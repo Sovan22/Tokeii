@@ -11,8 +11,15 @@ interface TMDBService {
         @Query("language") language: String
     ): Response<TVShowResponse>
 
+    @GET("trending/tv/day")
+    suspend fun getTrendingTVShows(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String
+    ): Response<TVShowResponse>
+
 }
 
 data class TVShowResponse(
     val results: List<TVshow>
 )
+
