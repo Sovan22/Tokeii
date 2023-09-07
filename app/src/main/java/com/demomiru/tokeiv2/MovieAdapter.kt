@@ -25,6 +25,7 @@ class MovieAdapter(private val movies: List<Movie>) :
        return movies.size
     }
 
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val movie = movies[position]
         holder.titleTextView.text = movie.title

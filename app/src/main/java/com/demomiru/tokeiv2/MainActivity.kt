@@ -1,8 +1,10 @@
 package com.demomiru.tokeiv2
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import androidx.appcompat.widget.Toolbar
 
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,7 +35,11 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(myToolbar)
         supportActionBar?.title = "Tokei"
 
-
+        val button : Button = findViewById(R.id.check_button)
+        button.setOnClickListener {
+            val intent = Intent(this, MoviePlayActivity::class.java)
+            startActivity(intent)
+        }
         tvCardRc = findViewById(R.id.card_container)
         tvRc = findViewById(R.id.tv_recycler_view)
         movieRc = findViewById(R.id.movie_recycler_view)
@@ -41,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         tvCardRc.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
         tvRc.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
         movieRc.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+
 
         val retrofit = Retrofit.Builder()
             .baseUrl("https://api.themoviedb.org/3/")
