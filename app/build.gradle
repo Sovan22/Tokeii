@@ -3,12 +3,13 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id("androidx.navigation.safeargs.kotlin")
 
 }
 
 android {
     namespace 'com.demomiru.tokeiv2'
-    compileSdk 33
+    compileSdk 34
 
     packagingOptions {
         pickFirst "META-INF/DEPENDENCIES"
@@ -16,8 +17,8 @@ android {
     }
     defaultConfig {
         applicationId "com.demomiru.tokeiv2"
-        minSdk 26
-        targetSdk 33
+        minSdk 29
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -42,6 +43,9 @@ android {
 dependencies {
     //noinspection GradleDependency
     implementation 'androidx.core:core-ktx:1.8.0'
+
+    implementation "androidx.navigation:navigation-fragment-ktx:2.7.1"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.1"
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation("it.skrape:skrapeit:1.2.2")
     implementation 'org.jsoup:jsoup:1.14.3'

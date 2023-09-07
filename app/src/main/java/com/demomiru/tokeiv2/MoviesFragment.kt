@@ -1,10 +1,12 @@
 package com.demomiru.tokeiv2
 
+
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.utils.retrofitBuilder
@@ -56,7 +58,10 @@ class MoviesFragment : Fragment() {
 
             if (movieResponse.isSuccessful) {
                 val movies = movieResponse.body()?.results ?: emptyList()
-                movieRc.adapter = MovieAdapter(movies)
+                movieRc.adapter = MovieAdapter(movies){
+                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id)
+                    findNavController().navigate(action)
+                }
             }
         }
         return view

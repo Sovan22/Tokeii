@@ -1,10 +1,18 @@
 package com.demomiru.tokeiv2
 
 import android.os.Bundle
+
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.retrofitBuilder
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -20,6 +28,8 @@ class TVShowFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private lateinit var popTvRc: RecyclerView
+    private lateinit var trenTvRc: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,12 +39,49 @@ class TVShowFragment : Fragment() {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_tv_show, container, false)
+        val view =  inflater.inflate(R.layout.fragment_tv_show, container, false)
+        popTvRc = view.findViewById(R.id.popular_tvshow_rc)
+        trenTvRc = view.findViewById(R.id.trending_tvshow_rc)
+
+        val retrofit = retrofitBuilder()
+        popTvRc.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
+        trenTvRc.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
+
+        val tvService = retrofit.create(TMDBService::class.java)
+
+        GlobalScope.launch(Dispatchers.Main) {
+            val tvPopularResponse = tvService.getPopularTVShows(
+                "cab731891b28c5ad61c85cd993851ed7",
+                "en-US"
+            )
+
+            val tvTrendingResponse = tvService.getTrendingTVShows(
+                "cab731891b28c5ad61c85cd993851ed7",
+                "en-US"
+            )
+            if (tvTrendingResponse.isSuccessful) {
+                val tvShows = tvTrendingResponse.body()?.results ?: emptyList()
+                trenTvRc.adapter = TVShowAdapter(tvShows){
+//                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
+//                    findNavController().navigate(action)
+                }
+            }
+
+            if (tvPopularResponse.isSuccessful) {
+                val tvShows = tvPopularResponse.body()?.results ?: emptyList()
+                popTvRc.adapter = TVShowAdapter(tvShows){
+//                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
+//                    findNavController().navigate(action)
+                }
+            }
+        }
+        return view
     }
 
     companion object {

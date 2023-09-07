@@ -8,7 +8,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 
-class MovieAdapter(private val movies: List<Movie>) :
+class MovieAdapter(private val movies: List<Movie>,
+                   private val clickHandler : (Movie) -> Unit
+) :
     RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -30,6 +32,9 @@ class MovieAdapter(private val movies: List<Movie>) :
         val movie = movies[position]
         holder.titleTextView.text = movie.title
         holder.imageView.load("https://image.tmdb.org/t/p/w500${movie.poster_path}")
+        holder.itemView.setOnClickListener {
+            clickHandler(movie)
+        }
     }
 
 }

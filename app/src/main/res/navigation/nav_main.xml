@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_main"
+    app:startDestination="@id/TVShowFragment">
+
+    <fragment
+        android:id="@+id/moviesFragment"
+        android:name="com.demomiru.tokeiv2.MoviesFragment"
+        android:label="@string/movies"
+        tools:layout="@layout/fragment_movies" >
+        <action
+            android:id="@+id/action_moviesFragment_to_TVShowFragment"
+            app:destination="@id/TVShowFragment" />
+        <action
+            android:id="@+id/action_moviesFragment_to_moviePlayActivity"
+            app:destination="@id/moviePlayActivity" />
+    </fragment>
+    <fragment
+        android:id="@+id/TVShowFragment"
+        android:name="com.demomiru.tokeiv2.TVShowFragment"
+        android:label="@string/tv_show"
+        tools:layout="@layout/fragment_tv_show" >
+        <action
+            android:id="@+id/action_TVShowFragment_to_moviesFragment"
+            app:destination="@id/moviesFragment" />
+        <action
+            android:id="@+id/action_TVShowFragment_to_TVShowDetails"
+            app:destination="@id/TVShowDetails" />
+
+    </fragment>
+    <activity
+        android:id="@+id/moviePlayActivity"
+        android:name="com.demomiru.tokeiv2.MoviePlayActivity"
+        android:label="activity_movie_play"
+        tools:layout="@layout/activity_movie_play" >
+        <argument
+            android:name="tmdbID"
+            app:argType="string" />
+    </activity>
+    <fragment
+        android:id="@+id/TVShowDetails"
+        android:name="com.demomiru.tokeiv2.TVShowDetails"
+        android:label="fragment_t_v_show_details"
+        tools:layout="@layout/fragment_tv_show_details" >
+        <argument android:name="tmdbID"
+            app:argType="string"
+            />
+    </fragment>
+</navigation>

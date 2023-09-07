@@ -1,113 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.Toolbar
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        android:id="@+id/toolbar"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_marginBottom="70dp"
+        >
 
-<ScrollView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:layout_constraintTop_toBottomOf="@+id/toolbar"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    >
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-   >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
 
-    <TextView
-        android:id="@+id/trending_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:fontFamily="sans-serif-condensed-light"
-        android:text="@string/trending"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:id="@+id/card_container"
+                app:layout_constraintTop_toBottomOf="@+id/trending_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
 
-         />
+                />
 
-    <androidx.recyclerview.widget.RecyclerView
+            <fragment
+                android:layout_width="match_parent"
+                android:id="@+id/nav_host_fragment"
+                android:name="androidx.navigation.fragment.NavHostFragment"
+                app:navGraph = "@navigation/nav_main"
+                app:defaultNavHost = "true"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/card_container"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:ignore="FragmentTagUsage" />
+
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:id="@+id/card_container"
-        app:layout_constraintTop_toBottomOf="@+id/trending_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom"
+        app:menu="@menu/bottom_nav" />
 
-        />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <TextView
-        android:id="@+id/movies_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:fontFamily="sans-serif-condensed-light"
-        android:text="@string/movies"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/card_container" />
+<!--    <androidx.appcompat.widget.Toolbar-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="?attr/actionBarSize"-->
+<!--        app:theme="@style/ThemeOverlay.AppCompat.ActionBar"-->
+<!--        android:id="@+id/toolbar"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        />-->
 
-    <Button
-        android:id="@+id/check_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/green"
-        app:layout_constraintBottom_toTopOf="@+id/movie_recycler_view"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/movies_text" />
+<!--    <ScrollView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/toolbar"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        >-->
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/movie_recycler_view"
-        android:layout_width="0dp"
-        android:layout_margin="10dp"
-        android:layout_height="wrap_content"
+            <!--    <TextView-->
+            <!--        android:id="@+id/movies_text"-->
+            <!--        android:layout_width="wrap_content"-->
+            <!--        android:layout_height="wrap_content"-->
+            <!--        android:layout_margin="5dp"-->
+            <!--        android:fontFamily="sans-serif-condensed-light"-->
+            <!--        android:text="@string/movies"-->
+            <!--        android:textAppearance="@style/TextAppearance.AppCompat.Display1"-->
+            <!--        app:layout_constraintStart_toStartOf="parent"-->
+            <!--        app:layout_constraintTop_toBottomOf="@+id/card_container" />-->
 
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/movies_text"
-/>
-    <TextView
-        android:id="@+id/popular_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:fontFamily="sans-serif-condensed-light"
-        android:text="@string/popular"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        app:layout_constraintTop_toBottomOf="@id/movie_recycler_view"
-        app:layout_constraintStart_toStartOf="parent"
+            <!--    <Button-->
+            <!--        android:id="@+id/check_button"-->
+            <!--        android:layout_width="wrap_content"-->
+            <!--        android:layout_height="wrap_content"-->
+            <!--        android:background="@color/green"-->
+            <!--        app:layout_constraintBottom_toTopOf="@+id/movie_recycler_view"-->
+            <!--        app:layout_constraintEnd_toEndOf="parent"-->
+            <!--        app:layout_constraintStart_toEndOf="@id/movies_text" />-->
 
-        />
+            <!--    <androidx.recyclerview.widget.RecyclerView-->
+            <!--        android:id="@+id/movie_recycler_view"-->
+            <!--        android:layout_width="0dp"-->
+            <!--        android:layout_margin="10dp"-->
+            <!--        android:layout_height="wrap_content"-->
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/tv_recycler_view"
-        android:layout_width="0dp"
-        android:layout_margin="10dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/popular_text" />
+            <!--        app:layout_constraintEnd_toEndOf="parent"-->
+            <!--        app:layout_constraintStart_toStartOf="parent"-->
+            <!--        app:layout_constraintTop_toBottomOf="@+id/movies_text"-->
+            <!--/>-->
+            <!--    <TextView-->
+            <!--        android:id="@+id/popular_text"-->
+            <!--        android:layout_width="wrap_content"-->
+            <!--        android:layout_height="wrap_content"-->
+            <!--        android:layout_margin="5dp"-->
+            <!--        android:fontFamily="sans-serif-condensed-light"-->
+            <!--        android:text="@string/popular"-->
+            <!--        android:textAppearance="@style/TextAppearance.AppCompat.Display1"-->
+            <!--        app:layout_constraintTop_toBottomOf="@id/movie_recycler_view"-->
+            <!--        app:layout_constraintStart_toStartOf="parent"-->
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <!--        />-->
 
-</ScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <!--    <androidx.recyclerview.widget.RecyclerView-->
+            <!--        android:id="@+id/tv_recycler_view"-->
+            <!--        android:layout_width="0dp"-->
+            <!--        android:layout_margin="10dp"-->
+            <!--        android:layout_height="wrap_content"-->
+            <!--        app:layout_constraintEnd_toEndOf="parent"-->
+            <!--        app:layout_constraintStart_toStartOf="parent"-->
+            <!--        app:layout_constraintTop_toBottomOf="@+id/popular_text" />-->
+
+
+

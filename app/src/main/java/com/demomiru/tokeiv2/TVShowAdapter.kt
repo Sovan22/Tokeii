@@ -8,7 +8,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 
-class TVShowAdapter(private val tvShows: List<TVshow>) :
+class TVShowAdapter(private val tvShows: List<TVshow>,
+private val clickHandler : (TVshow) -> Unit
+) :
     RecyclerView.Adapter<TVShowAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,6 +29,9 @@ class TVShowAdapter(private val tvShows: List<TVshow>) :
         holder.titleTextView.text = tvShow.name
         holder.imageView
             .load("https://image.tmdb.org/t/p/w500${tvShow.poster_path}")
+        holder.itemView.setOnClickListener {
+            clickHandler(tvShow)
+        }
     }
 
     override fun getItemCount(): Int {

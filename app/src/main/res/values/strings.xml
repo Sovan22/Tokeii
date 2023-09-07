@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">TokeiV2</string>
-    <string name="movies_text">Movies\n</string>
     <string name="movies">Movies</string>
     <string name="trending">Trending</string>
     <string name="popular">Popular</string>
+    <string name="tv_show">TV Shows</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
