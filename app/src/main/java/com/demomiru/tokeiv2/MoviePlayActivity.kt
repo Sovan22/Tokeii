@@ -43,6 +43,7 @@ import java.io.IOException
 
 class MoviePlayActivity : AppCompatActivity() {
     private lateinit var webView : WebView
+    private lateinit var url : String
     private val args : MoviePlayActivityArgs by navArgs()
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,13 +53,21 @@ class MoviePlayActivity : AppCompatActivity() {
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_movie_play)
         val id = args.tmdbID
+        val type = args.type
+        val episode = args.episodeN
         webView = findViewById(R.id.web_view)
+//        AdBlockerWebView
 
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
         } else {
 //            webView.loadUrl("https://vidsrc.me/embed/movie?tmdb=$id")
-            val url = "https://vidsrc.to/embed/movie/$id"
+//            val video = "<iframe id=\"the_frame\" src=\"//vidsrc.me/srcrcp/YmIzZjhhOWNhYTU5NDJiOTliYTBmOGE3OGY3M2M2MDU6UWtwaU1rZFpVR2RTSzFwdE5tWnRhM2hrTUVOMlNXdEZkMUpPV0ZsR1dqSnhhRmwxUjIwek5UbG9RVU50YjNGQ1VIRTVWVEZXTldkalpWbGlaRFYyVEVaelpqRlhZWFZaUkVOM2R6QjVRbWcwY1RaamFuWmxOa2N2ZWpGV2QzTnpVMVYxYlhCNmIzVkJjRzR5Y0VrNFkwbzBTQ3RuYUROTlNXYzVSakZLTVhSSFJWVjZjRzloT1VGU1QwZEJNMjFCWTJ4c1ZIRndNMDl3VlU5SGIzTkRiMWxUTm1oNGVtRTFVMU5ZWWxnNVZrbzVOaTgxVlZOcGFHMTRVemhoV2s4eVIwMTVURTlpZUc1U2RsRXZjVmx1SzBaaFFsVjZTWE42V1ZwaVRXVTJabXBJVTAxblVrNXFiVFJyY1ZCemMxbHJaa1Z3Y0hSaFdVOTRObGxSWTJ4MlJEUklkVE0wTTBoU1ppOTFXazlNV2tRemFtZDRXa3BtVjNwT1JUbDFlSGRxYmpRcmVYY3dPVWxNYTFCbVNuRnJkV3N5VjA1WldsWkhOazk0ZVRRdlFrTXpOUzg1UVRWblNqbFViWEJKZUhoTVVISmphRXhwWlZCQ1VYSmlORWhVU20xWmJDdFBZalJVYm1WMmNGRjZUR3BsV0RsT09IWXZTMFJITlRkalFqQmFNekpXY0hOYWIwd3hMekZ2UzJoeFZXMHdRaXQwV0dwWWVXc3ZVRGhGUTA1RGVHZ3hiMmRrUW5NMU1raHRVRmh2WTNCNlpFSjFXbFZVUW1KSllWb3lVakZSV21SRlIyaEdZMEZpWjA0eFVtdGlla3BwZVdaQldVZFlheXRwVkcxM2IwdFllRkZWWW5sVVVUUldha1l2WnpBMFRETjRkeTlsYzNvck0wRk1RVlZJTTJaM2RHbFdkVlZMZG5kV1dsSlllVFYxUXpaNFYwSXZkVFJRV0V4aFVVVlVTRk5IUW5KVFVuSlhjMUphV0RsbFEzQTVVaXMxZDAxb1lTdDVWREZX\" frameborder=\"0\" scrolling=\"no\" allowfullscreen=\"yes\" style=\"height: 100%; width: 100%;\" onload=\"remove_loading()\"></iframe>"
+//            webView.loadData(video,"text/html","utf-8")
+            url = if(type == "movie")
+                "https://vidsrc.to/embed/movie/$id"
+            else
+                "https://vidsrc.to/embed/tv/$id/1/$episode"
             webView.loadUrl(url)
 //            checkStatusCode(url)
         }
@@ -67,8 +76,7 @@ class MoviePlayActivity : AppCompatActivity() {
         webView.webChromeClient
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                view?.loadUrl(request?.url.toString())
-                return true
+                return request?.url.toString() != view?.url
             }
         }
     }

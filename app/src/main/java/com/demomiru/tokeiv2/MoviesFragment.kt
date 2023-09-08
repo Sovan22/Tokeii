@@ -59,7 +59,7 @@ class MoviesFragment : Fragment() {
             if (movieResponse.isSuccessful) {
                 val movies = movieResponse.body()?.results ?: emptyList()
                 movieRc.adapter = MovieAdapter(movies){
-                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id)
+                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
                     findNavController().navigate(action)
                 }
             }

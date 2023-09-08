@@ -6,12 +6,28 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".TVShowDetails">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/progress_layout"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        >
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/progress_circular"
+            />
+
+    </LinearLayout>
+
 
     <FrameLayout
         android:layout_width="match_parent"
         android:id="@+id/show_images"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
+
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
 
@@ -28,15 +44,16 @@
             android:id="@+id/show_poster"
             android:layout_height="250dp"
             android:layout_marginStart="40dp"
-            android:layout_marginTop="125dp"
+            android:layout_marginTop="100dp"
             android:scaleType="center"
             tools:src="@drawable/icon_tvshow"
             />
 
-</FrameLayout>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/overview"
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
@@ -44,4 +61,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/show_images"
         tools:text="System Hang" />
+
+    <TextView
+        android:id="@+id/episodes_text"
+        android:layout_marginTop="10dp"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/overview"
+        android:text="@string/episodes" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginTop="25dp"
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/episodes_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/episode_display_rc"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

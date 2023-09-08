@@ -38,6 +38,13 @@
         <argument
             android:name="tmdbID"
             app:argType="string" />
+        <argument
+            android:name="type"
+            app:argType="string" />
+        <argument
+            android:name="episodeN"
+            app:argType="integer"
+            android:defaultValue="0" />
     </activity>
     <fragment
         android:id="@+id/TVShowDetails"
@@ -47,5 +54,8 @@
         <argument android:name="tmdbID"
             app:argType="string"
             />
+        <action
+            android:id="@+id/action_TVShowDetails_to_moviePlayActivity"
+            app:destination="@id/moviePlayActivity" />
     </fragment>
 </navigation>
