@@ -7,10 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import android.view.ViewGroup
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.playShow
 import com.demomiru.tokeiv2.utils.retrofitBuilder
+import com.google.android.material.transition.Hold
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -40,6 +43,7 @@ class TVShowFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+//        exitTransition = Hold()
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -78,26 +82,29 @@ class TVShowFragment : Fragment() {
 
             if(tvTopResponse.isSuccessful){
                 val tvShows = tvTopResponse.body()?.results ?: emptyList()
-                topTvRc.adapter = TVShowAdapter(tvShows){
+                val adapter = TVShowAdapter(tvShows){it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-                    findNavController().navigate(playShow(it))
+                    findNavController().navigate(playShow(it,position))
                 }
+                addRecyclerAnimation(topTvRc,adapter)
             }
 
             if (tvTrendingResponse.isSuccessful) {
                 val tvShows = tvTrendingResponse.body()?.results ?: emptyList()
-                trenTvRc.adapter = TVShowAdapter(tvShows){
+                val adapter = TVShowAdapter(tvShows){it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-                    findNavController().navigate(playShow(it))
+                    findNavController().navigate(playShow(it,position))
                 }
+                addRecyclerAnimation(trenTvRc,adapter)
             }
 
             if (tvPopularResponse.isSuccessful) {
                 val tvShows = tvPopularResponse.body()?.results ?: emptyList()
-                popTvRc.adapter = TVShowAdapter(tvShows){
+                val adapter = TVShowAdapter(tvShows){it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-                    findNavController().navigate(playShow(it))
+                    findNavController().navigate(playShow(it,position))
                 }
+                addRecyclerAnimation(popTvRc,adapter)
             }
         }
         return view

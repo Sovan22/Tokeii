@@ -1,5 +1,6 @@
 package com.demomiru.tokeiv2
 
+import android.graphics.Color
 import android.media.Image
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
@@ -17,6 +19,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,8 +29,10 @@ import com.demomiru.tokeiv2.utils.createNumberList
 import com.demomiru.tokeiv2.utils.dropDownMenu
 
 import com.demomiru.tokeiv2.utils.retrofitBuilder
+
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.transition.MaterialContainerTransform
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -63,19 +68,32 @@ class TVShowDetails : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+//        sharedElementEnterTransition = MaterialContainerTransform().apply {
+//            drawingViewId = R.id.nav_host_fragment
+//            scrimColor = Color.TRANSPARENT
+//            duration = 750
+//        }
+
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+//        startPostponedEnterTransition()
+    }
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+//        postponeEnterTransition()
         // Inflate the layout for this fragment
        val view =  inflater.inflate(R.layout.fragment_tv_show_details, container, false)
         val id = args.tmdbID
 
-        episodeImg = view.findViewById(R.id.episode_img)
-        episodeOverview = view.findViewById(R.id.episode_overview_text)
+        val expandView = view.findViewById<ConstraintLayout>(R.id.expand_tvshow_view)
+        val position = args.position
+        expandView.transitionName = "image_$position"
 
 
         hintTil = view.findViewById(R.id.dropdown_menu)
@@ -88,9 +106,6 @@ class TVShowDetails : Fragment() {
         val overview : TextView = view.findViewById(R.id.overview)
         val retrofit = retrofitBuilder()
 
-        val bottomSheet = view.findViewById<CardView>(R.id.bottom_sheet)
-        val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
 
         val tvService = retrofit.create(TMDBService::class.java)
@@ -136,7 +151,7 @@ class TVShowDetails : Fragment() {
 
                         if (episodeResponse.isSuccessful) {
                             val episodes = episodeResponse.body()?.episodes ?: emptyList()
-                            episodesRc.adapter = EpisodeAdapter2(episodes) {
+                            val adapter = EpisodeAdapter2(episodes) {
 
 
 //                                episodeImg.load("https://image.tmdb.org/t/p/w500${it.still_path}")
@@ -155,6 +170,12 @@ class TVShowDetails : Fragment() {
                                 findNavController().navigate(action)
 
                             }
+                            episodesRc.adapter = adapter
+                            val context = episodesRc.context
+                            val controller = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
+                            episodesRc.layoutAnimation = controller
+                            adapter.notifyDataSetChanged()
+                            episodesRc.scheduleLayoutAnimation()
 
                         }
                     }

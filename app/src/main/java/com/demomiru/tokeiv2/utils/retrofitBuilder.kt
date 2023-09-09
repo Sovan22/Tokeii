@@ -1,12 +1,18 @@
 package com.demomiru.tokeiv2.utils
 
+import android.view.animation.AnimationUtils
 import androidx.navigation.NavDirections
+import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.Movie
+import com.demomiru.tokeiv2.MovieAdapter
 import com.demomiru.tokeiv2.MoviesFragmentDirections
+import com.demomiru.tokeiv2.R
+import com.demomiru.tokeiv2.TVShowAdapter
 import com.demomiru.tokeiv2.TVShowFragmentDirections
 import com.demomiru.tokeiv2.TVshow
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.FieldPosition
 
 fun retrofitBuilder (): Retrofit
 {
@@ -28,8 +34,8 @@ fun play(movie : Movie) : NavDirections{
     return  MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(movie.id, "movie")
 
 }
-fun playShow(tvShow : TVshow) : NavDirections{
-    return TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(tvShow.id)
+fun playShow(tvShow : TVshow, position: Int) : NavDirections{
+    return TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(tvShow.id,position)
 }
 
 fun dropDownMenu(seasonNumbers: Int): List<String>{
@@ -38,6 +44,24 @@ fun dropDownMenu(seasonNumbers: Int): List<String>{
         resultList.add("Season $i")
     }
     return resultList
+}
+
+fun addRecyclerAnimation(view :RecyclerView,adapter : TVShowAdapter){
+    view.adapter = adapter
+    val context = view.context
+    val controller = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
+    view.layoutAnimation = controller
+    adapter.notifyDataSetChanged()
+    view.scheduleLayoutAnimation()
+}
+
+fun addRecyclerAnimation(view :RecyclerView,adapter : MovieAdapter){
+    view.adapter = adapter
+    val context = view.context
+    val controller = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
+    view.layoutAnimation = controller
+    adapter.notifyDataSetChanged()
+    view.scheduleLayoutAnimation()
 }
 
 //fun dynamicRetrofitBuilder (id :String): Retrofit

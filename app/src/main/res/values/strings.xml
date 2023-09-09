@@ -11,4 +11,5 @@
     <string name="top_rated">Top Rated</string>
     <string name="default_season">Season 1</string>
     <string name="season">Season</string>
+    <string name="expandtvshow">expandTvShow</string>
 </resources>

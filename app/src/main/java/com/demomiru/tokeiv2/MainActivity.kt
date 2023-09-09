@@ -1,28 +1,15 @@
 package com.demomiru.tokeiv2
 
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.demomiru.tokeiv2.utils.retrofitBuilder
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.transition.platform.MaterialContainerTransform
+
 import kotlinx.coroutines.DelicateCoroutinesApi
-
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -35,8 +22,33 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val options = NavOptions.Builder()
+            .setEnterAnim(R.anim.enter_from_bottom)
+            .setExitAnim(R.anim.exit_to_top)
+            .build()
+
         val navController = findNavController(R.id.nav_host_fragment)
-        findViewById<BottomNavigationView>(R.id.bottom_nav_bar).setupWithNavController(navController)
+        val bottomNavigationView : BottomNavigationView = findViewById(R.id.bottom_nav_bar)
+       bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.moviesFragment -> {
+                    navController.navigate(R.id.moviesFragment, null, options)
+                }
+                R.id.searchFragment -> {
+                    navController.navigate(R.id.searchFragment, null, options)
+                }
+                R.id.TVShowFragment -> {
+                    navController.navigate(R.id.TVShowFragment, null, options)
+                }
+            }
+            true
+        }
+        bottomNavigationView.setOnNavigationItemReselectedListener { item ->
+            return@setOnNavigationItemReselectedListener
+        }
+//        findViewById<BottomNavigationView>(R.id.bottom_nav_bar).setupWithNavController(navController)
+
+//        window.sharedElementEnterTransition = MaterialContainerTransform()
 
         //Toolbar
 //        val myToolbar = findViewById<Toolbar>(R.id.toolbar)

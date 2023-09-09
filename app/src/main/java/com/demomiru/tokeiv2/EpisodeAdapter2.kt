@@ -8,9 +8,23 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import at.blogc.android.views.ExpandableTextView
 import coil.load
+
+
+//class MyDiffUtilCallback : DiffUtil.ItemCallback<MyItem>() {
+//    override fun areItemsTheSame(oldItem: MyItem, newItem: MyItem): Boolean {
+//        // Return true if items are the same.
+//        return oldItem.id == newItem.id
+//    }
+//
+//    override fun areContentsTheSame(oldItem: MyItem, newItem: MyItem): Boolean {
+//        // Return true if contents are the same.
+//        return oldItem == newItem
+//    }
+//}
 
 
 class EpisodeAdapter2(private val episodes : List<Episode>,

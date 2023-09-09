@@ -5,11 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 
 class TVShowAdapter(private val tvShows: List<TVshow>,
-private val clickHandler : (TVshow) -> Unit
+private val clickHandler : (TVshow,Int) -> Unit
 ) :
     RecyclerView.Adapter<TVShowAdapter.ViewHolder>() {
 
@@ -29,8 +30,10 @@ private val clickHandler : (TVshow) -> Unit
         holder.titleTextView.text = tvShow.name
         holder.imageView
             .load("https://image.tmdb.org/t/p/w500${tvShow.poster_path}")
+        ViewCompat.setTransitionName(holder.imageView, "image_$position")
+
         holder.itemView.setOnClickListener {
-            clickHandler(tvShow)
+            clickHandler(tvShow,position)
         }
     }
 

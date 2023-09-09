@@ -3,6 +3,7 @@ package com.demomiru.tokeiv2
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,6 +42,16 @@ import java.io.IOException
 //
 //    }
 //}
+import android.webkit.JavascriptInterface
+
+class HtmlHandler {
+    @JavascriptInterface
+    @SuppressWarnings("unused")
+    fun handleHtml(html: String) {
+        Log.i("HTML", html)
+    }
+}
+
 
 class MoviePlayActivity : AppCompatActivity() {
     private lateinit var webView : WebView
@@ -59,6 +70,8 @@ class MoviePlayActivity : AppCompatActivity() {
         val season = args.seasonN
         webView = findViewById(R.id.web_view)
 //        AdBlockerWebView
+        webView.settings.javaScriptEnabled = true
+        webView.webChromeClient =  WebChromeClient()
 
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
@@ -72,6 +85,8 @@ class MoviePlayActivity : AppCompatActivity() {
             else
                 "https://vidsrc.me/embed/tv?tmdb=$id&season=$season&episode=$episode"
 
+//            url = "https://movie-web.app/"
+
 
 //
 //            url = if(type == "movie")
@@ -80,11 +95,39 @@ class MoviePlayActivity : AppCompatActivity() {
 //                "https://vidsrc.to/embed/tv/$id/$season/$episode"
             webView.loadUrl(url)
 //            checkStatusCode(url)
+
+
         }
 
-        webView.settings.javaScriptEnabled = true
-        webView.webChromeClient =  WebChromeClient()
+
+//        webView.addJavascriptInterface(HtmlHandler(), "HtmlHandler")
+
+//        webView.webViewClient = object : WebViewClient() {
+//            override fun onPageFinished(view: WebView, url: String) {
+//                super.onPageFinished(view, url)
+//                    // Pass html source to the HtmlHandler
+//                    val htmlCode = webView.evaluateJavascript("document.documentElement.outerHTML") {html->
+//                        Toast.makeText(this@MoviePlayActivity,html.substringBefore(">"),Toast.LENGTH_SHORT).show()
+//                    }
+//
+//            }
+//        }
+
+//        webView.webChromeClient =  WebChromeClient()
         webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                val htmlCode = webView.evaluateJavascript("document.documentElement.outerHTML") {html->
+//                    Toast.makeText(this@MoviePlayActivity,html.substringBefore(">"),Toast.LENGTH_SHORT).show()
+//                    val document = Jsoup.parse(html)
+                    Log.i("html", html)
+//                    val videoTags = document.getElementsByTag("video")
+//                    for (videoTag in videoTags) {
+//                        val src = videoTag.attr("src")
+//                        Log.i("link", src)
+                    }
+                }
+
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 return request?.url.toString() != view?.url
             }

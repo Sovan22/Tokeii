@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.play
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -80,29 +81,32 @@ class MoviesFragment : Fragment() {
             if (topMovieResponse.isSuccessful)
             {
                 val movies = tmovieResponse.body()?.results?: emptyList()
-                topMovieRc.adapter = MovieAdapter(movies){
+                val adapter = MovieAdapter(movies){
 //                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
                     findNavController().navigate(play(it))
                 }
+                addRecyclerAnimation(topMovieRc,adapter)
 
             }
 
             if(tmovieResponse.isSuccessful){
                 val movies = tmovieResponse.body()?.results?: emptyList()
-                trenMovieRc.adapter = MovieAdapter(movies){
+                val adapter = MovieAdapter(movies){
                     findNavController().navigate(play(it))
                 }
+                addRecyclerAnimation(trenMovieRc,adapter)
 
             }
 
 
             if (pmovieResponse.isSuccessful) {
                 val movies = pmovieResponse.body()?.results ?: emptyList()
-                popMovieRc.adapter = MovieAdapter(movies){
+                val adapter = MovieAdapter(movies){
 //                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
 //                    findNavController().navigate(action)
                     findNavController().navigate(play(it))
                 }
+                addRecyclerAnimation(popMovieRc,adapter)
             }
         }
         return view

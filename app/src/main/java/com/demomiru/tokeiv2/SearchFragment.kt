@@ -142,7 +142,7 @@ class SearchFragment : Fragment() {
             if (searchResults.isSuccessful)
             {
                 val tvShows = searchResults.body()?.results ?: emptyList()
-                searchResultsRc.adapter = TVShowAdapter(tvShows){
+                searchResultsRc.adapter = TVShowAdapter(tvShows){it, _ ->
                     val action = SearchFragmentDirections.actionSearchFragmentToTVShowDetails(it.id)
                     findNavController().navigate(action)
                 }

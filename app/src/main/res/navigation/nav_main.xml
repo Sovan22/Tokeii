@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_main"
-    app:startDestination="@id/TVShowFragment">
+    app:startDestination="@id/moviesFragment">
 
     <fragment
         android:id="@+id/moviesFragment"
@@ -12,7 +12,11 @@
         tools:layout="@layout/fragment_movies" >
         <action
             android:id="@+id/action_moviesFragment_to_TVShowFragment"
-            app:destination="@id/TVShowFragment" />
+            app:destination="@id/TVShowFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@anim/slide_out" />
         <action
             android:id="@+id/action_moviesFragment_to_moviePlayActivity"
             app:destination="@id/moviePlayActivity" />
@@ -30,7 +34,11 @@
             app:destination="@id/moviesFragment" />
         <action
             android:id="@+id/action_TVShowFragment_to_TVShowDetails"
-            app:destination="@id/TVShowDetails" />
+            app:destination="@id/TVShowDetails"
+            app:enterAnim="@anim/enter_from_bottom"
+            app:exitAnim="@anim/exit_to_top"
+            app:popEnterAnim="@anim/go_left"
+            app:popExitAnim="@anim/go_right" />
         <action
             android:id="@+id/action_TVShowFragment_to_searchFragment"
             app:destination="@id/searchFragment" />
@@ -67,6 +75,10 @@
         <action
             android:id="@+id/action_TVShowDetails_to_moviePlayActivity"
             app:destination="@id/moviePlayActivity" />
+        <argument
+            android:name="position"
+            app:argType="integer"
+            android:defaultValue="0" />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
@@ -75,9 +87,17 @@
         tools:layout="@layout/fragment_search" >
         <action
             android:id="@+id/action_searchFragment_to_moviePlayActivity"
-            app:destination="@id/moviePlayActivity" />
+            app:destination="@id/moviePlayActivity"
+            app:enterAnim="@anim/nav_enter_anim"
+            app:exitAnim="@anim/nav_exit_anim"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
         <action
             android:id="@+id/action_searchFragment_to_TVShowDetails"
-            app:destination="@id/TVShowDetails" />
+            app:destination="@id/TVShowDetails"
+            app:enterAnim="@anim/nav_enter_anim"
+            app:exitAnim="@anim/nav_exit_anim"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
     </fragment>
 </navigation>
