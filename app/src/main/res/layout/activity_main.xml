@@ -20,17 +20,6 @@
             android:orientation="vertical"
             >
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:id="@+id/card_container"
-                app:layout_constraintTop_toBottomOf="@+id/trending_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-
-                />
-
             <fragment
                 android:layout_width="match_parent"
                 android:id="@+id/nav_host_fragment"

@@ -35,6 +35,22 @@ interface TMDBService {
         @Query("language") language: String
     ) : Response<TVShowEpisodeDetailsResponse>
 
+    @GET("search/tv")
+    suspend fun searchShow(
+        @Query("query") query: String,
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String
+    ) : Response<TVShowResponse>
+
+    @GET("tv/top_rated")
+    suspend fun getTopRatedTVShows(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String
+
+    ) : Response<TVShowResponse>
+
+
+
 }
 
 data class TVShowResponse(
@@ -52,9 +68,9 @@ data class TVShowDetailsResponse(
 )
 
 data class TVShowEpisodeDetailsResponse(
-    val results : List<TVShowEpisodeResponse>
+    val episodes : List<Episode>
 )
-data class TVShowEpisodeResponse(
+data class Episode(
     val season_number: String,
     val episode_number: String,
     val overview: String,

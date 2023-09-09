@@ -55,5 +55,29 @@
 
         />
 
+    <TextView
+        android:id="@+id/topShows_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="@string/top_rated"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        app:layout_constraintTop_toBottomOf="@+id/trending_tvshow_rc"
+        app:layout_constraintStart_toStartOf="parent"
+
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:id="@+id/toprated_tvshow_rc"
+        app:layout_constraintTop_toBottomOf="@id/topShows_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

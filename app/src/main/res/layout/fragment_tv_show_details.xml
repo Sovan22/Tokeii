@@ -27,7 +27,6 @@
         android:id="@+id/show_images"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
 
@@ -62,27 +61,106 @@
         app:layout_constraintTop_toBottomOf="@id/show_images"
         tools:text="System Hang" />
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/dropdown_menu"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+        android:layout_width="150dp"
+        android:layout_margin="5dp"
+        app:layout_constraintTop_toBottomOf="@+id/overview"
+        android:layout_height="wrap_content"
+        android:hint="@string/season"
+        app:layout_constraintStart_toStartOf="parent"
+
+        >
+
+        <AutoCompleteTextView
+            android:id="@+id/autoCompleteTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:inputType="none"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
     <TextView
         android:id="@+id/episodes_text"
         android:layout_marginTop="10dp"
         android:visibility="invisible"
+        tools:visibility="visible"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/overview"
+        app:layout_constraintTop_toBottomOf="@id/dropdown_menu"
         android:text="@string/episodes" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_marginTop="25dp"
         android:layout_width="match_parent"
-
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/episodes_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:id="@+id/episode_display_rc"
         />
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottom_sheet"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:cardElevation="10dp"
+            app:cardCornerRadius="15dp"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:id="@+id/episode_card_ll"
+                android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/expanded_episode_fl"
+                    >
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="225dp"
+                        android:id="@+id/episode_img"
+                        android:scaleType="centerCrop"
+                        />
+                    <ImageView
+                        android:id="@+id/play_button_2"
+                        android:layout_width="50dp"
+                        android:layout_gravity="center"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="6dp"
+                        android:src="@drawable/baseline_play_circle_24"
+                        />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/episode_overview_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:layout_gravity="bottom"
+                    />
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

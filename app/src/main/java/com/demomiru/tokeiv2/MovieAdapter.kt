@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.demomiru.tokeiv2.utils.yearExtract
 
 class MovieAdapter(private val movies: List<Movie>,
                    private val clickHandler : (Movie) -> Unit
@@ -30,7 +31,7 @@ class MovieAdapter(private val movies: List<Movie>,
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val movie = movies[position]
-        holder.titleTextView.text = movie.title
+        holder.titleTextView.text = movie.title + " (${yearExtract(movie.release_date)})"
         holder.imageView.load("https://image.tmdb.org/t/p/w500${movie.poster_path}")
         holder.itemView.setOnClickListener {
             clickHandler(movie)

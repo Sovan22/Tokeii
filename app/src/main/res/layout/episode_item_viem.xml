@@ -1,37 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp"
+
+    android:orientation="horizontal"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <ImageView
+        android:id="@+id/play_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_marginTop="6dp"
         android:src="@drawable/baseline_play_circle_24"
-        android:id="@+id/play_button"
+        app:layout_constraintBottom_toBottomOf="@id/episode_no_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        />
-
+        app:layout_constraintTop_toTopOf="@id/episode_no_text" />
 
     <TextView
         android:id="@+id/episode_no_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_margin="5dp"
         android:fontFamily="sans-serif-condensed-light"
-        android:gravity="center"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        app:layout_constraintBottom_toBottomOf="@+id/play_button"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/play_button"
-
-        app:layout_constraintTop_toTopOf="@+id/play_button"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="Episode 1" />
 
 
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.playShow
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,7 @@ class TVShowFragment : Fragment() {
     private var param2: String? = null
     private lateinit var popTvRc: RecyclerView
     private lateinit var trenTvRc: RecyclerView
+    private lateinit var topTvRc : RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,8 +51,10 @@ class TVShowFragment : Fragment() {
         val view =  inflater.inflate(R.layout.fragment_tv_show, container, false)
         popTvRc = view.findViewById(R.id.popular_tvshow_rc)
         trenTvRc = view.findViewById(R.id.trending_tvshow_rc)
+        topTvRc = view.findViewById(R.id.toprated_tvshow_rc)
 
         val retrofit = retrofitBuilder()
+        topTvRc.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
         popTvRc.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
         trenTvRc.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
 
@@ -66,11 +70,25 @@ class TVShowFragment : Fragment() {
                 "cab731891b28c5ad61c85cd993851ed7",
                 "en-US"
             )
+
+            val tvTopResponse = tvService.getTopRatedTVShows(
+                "cab731891b28c5ad61c85cd993851ed7",
+                "en-US"
+            )
+
+            if(tvTopResponse.isSuccessful){
+                val tvShows = tvTopResponse.body()?.results ?: emptyList()
+                topTvRc.adapter = TVShowAdapter(tvShows){
+//                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
+                    findNavController().navigate(playShow(it))
+                }
+            }
+
             if (tvTrendingResponse.isSuccessful) {
                 val tvShows = tvTrendingResponse.body()?.results ?: emptyList()
                 trenTvRc.adapter = TVShowAdapter(tvShows){
-                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-                    findNavController().navigate(action)
+//                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
+                    findNavController().navigate(playShow(it))
                 }
             }
 
@@ -78,7 +96,7 @@ class TVShowFragment : Fragment() {
                 val tvShows = tvPopularResponse.body()?.results ?: emptyList()
                 popTvRc.adapter = TVShowAdapter(tvShows){
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-//                    findNavController().navigate(action)
+                    findNavController().navigate(playShow(it))
                 }
             }
         }

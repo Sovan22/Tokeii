@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SearchFragment"
+    android:orientation="vertical"
+    >
+
+    <RadioGroup
+        android:id="@+id/choice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@drawable/radio_group_tab_bg"
+        android:orientation="horizontal"
+        >
+
+        <RadioButton
+            android:id="@+id/movies_search"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:layout_weight="0.5"
+            android:background="@drawable/tab_selector"
+            android:button="@null"
+            android:checked="true"
+            android:text="@string/movies"
+            android:gravity="center"
+            android:textColor="@drawable/tab_text_color_selector"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            />
+
+        <RadioButton
+            android:id="@+id/tvShows_search"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:layout_weight="0.5"
+            android:background="@drawable/tab_selector"
+            android:button="@null"
+            android:checked="false"
+            android:text="@string/tv_show"
+            android:gravity="center"
+            android:textColor="@drawable/tab_text_color_selector"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            />
+
+    </RadioGroup>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:padding="10dp"
+        android:id="@+id/search_til"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/search_et"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:hint="@string/search"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/search_results_rc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        />
+
+</LinearLayout>

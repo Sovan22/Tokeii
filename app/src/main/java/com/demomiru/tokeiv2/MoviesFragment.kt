@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.play
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,9 @@ private const val ARG_PARAM2 = "param2"
 class MoviesFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
-    private lateinit var movieRc: RecyclerView
+    private lateinit var popMovieRc: RecyclerView
+    private lateinit var trenMovieRc : RecyclerView
+    private lateinit var topMovieRc : RecyclerView
     private var param2: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,21 +49,59 @@ class MoviesFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view =  inflater.inflate(R.layout.fragment_movies, container, false)
-        movieRc = view.findViewById(R.id.movie_recycler_view)
-        movieRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false)
+        popMovieRc = view.findViewById(R.id.movie_recycler_view)
+        trenMovieRc = view.findViewById(R.id.trending_movie_rc)
+        topMovieRc = view.findViewById(R.id.topRatedMovie_recycler_view)
+
+
+        topMovieRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false)
+        trenMovieRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false)
+        popMovieRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false)
+
         val retrofit = retrofitBuilder()
         val movieService = retrofit.create(MovieService::class.java)
+
         GlobalScope.launch(Dispatchers.Main) {
-            val movieResponse = movieService.getPopularMovies(
+            val pmovieResponse = movieService.getPopularMovies(
                 "cab731891b28c5ad61c85cd993851ed7",
                 "en-US"
             )
 
-            if (movieResponse.isSuccessful) {
-                val movies = movieResponse.body()?.results ?: emptyList()
-                movieRc.adapter = MovieAdapter(movies){
-                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
-                    findNavController().navigate(action)
+            val tmovieResponse = movieService.getTrendingMovies(
+                "cab731891b28c5ad61c85cd993851ed7",
+                "en-US"
+            )
+
+            val topMovieResponse = movieService.getTopRatedMovies(
+                "cab731891b28c5ad61c85cd993851ed7",
+                "en-US"
+            )
+
+            if (topMovieResponse.isSuccessful)
+            {
+                val movies = tmovieResponse.body()?.results?: emptyList()
+                topMovieRc.adapter = MovieAdapter(movies){
+//                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
+                    findNavController().navigate(play(it))
+                }
+
+            }
+
+            if(tmovieResponse.isSuccessful){
+                val movies = tmovieResponse.body()?.results?: emptyList()
+                trenMovieRc.adapter = MovieAdapter(movies){
+                    findNavController().navigate(play(it))
+                }
+
+            }
+
+
+            if (pmovieResponse.isSuccessful) {
+                val movies = pmovieResponse.body()?.results ?: emptyList()
+                popMovieRc.adapter = MovieAdapter(movies){
+//                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
+//                    findNavController().navigate(action)
+                    findNavController().navigate(play(it))
                 }
             }
         }

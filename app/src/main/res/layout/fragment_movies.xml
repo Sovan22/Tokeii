@@ -9,13 +9,37 @@
     >
 
     <TextView
+        android:id="@+id/trending_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="@string/trending"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:id="@+id/trending_movie_rc"
+        app:layout_constraintTop_toBottomOf="@+id/trending_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        />
+
+    <TextView
         android:id="@+id/movies_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/movies"
+        android:text="@string/popular"
         android:layout_margin="5dp"
         android:fontFamily="sans-serif-condensed-light"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/trending_movie_rc"
         app:layout_constraintStart_toStartOf="parent"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
 
@@ -30,5 +54,28 @@
             app:layout_constraintTop_toBottomOf="@+id/movies_text"
         />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/topmovies_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/top_rated"
+        android:layout_margin="5dp"
+        android:fontFamily="sans-serif-condensed-light"
+        app:layout_constraintTop_toBottomOf="@+id/movie_recycler_view"
+        app:layout_constraintStart_toStartOf="parent"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/topRatedMovie_recycler_view"
+        android:layout_width="0dp"
+        android:layout_margin="10dp"
+        android:layout_height="wrap_content"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topmovies_text"
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
 

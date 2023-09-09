@@ -49,30 +49,30 @@ class MainActivity : AppCompatActivity() {
 //            startActivity(intent)
 //        }
 
-        tvCardRc = findViewById(R.id.card_container)
+//        tvCardRc = findViewById(R.id.card_container)
 //        tvRc = findViewById(R.id.tv_recycler_view)
 //        movieRc = findViewById(R.id.movie_recycler_view)
 
-        tvCardRc.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+//        tvCardRc.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        tvRc.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 //        movieRc.layoutManager = LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
 
 
-        val retrofit = retrofitBuilder()
+//        val retrofit = retrofitBuilder()
+//
+//        val tvService = retrofit.create(TMDBService::class.java)
+//        val movieService = retrofit.create(MovieService::class.java)
 
-        val tvService = retrofit.create(TMDBService::class.java)
-        val movieService = retrofit.create(MovieService::class.java)
-
-        GlobalScope.launch(Dispatchers.Main) {
+//        GlobalScope.launch(Dispatchers.Main) {
 //            val tvPopularResponse = tvService.getPopularTVShows(
 //                "cab731891b28c5ad61c85cd993851ed7",
 //                "en-US"
 //            )
 
-            val tvTrendingResponse = tvService.getTrendingTVShows(
-                "cab731891b28c5ad61c85cd993851ed7",
-                "en-US"
-            )
+//            val tvTrendingResponse = tvService.getTrendingTVShows(
+//                "cab731891b28c5ad61c85cd993851ed7",
+//                "en-US"
+//            )
 
 //            val movieResponse = movieService.getPopularMovies(
 //                "cab731891b28c5ad61c85cd993851ed7",
@@ -80,12 +80,12 @@ class MainActivity : AppCompatActivity() {
 //            )
 
 
-            if (tvTrendingResponse.isSuccessful) {
-                val tvShows = tvTrendingResponse.body()?.results ?: emptyList()
-                Log.i("Trending Shows Size", tvShows.size.toString())
-                val trendingTVShows = tvShows.subList(0,18).chunked(3)
-                tvCardRc.adapter = TVShowCardAdapter(trendingTVShows)
-            }
+//            if (tvTrendingResponse.isSuccessful) {
+//                val tvShows = tvTrendingResponse.body()?.results ?: emptyList()
+//                Log.i("Trending Shows Size", tvShows.size.toString())
+//                val trendingTVShows = tvShows.subList(0,18).chunked(3)
+//                tvCardRc.adapter = TVShowCardAdapter(trendingTVShows)
+//            }
 
 //            if (movieResponse.isSuccessful) {
 //                val movies = movieResponse.body()?.results ?: emptyList()
@@ -97,6 +97,6 @@ class MainActivity : AppCompatActivity() {
 //                tvRc.adapter = TVShowAdapter(tvShows)
 //            }
 
-        }
+
     }
 }

@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_moviesFragment_to_moviePlayActivity"
             app:destination="@id/moviePlayActivity" />
+        <action
+            android:id="@+id/action_moviesFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
     </fragment>
     <fragment
         android:id="@+id/TVShowFragment"
@@ -28,6 +31,9 @@
         <action
             android:id="@+id/action_TVShowFragment_to_TVShowDetails"
             app:destination="@id/TVShowDetails" />
+        <action
+            android:id="@+id/action_TVShowFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
 
     </fragment>
     <activity
@@ -45,6 +51,10 @@
             android:name="episodeN"
             app:argType="integer"
             android:defaultValue="0" />
+        <argument
+            android:name="seasonN"
+            app:argType="string"
+            android:defaultValue="1" />
     </activity>
     <fragment
         android:id="@+id/TVShowDetails"
@@ -57,5 +67,17 @@
         <action
             android:id="@+id/action_TVShowDetails_to_moviePlayActivity"
             app:destination="@id/moviePlayActivity" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.demomiru.tokeiv2.SearchFragment"
+        android:label="fragment_search"
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_searchFragment_to_moviePlayActivity"
+            app:destination="@id/moviePlayActivity" />
+        <action
+            android:id="@+id/action_searchFragment_to_TVShowDetails"
+            app:destination="@id/TVShowDetails" />
     </fragment>
 </navigation>

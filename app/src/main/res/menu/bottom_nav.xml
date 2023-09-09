@@ -7,6 +7,11 @@
         android:icon="@drawable/icon_movie"
         />
 
+    <item android:id="@+id/searchFragment"
+        android:title=""
+        android:icon="@drawable/baseline_search_24"
+        />
+
     <item android:id="@+id/TVShowFragment"
         android:title=""
         android:icon="@drawable/icon_tvshow"
