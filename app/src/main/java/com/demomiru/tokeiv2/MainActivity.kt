@@ -4,20 +4,19 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
-import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.RecyclerView
+
+
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.transition.platform.MaterialContainerTransform
-
-import kotlinx.coroutines.DelicateCoroutinesApi
 
 
+
+@Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
 
 //    private lateinit var tvRc: RecyclerView
 //    private lateinit var movieRc: RecyclerView
-    private lateinit var tvCardRc: RecyclerView
-    @OptIn(DelicateCoroutinesApi::class)
+//    private lateinit var tvCardRc: RecyclerView
+//    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -29,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         val navController = findNavController(R.id.nav_host_fragment)
         val bottomNavigationView : BottomNavigationView = findViewById(R.id.bottom_nav_bar)
+
        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.moviesFragment -> {
@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-        bottomNavigationView.setOnNavigationItemReselectedListener { item ->
+        bottomNavigationView.setOnNavigationItemReselectedListener {
             return@setOnNavigationItemReselectedListener
         }
 //        findViewById<BottomNavigationView>(R.id.bottom_nav_bar).setupWithNavController(navController)

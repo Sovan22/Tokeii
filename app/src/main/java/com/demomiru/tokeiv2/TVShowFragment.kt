@@ -7,13 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import android.view.ViewGroup
-import androidx.navigation.fragment.FragmentNavigatorExtras
+
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.playShow
 import com.demomiru.tokeiv2.utils.retrofitBuilder
-import com.google.android.material.transition.Hold
+
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

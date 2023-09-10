@@ -1,6 +1,7 @@
 package com.demomiru.tokeiv2
 
 
+
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +22,7 @@ private val clickHandler : (Int) -> Unit
         return ViewHolder(view)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val episodeN = episodeNumber[position]
         holder.episodeText.text = "Episode $episodeN"

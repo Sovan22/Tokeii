@@ -3,23 +3,16 @@ package com.demomiru.tokeiv2
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
+
 import android.view.View
-import android.view.ViewGroup
-import android.view.Window
+
 import android.view.WindowManager
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
-import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
+
 import androidx.navigation.navArgs
-import org.jsoup.Connection
-import org.jsoup.Jsoup
-import java.io.IOException
 
 //class MoviePlayActivity : AppCompatActivity() {
 //
@@ -42,17 +35,17 @@ import java.io.IOException
 //
 //    }
 //}
-import android.webkit.JavascriptInterface
 
-class HtmlHandler {
-    @JavascriptInterface
-    @SuppressWarnings("unused")
-    fun handleHtml(html: String) {
-        Log.i("HTML", html)
-    }
-}
+//class HtmlHandler {
+//    @JavascriptInterface
+//    @SuppressWarnings("unused")
+//    fun handleHtml(html: String) {
+//        Log.i("HTML", html)
+//    }
+//}
 
 
+@Suppress("DEPRECATION")
 class MoviePlayActivity : AppCompatActivity() {
     private lateinit var webView : WebView
     private lateinit var url : String
@@ -60,7 +53,6 @@ class MoviePlayActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_movie_play)
         hideSystemUI()
@@ -117,15 +109,15 @@ class MoviePlayActivity : AppCompatActivity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                val htmlCode = webView.evaluateJavascript("document.documentElement.outerHTML") {html->
+//                val htmlCode = webView.evaluateJavascript("document.documentElement.outerHTML") {html->
 //                    Toast.makeText(this@MoviePlayActivity,html.substringBefore(">"),Toast.LENGTH_SHORT).show()
 //                    val document = Jsoup.parse(html)
-                    Log.i("html", html)
+//                    Log.i("html", html)
 //                    val videoTags = document.getElementsByTag("video")
 //                    for (videoTag in videoTags) {
 //                        val src = videoTag.attr("src")
 //                        Log.i("link", src)
-                    }
+
                 }
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {

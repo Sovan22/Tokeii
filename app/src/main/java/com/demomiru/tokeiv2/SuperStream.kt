@@ -1,17 +1,17 @@
 package com.demomiru.tokeiv2
-
-import android.os.Bundle
-import android.util.Log
-import com.gargoylesoftware.htmlunit.javascript.host.WindowOrWorkerGlobalScopeMixin.atob
-import java.util.Base64
-
-class SuperStream {
-
-    private fun atob(encodedData : String):String{
-        val decodedBytes = Base64.getDecoder().decode(encodedData)
-        return String(decodedBytes)
-
-    }
+//
+//import android.os.Bundle
+//import android.util.Log
+//import com.gargoylesoftware.htmlunit.javascript.host.WindowOrWorkerGlobalScopeMixin.atob
+//import java.util.Base64
+//
+//class SuperStream {
+//
+//    private fun atob(encodedData : String):String{
+//        val decodedBytes = Base64.getDecoder().decode(encodedData)
+//        return String(decodedBytes)
+//
+//    }
 
 //     fun onCreate(savedInstanceState: Bundle?) {
 //
@@ -34,4 +34,4 @@ class SuperStream {
 ////            withContext(Dispatchers.Main) {
 ////            }
 ////        }
-}
+//}

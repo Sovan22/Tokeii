@@ -17,7 +17,9 @@ import android.widget.RadioGroup
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.retrofitBuilder
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -91,6 +93,7 @@ class SearchFragment : Fragment() {
         return view
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun performMovieSearch()
     {
         searchResultsRc.visibility = View.GONE
@@ -110,10 +113,11 @@ class SearchFragment : Fragment() {
             if (searchResults.isSuccessful)
             {
                 val movies = searchResults.body()?.results ?: emptyList()
-                searchResultsRc.adapter = MovieAdapter(movies){
+                val adapter = MovieAdapter(movies){
                     val action = SearchFragmentDirections.actionSearchFragmentToMoviePlayActivity(it.id,"movie")
                     findNavController().navigate(action)
                 }
+                addRecyclerAnimation(searchResultsRc,adapter)
             }
 
             withContext(Dispatchers.Main) {
@@ -123,6 +127,7 @@ class SearchFragment : Fragment() {
 
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun performShowSearch()
     {
         searchResultsRc.visibility = View.GONE
@@ -142,10 +147,11 @@ class SearchFragment : Fragment() {
             if (searchResults.isSuccessful)
             {
                 val tvShows = searchResults.body()?.results ?: emptyList()
-                searchResultsRc.adapter = TVShowAdapter(tvShows){it, _ ->
+                val adapter = TVShowAdapter(tvShows){it, _ ->
                     val action = SearchFragmentDirections.actionSearchFragmentToTVShowDetails(it.id)
                     findNavController().navigate(action)
                 }
+                addRecyclerAnimation(searchResultsRc,adapter)
             }
             withContext(Dispatchers.Main) {
                 searchResultsRc.visibility = View.VISIBLE

@@ -1,7 +1,7 @@
 package com.demomiru.tokeiv2
 
-import android.graphics.Color
-import android.media.Image
+import android.annotation.SuppressLint
+
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -12,33 +12,30 @@ import android.view.animation.AnimationUtils
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.FrameLayout
+
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
-import androidx.cardview.widget.CardView
+
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.demomiru.tokeiv2.utils.createNumberList
+
 import com.demomiru.tokeiv2.utils.dropDownMenu
 
 import com.demomiru.tokeiv2.utils.retrofitBuilder
-
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.textfield.TextInputLayout
-import com.google.android.material.transition.MaterialContainerTransform
+
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.create
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -59,8 +56,6 @@ class TVShowDetails : Fragment() {
     private lateinit var progressBar: ProgressBar
     private lateinit var dropdownMenu: AutoCompleteTextView
     private lateinit var hintTil : TextInputLayout
-    private lateinit var episodeImg: ImageView
-    private lateinit var episodeOverview : TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,10 +72,11 @@ class TVShowDetails : Fragment() {
 
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-//        startPostponedEnterTransition()
-    }
+//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//        super.onViewCreated(view, savedInstanceState)
+////        startPostponedEnterTransition()
+//    }
+    @SuppressLint("NotifyDataSetChanged")
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -124,17 +120,13 @@ class TVShowDetails : Fragment() {
                 backdropImg.load("https://image.tmdb.org/t/p/original${tvShows?.backdrop_path}")
                 overview.text = tvShows?.overview
 
-                val episodeNumber = createNumberList(tvShows?.number_of_episodes!!)
-
-                Log.i("Seasons", "${tvShows.number_of_seasons}")
-
-                val seasons = dropDownMenu(tvShows.number_of_seasons.toInt()) // Fetch the data
+                val seasons = dropDownMenu(tvShows!!.number_of_seasons.toInt()) // Fetch the data
                 val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, seasons) // Create an ArrayAdapter
                 dropdownMenu = view.findViewById(R.id.autoCompleteTextView) // Get the AutoCompleteTextView
                 dropdownMenu.setAdapter(arrayAdapter) // Set the adapter
 
 
-                var seasonNumber = "1"
+                var seasonNumber: String
 
                 dropdownMenu.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
 //                        hintTil.hint = ""
