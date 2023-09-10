@@ -63,7 +63,13 @@
             />
 
     </com.google.android.material.textfield.TextInputLayout>
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:id="@+id/search_loading"
 
+        />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_results_rc"
         android:layout_width="match_parent"

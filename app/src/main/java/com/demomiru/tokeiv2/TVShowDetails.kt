@@ -12,24 +12,19 @@ import android.view.animation.AnimationUtils
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-
 import com.demomiru.tokeiv2.utils.dropDownMenu
-
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 import com.google.android.material.textfield.TextInputLayout
-
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -168,6 +163,7 @@ class TVShowDetails : Fragment() {
                             episodesRc.layoutAnimation = controller
                             adapter.notifyDataSetChanged()
                             episodesRc.scheduleLayoutAnimation()
+                            view.findViewById<TextView>(R.id.episodes_text).visibility = View.VISIBLE
 
                         }
                     }
@@ -184,7 +180,7 @@ class TVShowDetails : Fragment() {
                 withContext(Dispatchers.Main) {
 
                     view.findViewById<LinearLayout>(R.id.progress_layout).visibility = View.GONE
-                    view.findViewById<TextView>(R.id.episodes_text).visibility = View.VISIBLE
+//                    view.findViewById<TextView>(R.id.episodes_text).visibility = View.VISIBLE
                 }
 
             }

@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 
 import android.widget.EditText
+import android.widget.ProgressBar
 
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -45,6 +46,7 @@ class SearchFragment : Fragment() {
     private lateinit var movieChoice : RadioButton
     private lateinit var tvChoice : RadioButton
     private lateinit var choice : RadioGroup
+    private lateinit var searchLoading : ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +64,7 @@ class SearchFragment : Fragment() {
         val view =  inflater.inflate(R.layout.fragment_search, container, false)
 
         searchResultsRc = view.findViewById(R.id.search_results_rc)
-
+        searchLoading = view.findViewById(R.id.search_loading)
         movieChoice = view.findViewById(R.id.movies_search)
         tvChoice = view.findViewById(R.id.tvShows_search)
         choice = view.findViewById(R.id.choice)
@@ -97,6 +99,7 @@ class SearchFragment : Fragment() {
     private fun performMovieSearch()
     {
         searchResultsRc.visibility = View.GONE
+        searchLoading.visibility = View.VISIBLE
         val query = searchEt.text.toString()
 //        Log.i("Search query", query)
         val retrofit = retrofitBuilder()
@@ -121,6 +124,7 @@ class SearchFragment : Fragment() {
             }
 
             withContext(Dispatchers.Main) {
+                searchLoading.visibility = View.GONE
                 searchResultsRc.visibility = View.VISIBLE
             }
         }
@@ -131,6 +135,7 @@ class SearchFragment : Fragment() {
     private fun performShowSearch()
     {
         searchResultsRc.visibility = View.GONE
+        searchLoading.visibility = View.VISIBLE
         val query = searchEt.text.toString()
 //        Log.i("Search query", query)
         val retrofit = retrofitBuilder()
@@ -154,6 +159,7 @@ class SearchFragment : Fragment() {
                 addRecyclerAnimation(searchResultsRc,adapter)
             }
             withContext(Dispatchers.Main) {
+                searchLoading.visibility = View.GONE
                 searchResultsRc.visibility = View.VISIBLE
             }
         }

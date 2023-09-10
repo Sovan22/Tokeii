@@ -8,9 +8,12 @@
     tools:context=".MoviesFragment"
     >
 
+
+
     <TextView
         android:id="@+id/trending_text"
         android:layout_width="wrap_content"
+        android:visibility="invisible"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:fontFamily="sans-serif-condensed-light"
@@ -32,9 +35,12 @@
 
         />
 
+
+
     <TextView
         android:id="@+id/movies_text"
         android:layout_width="wrap_content"
+        android:visibility="invisible"
         android:layout_height="wrap_content"
         android:text="@string/popular"
         android:layout_margin="5dp"
@@ -54,11 +60,15 @@
             app:layout_constraintTop_toBottomOf="@+id/movies_text"
         />
 
+
+
+
     <TextView
         android:id="@+id/topmovies_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/top_rated"
+        android:visibility="invisible"
         android:layout_margin="5dp"
         android:fontFamily="sans-serif-condensed-light"
         app:layout_constraintTop_toBottomOf="@+id/movie_recycler_view"
@@ -74,6 +84,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/topmovies_text"
+        />
+
+    <ProgressBar
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/loading_movies"
         />
 
 

@@ -18,6 +18,7 @@
         <ProgressBar
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:id="@+id/progress_circular"
             />
 
@@ -33,30 +34,42 @@
         app:layout_constraintStart_toStartOf="parent"
 
     >
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
      android:layout_width="match_parent"
-     android:layout_height="225dp"
+     android:layout_height="360dp"
      android:id="@+id/show_backdrop"
+        app:shapeAppearance="@style/roundedImageView"
+        android:foreground="@drawable/gradient_fill_bottom"
      android:scaleType="center"
         />
+        <androidx.cardview.widget.CardView
 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardElevation="10dp"
+            app:cardCornerRadius="15dp"
+            android:layout_margin="10dp"
+            android:layout_gravity="bottom"
+            >
         <ImageView
             android:layout_width="150dp"
+            android:importantForAccessibility="no"
             android:id="@+id/show_poster"
             android:layout_height="250dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="100dp"
+            android:foreground="@drawable/gradient_fill_bottom"
             android:scaleType="center"
             tools:src="@drawable/icon_tvshow"
             />
+        </androidx.cardview.widget.CardView>
 
     </FrameLayout>
 
     <TextView
         android:id="@+id/overview"
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="25dp"
+        android:fontFamily="@font/exo_2"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -80,7 +93,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:inputType="none"/>
+            android:inputType="none"
+            tools:ignore="LabelFor" />
 
     </com.google.android.material.textfield.TextInputLayout>
 

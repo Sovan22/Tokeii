@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +18,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -108,7 +111,17 @@ class MoviesFragment : Fragment() {
                 }
                 addRecyclerAnimation(popMovieRc,adapter)
             }
+
+            withContext(Dispatchers.Main) {
+
+                view.findViewById<ProgressBar>(R.id.loading_movies).visibility = View.GONE
+                view.findViewById<TextView>(R.id.trending_text).visibility = View.VISIBLE
+                view.findViewById<TextView>(R.id.movies_text).visibility = View.VISIBLE
+                view.findViewById<TextView>(R.id.topmovies_text).visibility = View.VISIBLE
+            }
         }
+
+
         return view
     }
 
