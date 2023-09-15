@@ -8,26 +8,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
-        android:id="@+id/play_button"
+        android:id="@+id/history_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:src="@drawable/baseline_play_circle_24"
-        app:layout_constraintBottom_toBottomOf="@id/episode_no_text"
+        android:src="@drawable/baseline_history_24"
+        app:layout_constraintBottom_toBottomOf="@id/search_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/episode_no_text" />
+        app:layout_constraintTop_toTopOf="@id/search_text" />
 
     <TextView
-        android:id="@+id/episode_no_text"
-        android:layout_width="wrap_content"
+        android:id="@+id/search_text"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:layout_margin="5dp"
-        android:fontFamily="@font/exo_2"
         android:textSize="20sp"
+        android:fontFamily="@font/exo_2"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/play_button"
+        app:layout_constraintStart_toEndOf="@id/history_icon"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="Episode 1" />
+        tools:text="Search Text" />
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:id="@+id/delete_record"
+        android:layout_height="wrap_content"
 
+        android:src="@drawable/baseline_cancel_24"
+        android:layout_margin="5dp"
+        />
 </LinearLayout>

@@ -41,7 +41,7 @@ class EpisodeAdapter2(private val episodes : List<Episode>,
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-       val view = LayoutInflater.from(parent.context).inflate(R.layout.episode_expanded_view,parent,false)
+       val view = LayoutInflater.from(parent.context).inflate(R.layout.test,parent,false)
         return ViewHolder(view)
     }
 

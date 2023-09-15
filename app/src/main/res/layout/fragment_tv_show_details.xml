@@ -104,6 +104,7 @@
         android:visibility="invisible"
         tools:visibility="visible"
         android:layout_width="match_parent"
+        android:fontFamily="@font/exo_2"
         android:layout_margin="10dp"
         android:layout_height="wrap_content"
         android:textSize="20sp"

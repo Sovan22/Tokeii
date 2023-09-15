@@ -1,13 +1,21 @@
 package com.demomiru.tokeiv2
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
+import com.demomiru.tokeiv2.utils.superStreamRetrofitBuilder
 
 
 import com.google.android.material.bottomnavigation.BottomNavigationView
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.util.concurrent.TimeUnit
 
 
 @Suppress("DEPRECATION")
@@ -28,6 +36,29 @@ class MainActivity : AppCompatActivity() {
 
         val navController = findNavController(R.id.nav_host_fragment)
         val bottomNavigationView : BottomNavigationView = findViewById(R.id.bottom_nav_bar)
+
+
+
+//        val retrofit = superStreamRetrofitBuilder()
+//        val apiService = retrofit.create(MovieService::class.java)
+//
+//        GlobalScope.launch (Dispatchers.Main){
+//            val response = apiService.fetchDataFromServer()
+//            if (response.isSuccessful) {
+//                val serverResponse = response.body()
+//                if (serverResponse != null) {
+//                    // Handle the server response here
+//                    val videoLink = serverResponse.videoLink
+//                    // Do something with videoLinks
+//                    Log.i("link",videoLink)
+//                } else {
+//                    Toast.makeText(this@MainActivity, "Response body is empty", Toast.LENGTH_SHORT).show()
+//                }
+//            } else {
+//                Toast.makeText(this@MainActivity, "Request failed", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+
 
        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
@@ -111,4 +142,6 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+
 }

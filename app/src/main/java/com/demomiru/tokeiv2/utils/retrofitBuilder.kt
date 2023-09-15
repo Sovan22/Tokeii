@@ -64,6 +64,18 @@ fun addRecyclerAnimation(view :RecyclerView,adapter : MovieAdapter){
     view.scheduleLayoutAnimation()
 }
 
+fun fixHtml(html : String) : String
+{
+    return html.replace("\u003C", "<")
+}
+
+
+fun superStreamRetrofitBuilder(): Retrofit{
+    return Retrofit.Builder()
+        .baseUrl("https://loon-neat-troll.ngrok-free.app/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+}
 //fun dynamicRetrofitBuilder (id :String): Retrofit
 //{
 //    return Retrofit.Builder()

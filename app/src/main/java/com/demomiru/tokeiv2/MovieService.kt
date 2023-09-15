@@ -2,6 +2,7 @@ package com.demomiru.tokeiv2
 
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Query
 
 interface MovieService {
@@ -25,6 +26,12 @@ interface MovieService {
         @Query("language") language: String
     ) : Response<MovieResponse>
 
+
+    @GET("scrape") // Replace with the actual endpoint path
+    fun fetchDataFromServer(
+        @Header("ngrok-skip-browser-warning") value: String
+    ): Response<ServerResponse>
+
     @GET("movie/top_rated")
     suspend fun getTopRatedMovies(
         @Query("api_key") apiKey: String,
@@ -38,6 +45,9 @@ interface MovieService {
 data class MovieResponse(
         val results: List<Movie>
         )
+data class ServerResponse(
+    val videoLink: String
+    )
 
 
 

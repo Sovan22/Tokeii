@@ -28,6 +28,7 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:fontFamily="@font/exo_2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/image_view"
         app:layout_constraintStart_toStartOf="@+id/image_view"

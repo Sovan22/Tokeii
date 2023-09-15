@@ -3,6 +3,7 @@
     <style name="Base.Theme.TokeiV2" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
     </style>
 
     <style name="Theme.TokeiV2" parent="Base.Theme.TokeiV2" />
@@ -12,4 +13,10 @@
         <item name="cornerSize">16dp</item>
     </style>
 
+    <style name="MyRipple">
+        <item name="colorControlHighlight">@color/ripple_color</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <color name="ripple_color">#9C9595</color>
 </resources>
