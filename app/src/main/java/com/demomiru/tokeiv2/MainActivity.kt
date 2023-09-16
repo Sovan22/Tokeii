@@ -2,6 +2,7 @@ package com.demomiru.tokeiv2
 
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavOptions
@@ -141,6 +142,10 @@ class MainActivity : AppCompatActivity() {
 //            }
 
 
+    }
+    fun triggerSearchKeyPress() {
+        val enterKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
+        dispatchKeyEvent(enterKeyEvent)
     }
 
 

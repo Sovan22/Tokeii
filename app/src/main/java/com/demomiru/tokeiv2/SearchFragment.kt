@@ -15,46 +15,44 @@ import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
 
+import android.widget.TextView
+import androidx.lifecycle.Observer
+
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.history.QueryRepository
+
+import com.demomiru.tokeiv2.history.SearchDatabase
+import com.demomiru.tokeiv2.history.SearchHistory
+import com.demomiru.tokeiv2.history.SearchHistoryAdapter
+import com.demomiru.tokeiv2.history.SearchHistoryAdapter2
+
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
+
 import com.demomiru.tokeiv2.utils.retrofitBuilder
+
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [SearchFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class SearchFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-
-    private var param2: String? = null
+//    private lateinit var searchHistoryList: List<String>
+    private lateinit var searchHistoryRC: RecyclerView
+    private lateinit var deleteAll : TextView
+    private lateinit var adapter: SearchHistoryAdapter2
     private lateinit var searchResultsRc : RecyclerView
     private lateinit var searchEt: EditText
     private lateinit var movieChoice : RadioButton
     private lateinit var tvChoice : RadioButton
     private lateinit var choice : RadioGroup
     private lateinit var searchLoading : ProgressBar
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private val database by lazy { SearchDatabase.getInstance(requireContext()) }
+    private val searchHistoryDao by lazy { database.searchDao() }
+    private lateinit var queryRepository:QueryRepository
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,17 +60,64 @@ class SearchFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view =  inflater.inflate(R.layout.fragment_search, container, false)
-
+        queryRepository = QueryRepository(searchHistoryDao)
+        deleteAll = view.findViewById(R.id.delete_all_button)
+        searchHistoryRC = view.findViewById(R.id.search_history_rc)
         searchResultsRc = view.findViewById(R.id.search_results_rc)
         searchLoading = view.findViewById(R.id.search_loading)
         movieChoice = view.findViewById(R.id.movies_search)
         tvChoice = view.findViewById(R.id.tvShows_search)
         choice = view.findViewById(R.id.choice)
 
-
         searchResultsRc.layoutManager = GridLayoutManager(requireContext(),2)
+        searchHistoryRC.layoutManager = LinearLayoutManager(requireContext())
+
+        adapter = SearchHistoryAdapter2{it,search->
+            if (search){
+                searchEt.setText(it.query)
+                (activity as MainActivity).triggerSearchKeyPress()
+            }
+            else {
+                GlobalScope.launch(Dispatchers.IO) {
+                    queryRepository.deleteRecord(it)
+                    queryRepository.loadData()
+                }
+            }
+        }
+        searchHistoryRC.adapter = adapter
+        searchHistoryRC.visibility = View.VISIBLE
+        GlobalScope.launch (Dispatchers.IO){
+            queryRepository.loadData()
+        }
+
+        val searchHistoryObserver = Observer<List<SearchHistory>>{
+            if (it.isNotEmpty()) {
+
+                adapter.submitList(it)
+
+            } else {
+                searchHistoryRC.visibility = View.GONE
+                deleteAll.visibility = View.GONE
+            }
+
+        }
+
+        queryRepository.allQueries.observe(viewLifecycleOwner,searchHistoryObserver)
+
+
+        deleteAll.setOnClickListener{
+            GlobalScope.launch (Dispatchers.IO){
+                queryRepository.deleteAll()
+                queryRepository.loadData()
+            }
+        }
 
         searchEt = view.findViewById(R.id.search_et)
+        searchEt.setOnClickListener{
+               deleteAll.visibility = View.VISIBLE
+               searchHistoryRC.visibility = View.VISIBLE
+
+        }
         searchEt.setOnKeyListener { _, actionId, event ->
             if (actionId == KeyEvent.ACTION_DOWN || event.keyCode == KeyEvent.KEYCODE_ENTER) {
                 // The "Search" button on the keyboard was clicked
@@ -86,6 +131,7 @@ class SearchFragment : Fragment() {
 
                 choice.setOnCheckedChangeListener { _, _: Int ->
                     searchResultsRc.visibility = View.GONE
+                    searchHistoryRC.visibility = View.VISIBLE
                 }
                 return@setOnKeyListener true
             }
@@ -99,14 +145,25 @@ class SearchFragment : Fragment() {
     private fun performMovieSearch()
     {
         searchResultsRc.visibility = View.GONE
+        searchHistoryRC.visibility = View.GONE
+        deleteAll.visibility = View.GONE
         searchLoading.visibility = View.VISIBLE
+
         val query = searchEt.text.toString()
-//        Log.i("Search query", query)
+
+        GlobalScope.launch(Dispatchers.IO) {
+
+            val history = SearchHistory(query = query)
+            queryRepository.insert(history)
+            queryRepository.loadData()
+        }
+
         val retrofit = retrofitBuilder()
 
         val movieService = retrofit.create(MovieService::class.java)
 
         GlobalScope.launch (Dispatchers.Main){
+
             val searchResults = movieService.searchMovie(
                 query,
                 "cab731891b28c5ad61c85cd993851ed7",
@@ -135,14 +192,24 @@ class SearchFragment : Fragment() {
     private fun performShowSearch()
     {
         searchResultsRc.visibility = View.GONE
+        searchHistoryRC.visibility = View.GONE
         searchLoading.visibility = View.VISIBLE
+        deleteAll.visibility = View.GONE
+
         val query = searchEt.text.toString()
-//        Log.i("Search query", query)
+        GlobalScope.launch(Dispatchers.IO) {
+//            searchHistoryDao.deleteAll()
+            val history = SearchHistory(query = query)
+            queryRepository.insert(history)
+            queryRepository.loadData()
+        }
+
         val retrofit = retrofitBuilder()
 
         val tvService = retrofit.create(TMDBService::class.java)
 
         GlobalScope.launch (Dispatchers.Main){
+
             val searchResults = tvService.searchShow(
                 query,
                 "cab731891b28c5ad61c85cd993851ed7",
@@ -166,24 +233,4 @@ class SearchFragment : Fragment() {
 
     }
 
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment SearchFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SearchFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
 }
