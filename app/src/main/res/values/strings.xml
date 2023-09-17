@@ -1,15 +1,17 @@
 <resources>
-    <string name="app_name">TokeiV2</string>
+    <string name="app_name">Tokei</string>
     <string name="movies">Movies</string>
     <string name="trending">Trending</string>
     <string name="popular">Popular</string>
     <string name="tv_show">TV Shows</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="episodes">Episodes</string>
+    <string name="episodes"><u>Episodes</u></string>
     <string name="search">Search</string>
     <string name="top_rated">Top Rated</string>
     <string name="default_season">Season 1</string>
     <string name="season">Season</string>
     <string name="expandtvshow">expandTvShow</string>
+    <string name="continue_watching">Continue Watching</string>
+    <string name="season_episode">S1E1</string>
 </resources>

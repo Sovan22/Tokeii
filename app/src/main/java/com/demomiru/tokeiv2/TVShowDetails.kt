@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.demomiru.tokeiv2.utils.dropDownMenu
+import com.demomiru.tokeiv2.utils.passData
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -81,8 +82,11 @@ class TVShowDetails : Fragment() {
         // Inflate the layout for this fragment
        val view =  inflater.inflate(R.layout.fragment_tv_show_details, container, false)
         val id = args.tmdbID
+        val title = args.title
 
         val expandView = view.findViewById<ConstraintLayout>(R.id.expand_tvshow_view)
+        val titleTv = view.findViewById<TextView>(R.id.title_show)
+
         val position = args.position
         expandView.transitionName = "image_$position"
 
@@ -114,6 +118,8 @@ class TVShowDetails : Fragment() {
                 posterImg.load("https://image.tmdb.org/t/p/w500${tvShows?.poster_path}")
                 backdropImg.load("https://image.tmdb.org/t/p/original${tvShows?.backdrop_path}")
                 overview.text = tvShows?.overview
+                titleTv.text = title
+
 
                 val seasons = dropDownMenu(tvShows!!.number_of_seasons.toInt()) // Fetch the data
                 val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, seasons) // Create an ArrayAdapter
@@ -147,14 +153,15 @@ class TVShowDetails : Fragment() {
 //                                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
 
 
-                                val action =
-                                    TVShowDetailsDirections.actionTVShowDetailsToMoviePlayActivity(
-                                        id,
-                                        "show",
-                                        it.episode_number.toInt(),
-                                        it.season_number
-                                    )
-                                findNavController().navigate(action)
+//                                val action =
+//                                    TVShowDetailsDirections.actionTVShowDetailsToMoviePlayActivity(
+//                                        id,
+//                                        "show",
+//                                        it.episode_number.toInt(),
+//                                        it.season_number
+//                                    )
+//                                findNavController().navigate(action)
+                                startActivity(passData(it,requireContext(),title,tvShows.poster_path,id))
 
                             }
                             episodesRc.adapter = adapter

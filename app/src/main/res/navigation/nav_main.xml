@@ -63,6 +63,10 @@
             android:name="seasonN"
             app:argType="string"
             android:defaultValue="1" />
+        <argument
+            android:name="title"
+            app:argType="string"
+            android:defaultValue='""' />
     </activity>
     <fragment
         android:id="@+id/TVShowDetails"
@@ -79,6 +83,10 @@
             android:name="position"
             app:argType="integer"
             android:defaultValue="0" />
+        <argument
+            android:name="title"
+            app:argType="string"
+            android:defaultValue='""' />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"

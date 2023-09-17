@@ -8,9 +8,11 @@
     android:layout_height="match_parent">
 
 
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:id="@+id/nestedScrollView"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_marginBottom="70dp"
         >
@@ -20,6 +22,29 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             >
+            <ImageView
+                android:layout_width="wrap_content"
+                android:id="@+id/back_listener"
+                android:layout_height="wrap_content"
+                android:importantForAccessibility="no" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:id="@+id/continue_watching_text"
+                android:layout_margin="10dp"
+                android:text="@string/continue_watching"
+                android:fontFamily="@font/exo_2"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_margin="10dp"
+                android:id="@+id/watch_history_rc"
+                />
 
             <fragment
                 android:layout_width="match_parent"

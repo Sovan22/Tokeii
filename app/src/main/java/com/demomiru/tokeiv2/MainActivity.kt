@@ -1,31 +1,54 @@
-package com.demomiru.tokeiv2
+@file:OptIn(DelicateCoroutinesApi::class)
 
+package com.demomiru.tokeiv2
 import android.os.Bundle
-import android.util.Log
+
 import android.view.KeyEvent
-import android.widget.Toast
+
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
+
 import androidx.appcompat.app.AppCompatActivity
+
+import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.Observer
+
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
-import com.demomiru.tokeiv2.utils.superStreamRetrofitBuilder
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+
+import com.demomiru.tokeiv2.utils.addRecyclerAnimation
+import com.demomiru.tokeiv2.utils.passData
+
+import com.demomiru.tokeiv2.watching.ContinueWatching
+import com.demomiru.tokeiv2.watching.ContinueWatchingAdapter
+import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
+import com.demomiru.tokeiv2.watching.ContinueWatchingRepository
 
 
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.DelicateCoroutinesApi
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.concurrent.TimeUnit
+
 
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
 
-//    private lateinit var tvRc: RecyclerView
-//    private lateinit var movieRc: RecyclerView
-//    private lateinit var tvCardRc: RecyclerView
-//    @OptIn(DelicateCoroutinesApi::class)
+    private lateinit var watchHistoryRc : RecyclerView
+    private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
+    private val watchHistoryDao by lazy { database.watchDao() }
+    private lateinit var continueText: TextView
+    private lateinit var imageback: ImageView
+    private lateinit var continueWatchingObserver: Observer<List<ContinueWatching>>
+    private var nestedScrollView : NestedScrollView? = null
+    private lateinit var adapter: ContinueWatchingAdapter
+    private lateinit var continueWatchingRepository: ContinueWatchingRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -35,10 +58,50 @@ class MainActivity : AppCompatActivity() {
             .setExitAnim(R.anim.exit_to_top)
             .build()
 
+        nestedScrollView = findViewById(R.id.nestedScrollView)
         val navController = findNavController(R.id.nav_host_fragment)
         val bottomNavigationView : BottomNavigationView = findViewById(R.id.bottom_nav_bar)
+        imageback = findViewById(R.id.back_listener)
+        continueWatchingRepository = ContinueWatchingRepository(watchHistoryDao)
+        watchHistoryRc = findViewById(R.id.watch_history_rc)
+        watchHistoryRc.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,false)
+        continueText = findViewById(R.id.continue_watching_text)
+        adapter = ContinueWatchingAdapter{it,delete->
+            if(delete){
+                GlobalScope.launch  (Dispatchers.IO) {
+                    continueWatchingRepository.delete(it)
+                    continueWatchingRepository.loadData()
+                }
+            }
+            else {
+                startActivity(passData(it, this))
+            }
+
+        }
 
 
+        watchHistoryRc.adapter = adapter
+
+        GlobalScope.launch  (Dispatchers.IO) {
+            continueWatchingRepository.loadData()
+        }
+
+
+
+        continueWatchingObserver = Observer{
+            if(it.isNotEmpty()){
+                watchHistoryRc.visibility = View.VISIBLE
+                continueText.visibility = View.VISIBLE
+                adapter.submitList(it)
+                addRecyclerAnimation(watchHistoryRc,adapter)
+            }
+            else{
+                watchHistoryRc.visibility = View.GONE
+                continueText.visibility = View.GONE
+            }
+        }
+
+        continueWatchingRepository.allWatchHistory.observe(this,continueWatchingObserver)
 
 //        val retrofit = superStreamRetrofitBuilder()
 //        val apiService = retrofit.create(MovieService::class.java)
@@ -60,17 +123,30 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        }
 
+        imageback.setOnClickListener {
+            GlobalScope.launch  (Dispatchers.IO) {
+                continueWatchingRepository.loadData()
+            }
+        }
 
        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.moviesFragment -> {
                     navController.navigate(R.id.moviesFragment, null, options)
+                    GlobalScope.launch  (Dispatchers.IO) {
+                        continueWatchingRepository.loadData()
+                    }
                 }
                 R.id.searchFragment -> {
                     navController.navigate(R.id.searchFragment, null, options)
+                    watchHistoryRc.visibility = View.GONE
+                    continueText.visibility = View.GONE
                 }
                 R.id.TVShowFragment -> {
                     navController.navigate(R.id.TVShowFragment, null, options)
+                    GlobalScope.launch  (Dispatchers.IO) {
+                        continueWatchingRepository.loadData()
+                    }
                 }
             }
             true
@@ -142,11 +218,37 @@ class MainActivity : AppCompatActivity() {
 //            }
 
 
+
+
     }
     fun triggerSearchKeyPress() {
         val enterKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
         dispatchKeyEvent(enterKeyEvent)
     }
 
+//    override fun onPause() {
+//        continueWatchingRepository.allWatchHistory.removeObserver(continueWatchingObserver)
+//        super.onPause()
+//    }
+
+    override fun onStart() {
+
+//        if(nestedScrollView !=null) {
+//
+//
+//            nestedScrollView?.post {
+//                nestedScrollView?.scrollTo(0, 0)
+//            }
+//
+//            nestedScrollView?.postDelayed({
+                GlobalScope.launch(Dispatchers.IO) {
+                    continueWatchingRepository.loadData()
+                }
+//                nestedScrollView?.scrollTo(0, 0)
+//            }, 0)
+//        }
+//        imageback.performClick()
+        super.onStart()
+    }
 
 }

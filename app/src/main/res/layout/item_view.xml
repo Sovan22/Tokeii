@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="160dp"
+    android:layout_height="wrap_content">
+<LinearLayout
+    android:layout_width="160dp"
     android:id="@+id/item_view_parent"
-
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="5dp"
@@ -21,6 +24,16 @@
         app:shapeAppearance="@style/roundedImageView"
         />
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/item_progress"
+        android:outlineSpotShadowColor="@color/black"
+        android:layout_width="match_parent"
+        app:trackCornerRadius="16dp"
+        android:background="@drawable/gradient_fill_text"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:layout_height="wrap_content"/>
+
     <TextView
         app:flow_wrapMode="aligned"
         android:id="@+id/title_text_view"
@@ -34,4 +47,37 @@
         app:layout_constraintStart_toStartOf="@+id/image_view"
         app:layout_constraintTop_toBottomOf="@+id/image_view" />
 
+
+
 </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_show_detail_tv"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:fontFamily="@font/exo_2"
+        android:text="@string/season_episode"
+        android:textColor="@color/white"
+        android:layout_gravity="end"
+        android:layout_margin="5dp"
+        android:background="@drawable/background_text"
+        />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="230dp"
+        android:id="@+id/blur_background"
+        android:visibility="gone"
+        android:background="@drawable/background_text"
+        />
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        tools:visibility="visible"
+        android:id="@+id/remove_continue"
+        android:visibility="gone"
+        android:layout_marginBottom="15dp"
+        android:layout_gravity="center"
+        android:src="@drawable/baseline_cancel_24"
+        android:importantForAccessibility="no" />
+</FrameLayout>

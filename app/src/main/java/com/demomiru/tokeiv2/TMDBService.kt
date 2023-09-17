@@ -4,6 +4,7 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import java.io.Serializable
 
 
 interface TMDBService {
@@ -76,4 +77,4 @@ data class Episode(
     val overview: String,
     val name: String,
     val still_path: String
-)
+) : Serializable

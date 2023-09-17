@@ -87,7 +87,7 @@ class TVShowFragment : Fragment() {
                 val tvShows = tvTopResponse.body()?.results ?: emptyList()
                 val adapter = TVShowAdapter(tvShows){it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-                    findNavController().navigate(playShow(it,position))
+                    findNavController().navigate(playShow(it,position,it.name))
                 }
                 addRecyclerAnimation(topTvRc,adapter)
             }
@@ -96,7 +96,7 @@ class TVShowFragment : Fragment() {
                 val tvShows = tvTrendingResponse.body()?.results ?: emptyList()
                 val adapter = TVShowAdapter(tvShows){it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-                    findNavController().navigate(playShow(it,position))
+                    findNavController().navigate(playShow(it,position,it.name))
                 }
                 addRecyclerAnimation(trenTvRc,adapter)
             }
@@ -105,7 +105,7 @@ class TVShowFragment : Fragment() {
                 val tvShows = tvPopularResponse.body()?.results ?: emptyList()
                 val adapter = TVShowAdapter(tvShows){it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-                    findNavController().navigate(playShow(it,position))
+                    findNavController().navigate(playShow(it,position,it.name))
                 }
                 addRecyclerAnimation(popTvRc,adapter)
             }

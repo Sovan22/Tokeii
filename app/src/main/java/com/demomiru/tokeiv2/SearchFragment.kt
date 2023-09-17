@@ -1,3 +1,5 @@
+@file:OptIn(DelicateCoroutinesApi::class)
+
 package com.demomiru.tokeiv2
 
 
@@ -30,6 +32,7 @@ import com.demomiru.tokeiv2.history.SearchHistoryAdapter
 import com.demomiru.tokeiv2.history.SearchHistoryAdapter2
 
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
+import com.demomiru.tokeiv2.utils.passData
 
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 
@@ -174,8 +177,9 @@ class SearchFragment : Fragment() {
             {
                 val movies = searchResults.body()?.results ?: emptyList()
                 val adapter = MovieAdapter(movies){
-                    val action = SearchFragmentDirections.actionSearchFragmentToMoviePlayActivity(it.id,"movie")
-                    findNavController().navigate(action)
+//                    val action = SearchFragmentDirections.actionSearchFragmentToMoviePlayActivity(it.id,"movie",title = it.title)
+//                    findNavController().navigate(action)
+                    startActivity(passData(it,requireContext()))
                 }
                 addRecyclerAnimation(searchResultsRc,adapter)
             }
@@ -220,7 +224,7 @@ class SearchFragment : Fragment() {
             {
                 val tvShows = searchResults.body()?.results ?: emptyList()
                 val adapter = TVShowAdapter(tvShows){it, _ ->
-                    val action = SearchFragmentDirections.actionSearchFragmentToTVShowDetails(it.id)
+                    val action = SearchFragmentDirections.actionSearchFragmentToTVShowDetails(it.id, title = it.name)
                     findNavController().navigate(action)
                 }
                 addRecyclerAnimation(searchResultsRc,adapter)

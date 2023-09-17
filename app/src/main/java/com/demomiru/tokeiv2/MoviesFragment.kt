@@ -1,6 +1,7 @@
 package com.demomiru.tokeiv2
 
 
+
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,11 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.navigation.fragment.findNavController
+
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
-import com.demomiru.tokeiv2.utils.play
+import com.demomiru.tokeiv2.utils.passData
+
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -86,7 +88,9 @@ class MoviesFragment : Fragment() {
                 val movies = tmovieResponse.body()?.results?: emptyList()
                 val adapter = MovieAdapter(movies){
 //                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
-                    findNavController().navigate(play(it))
+//                    findNavController().navigate(play(it))
+                    startActivity(passData(it,requireContext()))
+
                 }
                 addRecyclerAnimation(topMovieRc,adapter)
 
@@ -95,7 +99,9 @@ class MoviesFragment : Fragment() {
             if(tmovieResponse.isSuccessful){
                 val movies = tmovieResponse.body()?.results?: emptyList()
                 val adapter = MovieAdapter(movies){
-                    findNavController().navigate(play(it))
+//                    findNavController().navigate(play(it))
+                    startActivity(passData(it,requireContext()))
+
                 }
                 addRecyclerAnimation(trenMovieRc,adapter)
 
@@ -107,7 +113,9 @@ class MoviesFragment : Fragment() {
                 val adapter = MovieAdapter(movies){
 //                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
 //                    findNavController().navigate(action)
-                    findNavController().navigate(play(it))
+//                    findNavController().navigate(play(it))
+                    startActivity(passData(it,requireContext()))
+
                 }
                 addRecyclerAnimation(popMovieRc,adapter)
             }
@@ -144,4 +152,5 @@ class MoviesFragment : Fragment() {
                 }
             }
     }
+
 }

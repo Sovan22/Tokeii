@@ -2,7 +2,7 @@ package com.demomiru.tokeiv2
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
+
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -11,41 +11,66 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 
-import android.view.WindowManager
+
 import android.webkit.WebChromeClient
+
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.MediaController
-import android.widget.ProgressBar
-import android.widget.RelativeLayout
-import android.widget.Toast
-import android.widget.VideoView
 
-import androidx.navigation.navArgs
-import coil.load
-import com.demomiru.tokeiv2.utils.fixHtml
+import android.widget.ProgressBar
+
+
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+
+import androidx.media3.common.Player.*
+import androidx.media3.common.Timeline
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
+
+import androidx.media3.ui.PlayerView
+
+
+
+import com.demomiru.tokeiv2.watching.ContinueWatching
+import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
+
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.concurrent.TimeUnit
+
+
 
 @Suppress("DEPRECATION")
-class MoviePlayActivity : AppCompatActivity() {
+class MoviePlayActivity : AppCompatActivity(){
     private lateinit var webView : WebView
     private  var fullscreenContainer: FullscreenHolder? = null
 //    private lateinit var one:LinearLayout
 //    private lateinit var two:LinearLayout
 //    private lateinit var three:LinearLayout
 //    private lateinit var four:LinearLayout
-    private lateinit var videoView: VideoView
+//    private lateinit var itemData : Movie
+    private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
+    private val watchHistoryDao by lazy { database.watchDao() }
+
+    private lateinit var player: ExoPlayer
+    private lateinit var videoView: PlayerView
     private lateinit var loading:ProgressBar
+    private lateinit var id:String
+    private var season: Int = 1
+    private var episode: Int = 1
+    private var origin : String = ""
+    private var seekProgress : Int = 0
+    private var imgLink : String? = null
+    private lateinit var title:String
+    private var type : String? = null
+    private val videoUrl = MutableLiveData<String>()
 //    private var isOpen = true
 //    private var play = true
     private val COVER_SCREEN_PARAMS = FrameLayout.LayoutParams(
@@ -53,12 +78,51 @@ class MoviePlayActivity : AppCompatActivity() {
 
     private lateinit var url : String
 //    private lateinit var ppButton : ImageButton
-    private val args : MoviePlayActivityArgs by navArgs()
+//    private val args : MoviePlayActivityArgs by navArgs()
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_movie_play)
+        Log.i("Start", "Time")
+
+        val bundle = intent.extras
+        type = bundle?.getString("type")
+    when (type) {
+        "movie" -> {
+            val data = bundle?.getSerializable("Data") as? Movie
+            origin = data!!.original_language
+            id = data.id
+            title = data.title
+            imgLink = data.poster_path
+        }
+        "tvshow" -> {
+            val data =  bundle?.getSerializable("Data") as? Episode
+
+            id = bundle?.getString("id")!!
+            title = bundle.getString("showTitle")!!
+            imgLink = bundle.getString("poster")
+
+            season = data!!.season_number.toInt()
+            episode = data.episode_number.toInt()
+
+        }
+        else -> {
+            val data = bundle?.getSerializable("Data") as? ContinueWatching
+            id = data!!.tmdbID.toString()
+            title = data.title
+            imgLink = data.imgLink
+            seekProgress = data.progress
+            type = data.type
+            if (type == "tvshow"){
+                season = data.season
+                episode = data.episode
+            }
+        }
+    }
+
+
+
 //        ppButton = findViewById(R.id.videoView_play_pause_btn)
 //        one = findViewById(R.id.videoView_one_layout)
 //        two = findViewById(R.id.videoView_two_layout)
@@ -84,24 +148,86 @@ class MoviePlayActivity : AppCompatActivity() {
 //        }
 
 //        hideSystemUI()
+
+
         videoView = findViewById(R.id.video_view)
         loading = findViewById(R.id.loading_content)
-        val id = args.tmdbID
-        val type = args.type
-        val episode = args.episodeN
-        val season = args.seasonN
+
+//        id = args.tmdbID
+//
+//        val type = args.type
+//
+//        val episode = args.episodeN
+//        val season = args.seasonN
+
+
         webView = findViewById(R.id.web_view)
+//        loading.visibility = View.VISIBLE
+        player = ExoPlayer.Builder(this).build()
+
+        videoView.player = player
+
 //        AdBlockerWebView
         webView.settings.javaScriptEnabled = true
         webView.settings.displayZoomControls = true
+        webView.settings.domStorageEnabled = true
+
         webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 return request?.url.toString() != view?.url
             }
+
+//            override fun onPageFinished(view: WebView?, url: String?) {
+//                webView.evaluateJavascript("javascript:document.getElementByTagName('video')[0].src") {
+//                    Log.i("videoLink", it)
+//                }
+//                super.onPageFinished(view, url)
+//            }
+
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                if (request?.url.toString().endsWith("m3u8")){
+//                    Log.i("Video Link","Found")
+                    lifecycleScope.launch {
+                        videoUrl.value = request?.url.toString()
+                    }
+                }
+                return super.shouldInterceptRequest(view, request)
+            }
         }
 
-        webView.webChromeClient =  object : WebChromeClient() {
+        videoUrl.observe(this) { hlsUri ->
+            if (!hlsUri.isNullOrEmpty()) {
+                webView.visibility = View.GONE
+                videoView.visibility = View.VISIBLE
+                //add ExoPlayer
+                player.setMediaItem(MediaItem.fromUri(hlsUri))
+                player.prepare()
+                player.playWhenReady = true
+                loading.visibility = View.GONE
+            }
+        }
+
+    val listener = object : Listener{
+        @SuppressLint("UnsafeOptInUsageError")
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+            if (player.duration != C.TIME_UNSET) {
+                // Duration is available
+                val seek = player.duration / 100 * seekProgress
+                player.seekTo(seek)
+                videoView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+            }
+            super.onTimelineChanged(timeline, reason)
+        }
+    }
+    player.addListener(listener)
+
+
+
+    webView.webChromeClient =  object : WebChromeClient() {
 
             override fun onShowCustomView(view: View, callback: CustomViewCallback) {
                 // Make the WebView invisible
@@ -129,16 +255,36 @@ class MoviePlayActivity : AppCompatActivity() {
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
         } else {
-//            webView.loadUrl("https://vidsrc.me/embed/movie?tmdb=$id")
-//            val video = "<iframe id=\"the_frame\" src=\"//vidsrc.me/srcrcp/YmIzZjhhOWNhYTU5NDJiOTliYTBmOGE3OGY3M2M2MDU6UWtwaU1rZFpVR2RTSzFwdE5tWnRhM2hrTUVOMlNXdEZkMUpPV0ZsR1dqSnhhRmwxUjIwek5UbG9RVU50YjNGQ1VIRTVWVEZXTldkalpWbGlaRFYyVEVaelpqRlhZWFZaUkVOM2R6QjVRbWcwY1RaamFuWmxOa2N2ZWpGV2QzTnpVMVYxYlhCNmIzVkJjRzR5Y0VrNFkwbzBTQ3RuYUROTlNXYzVSakZLTVhSSFJWVjZjRzloT1VGU1QwZEJNMjFCWTJ4c1ZIRndNMDl3VlU5SGIzTkRiMWxUTm1oNGVtRTFVMU5ZWWxnNVZrbzVOaTgxVlZOcGFHMTRVemhoV2s4eVIwMTVURTlpZUc1U2RsRXZjVmx1SzBaaFFsVjZTWE42V1ZwaVRXVTJabXBJVTAxblVrNXFiVFJyY1ZCemMxbHJaa1Z3Y0hSaFdVOTRObGxSWTJ4MlJEUklkVE0wTTBoU1ppOTFXazlNV2tRemFtZDRXa3BtVjNwT1JUbDFlSGRxYmpRcmVYY3dPVWxNYTFCbVNuRnJkV3N5VjA1WldsWkhOazk0ZVRRdlFrTXpOUzg1UVRWblNqbFViWEJKZUhoTVVISmphRXhwWlZCQ1VYSmlORWhVU20xWmJDdFBZalJVYm1WMmNGRjZUR3BsV0RsT09IWXZTMFJITlRkalFqQmFNekpXY0hOYWIwd3hMekZ2UzJoeFZXMHdRaXQwV0dwWWVXc3ZVRGhGUTA1RGVHZ3hiMmRrUW5NMU1raHRVRmh2WTNCNlpFSjFXbFZVUW1KSllWb3lVakZSV21SRlIyaEdZMEZpWjA0eFVtdGlla3BwZVdaQldVZFlheXRwVkcxM2IwdFllRkZWWW5sVVVUUldha1l2WnpBMFRETjRkeTlsYzNvck0wRk1RVlZJTTJaM2RHbFdkVlZMZG5kV1dsSlllVFYxUXpaNFYwSXZkVFJRV0V4aFVVVlVTRk5IUW5KVFVuSlhjMUphV0RsbFEzQTVVaXMxZDAxb1lTdDVWREZX\" frameborder=\"0\" scrolling=\"no\" allowfullscreen=\"yes\" style=\"height: 100%; width: 100%;\" onload=\"remove_loading()\"></iframe>"
-//            webView.loadData(video,"text/html","utf-8")
+
 
             url = if(type == "movie"){
 //                "https://vidsrc.me/embed/movie?tmdb=$id/"
-                webView.webViewClient = WebViewClient()
-                "https://multiembed.mov/directstream.php?video_id=$id&tmdb=1"}
-            else
+                webView.webViewClient = object : WebViewClient() {
+                    override fun shouldInterceptRequest(
+                        view: WebView?,
+                        request: WebResourceRequest?
+                    ): WebResourceResponse? {
+                        if (request?.url.toString().endsWith(".m3u8")){
+//                    Log.i("Video Link","Found")
+                            lifecycleScope.launch {
+                                videoUrl.value = request?.url.toString()
+                            }
+                        }
+//                        else if(request?.url.toString().contains(".mp4")){
+//                            lifecycleScope.launch {
+//                                videoUrl.value = request?.url.toString()
+//                            }
+//                        }
+                        return super.shouldInterceptRequest(view, request)
+                    }
+                }
+                    "https://multiembed.mov/directstream.php?video_id=$id&tmdb=1"
+//                "https://movie-web.app/media/tmdb-movie-$id"
+            }
+            else{
                 "https://vidsrc.me/embed/tv?tmdb=$id&season=$season&episode=$episode"
+//                " https://multiembed.mov/directstream.php?video_id=$id&tmdb=1&s=$season&e=$episode"
+            }
 
 
 //
@@ -150,8 +296,10 @@ class MoviePlayActivity : AppCompatActivity() {
 
 
 
-
         }
+
+
+
 
 //        GlobalScope.launch (Dispatchers.IO){
 //            val videoUrl= sendGetRequest("https://loon-neat-troll.ngrok-free.app/scrape?id=$id").replace("\"", "")
@@ -182,22 +330,21 @@ class MoviePlayActivity : AppCompatActivity() {
 //            }
 //        }
 
-
     }
 
-    private fun sendGetRequest(url: String) : String {
-        val client  = OkHttpClient.Builder()
-            .connectTimeout(20, TimeUnit.SECONDS) // Set connection timeout
-            .readTimeout(20, TimeUnit.SECONDS)    // Set read timeout
-            .build()
-        val request = Request.Builder().url(url).addHeader("ngrok-skip-browser-warning","20").build()
-
-        client.newCall(request).execute().use { response ->
-            val responseBody = response.body()?.string()
-            Log.i("response", responseBody?:"systemHang")
-            return responseBody?:""
-        }
-    }
+//    private fun sendGetRequest(url: String) : String {
+//        val client  = OkHttpClient.Builder()
+//            .connectTimeout(20, TimeUnit.SECONDS) // Set connection timeout
+//            .readTimeout(20, TimeUnit.SECONDS)    // Set read timeout
+//            .build()
+//        val request = Request.Builder().url(url).addHeader("ngrok-skip-browser-warning","20").build()
+//
+//        client.newCall(request).execute().use { response ->
+//            val responseBody = response.body()?.string()
+//            Log.i("response", responseBody?:"systemHang")
+//            return responseBody?:""
+//        }
+//    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -223,16 +370,64 @@ class MoviePlayActivity : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun onDestroy() {
+
+        val currentPosition = player.currentPosition
+        val duration = player.duration
+        val progress = (currentPosition * 100 / duration).toInt()
+
+        if (progress > 2) {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (type == "movie") {
+                    watchHistoryDao.insert(
+                        ContinueWatching(
+                            progress = progress,
+                            imgLink = imgLink!!,
+                            tmdbID = id.toInt(),
+                            title = title,
+                            type = type!!
+                        )
+                    )
+                } else if (type == "tvshow") {
+                    watchHistoryDao.insert(
+                        ContinueWatching(
+                            progress = progress,
+                            imgLink = imgLink!!,
+                            tmdbID = id.toInt(),
+                            title = title,
+                            season = season,
+                            episode = episode,
+                            type = type!!
+                        )
+                    )
+                }
+            }
+        }
+        Log.i("Progress", progress.toString())
+        player.playWhenReady = false
+        player.stop()
+        player.seekTo(0)
+
+        super.onDestroy()
+    }
+
+
 }
 
+
+@Suppress("DEPRECATION")
 class FullscreenHolder(ctx: Context) : FrameLayout(ctx) {
     init {
         setBackgroundColor(ctx.resources.getColor(android.R.color.black))
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(evt: MotionEvent): Boolean {
         return true
     }
+
 
 }
 
