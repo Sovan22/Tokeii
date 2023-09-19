@@ -25,24 +25,18 @@ import android.widget.ProgressBar
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
+
 
 import androidx.media3.common.Player.*
-import androidx.media3.common.Timeline
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.AspectRatioFrameLayout
 
-import androidx.media3.ui.PlayerView
 
+import com.demomiru.tokeiv2.utils.passVideoData
 
 
 import com.demomiru.tokeiv2.watching.ContinueWatching
-import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import com.demomiru.tokeiv2.watching.VideoData
+
 import kotlinx.coroutines.launch
 
 
@@ -51,16 +45,12 @@ import kotlinx.coroutines.launch
 class MoviePlayActivity : AppCompatActivity(){
     private lateinit var webView : WebView
     private  var fullscreenContainer: FullscreenHolder? = null
-//    private lateinit var one:LinearLayout
-//    private lateinit var two:LinearLayout
-//    private lateinit var three:LinearLayout
-//    private lateinit var four:LinearLayout
-//    private lateinit var itemData : Movie
-    private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
-    private val watchHistoryDao by lazy { database.watchDao() }
 
-    private lateinit var player: ExoPlayer
-    private lateinit var videoView: PlayerView
+//    private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
+//    private val watchHistoryDao by lazy { database.watchDao() }
+
+//    private lateinit var player: ExoPlayer
+//    private lateinit var videoView: PlayerView
     private lateinit var loading:ProgressBar
     private lateinit var id:String
     private var season: Int = 1
@@ -71,13 +61,12 @@ class MoviePlayActivity : AppCompatActivity(){
     private lateinit var title:String
     private var type : String? = null
     private val videoUrl = MutableLiveData<String>()
-//    private var isOpen = true
-//    private var play = true
+
     private val COVER_SCREEN_PARAMS = FrameLayout.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
     private lateinit var url : String
-//    private lateinit var ppButton : ImageButton
+
 //    private val args : MoviePlayActivityArgs by navArgs()
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,7 +77,7 @@ class MoviePlayActivity : AppCompatActivity(){
 
         val bundle = intent.extras
         type = bundle?.getString("type")
-    when (type) {
+        when (type) {
         "movie" -> {
             val data = bundle?.getSerializable("Data") as? Movie
             origin = data!!.original_language
@@ -122,35 +111,7 @@ class MoviePlayActivity : AppCompatActivity(){
     }
 
 
-
-//        ppButton = findViewById(R.id.videoView_play_pause_btn)
-//        one = findViewById(R.id.videoView_one_layout)
-//        two = findViewById(R.id.videoView_two_layout)
-//        three = findViewById(R.id.videoView_three_layout)
-//        four = findViewById(R.id.videoView_four_layout)
-
-//        val z_layout = findViewById<RelativeLayout>(R.id.z_layout)
-//        z_layout.setOnClickListener{
-//            if(isOpen){
-//                one.visibility = View.GONE
-//                two.visibility = View.GONE
-//                three.visibility = View.GONE
-//                four.visibility = View.GONE
-//                isOpen = false
-//            }
-//            else{
-//                one.visibility = View.VISIBLE
-//                two.visibility = View.VISIBLE
-//                three.visibility = View.VISIBLE
-//                four.visibility = View.VISIBLE
-//                isOpen = true
-//            }
-//        }
-
-//        hideSystemUI()
-
-
-        videoView = findViewById(R.id.video_view)
+//        videoView = findViewById(R.id.video_view)
         loading = findViewById(R.id.loading_content)
 
 //        id = args.tmdbID
@@ -163,9 +124,9 @@ class MoviePlayActivity : AppCompatActivity(){
 
         webView = findViewById(R.id.web_view)
 //        loading.visibility = View.VISIBLE
-        player = ExoPlayer.Builder(this).build()
+//        player = ExoPlayer.Builder(this).build()
 
-        videoView.player = player
+//        videoView.player = player
 
 //        AdBlockerWebView
         webView.settings.javaScriptEnabled = true
@@ -202,28 +163,40 @@ class MoviePlayActivity : AppCompatActivity(){
         videoUrl.observe(this) { hlsUri ->
             if (!hlsUri.isNullOrEmpty()) {
                 webView.visibility = View.GONE
-                videoView.visibility = View.VISIBLE
-                //add ExoPlayer
-                player.setMediaItem(MediaItem.fromUri(hlsUri))
-                player.prepare()
-                player.playWhenReady = true
-                loading.visibility = View.GONE
+//                videoView.visibility = View.VISIBLE
+                //send to VideoPlayActivity
+//                player.setMediaItem(MediaItem.fromUri(hlsUri))
+//                player.prepare()
+//                player.playWhenReady = true
+
+//                loading.visibility = View.GONE
+               val intent =  passVideoData(VideoData(
+                    seekProgress,
+                    imgLink!!,
+                    id.toInt(),
+                    title,
+                    episode,
+                    season,
+                    type!!,
+                    hlsUri),this)
+                startActivity(intent)
+                finish()
             }
         }
 
-    val listener = object : Listener{
-        @SuppressLint("UnsafeOptInUsageError")
-        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-            if (player.duration != C.TIME_UNSET) {
-                // Duration is available
-                val seek = player.duration / 100 * seekProgress
-                player.seekTo(seek)
-                videoView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
-            }
-            super.onTimelineChanged(timeline, reason)
-        }
-    }
-    player.addListener(listener)
+//    val listener = object : Listener{
+//        @SuppressLint("UnsafeOptInUsageError")
+//        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+//            if (player.duration != C.TIME_UNSET) {
+//                // Duration is available
+//                val seek = player.duration / 100 * seekProgress
+//                player.seekTo(seek)
+//                videoView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+//            }
+//            super.onTimelineChanged(timeline, reason)
+//        }
+//    }
+//    player.addListener(listener)
 
 
 
@@ -371,47 +344,47 @@ class MoviePlayActivity : AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    override fun onDestroy() {
 
-        val currentPosition = player.currentPosition
-        val duration = player.duration
-        val progress = (currentPosition * 100 / duration).toInt()
+//    override fun onDestroy() {
 
-        if (progress > 2) {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (type == "movie") {
-                    watchHistoryDao.insert(
-                        ContinueWatching(
-                            progress = progress,
-                            imgLink = imgLink!!,
-                            tmdbID = id.toInt(),
-                            title = title,
-                            type = type!!
-                        )
-                    )
-                } else if (type == "tvshow") {
-                    watchHistoryDao.insert(
-                        ContinueWatching(
-                            progress = progress,
-                            imgLink = imgLink!!,
-                            tmdbID = id.toInt(),
-                            title = title,
-                            season = season,
-                            episode = episode,
-                            type = type!!
-                        )
-                    )
-                }
-            }
-        }
-        Log.i("Progress", progress.toString())
-        player.playWhenReady = false
-        player.stop()
-        player.seekTo(0)
-
-        super.onDestroy()
-    }
+//        val currentPosition = player.currentPosition
+//        val duration = player.duration
+//        val progress = (currentPosition * 100 / duration).toInt()
+//
+//        if (progress > 2) {
+//            GlobalScope.launch(Dispatchers.IO) {
+//                if (type == "movie") {
+//                    watchHistoryDao.insert(
+//                        ContinueWatching(
+//                            progress = progress,
+//                            imgLink = imgLink!!,
+//                            tmdbID = id.toInt(),
+//                            title = title,
+//                            type = type!!
+//                        )
+//                    )
+//                } else if (type == "tvshow") {
+//                    watchHistoryDao.insert(
+//                        ContinueWatching(
+//                            progress = progress,
+//                            imgLink = imgLink!!,
+//                            tmdbID = id.toInt(),
+//                            title = title,
+//                            season = season,
+//                            episode = episode,
+//                            type = type!!
+//                        )
+//                    )
+//                }
+//            }
+//        }
+//        Log.i("Progress", progress.toString())
+//        player.playWhenReady = false
+//        player.stop()
+//        player.seekTo(0)
+//
+//        super.onDestroy()
+//    }
 
 
 }

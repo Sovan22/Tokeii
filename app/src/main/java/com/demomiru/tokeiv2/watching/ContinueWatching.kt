@@ -16,3 +16,16 @@ data class ContinueWatching (
         val season : Int = 0,
         val type : String
         ):Serializable
+
+
+data class VideoData(
+        val progress : Int,
+        val imgLink : String,
+        @PrimaryKey
+        val tmdbID: Int,
+        val title: String,
+        val episode : Int = 0,
+        val season : Int = 0,
+        val type : String,
+        val videoUrl: String
+        ) : Serializable

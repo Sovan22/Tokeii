@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:clickable="true"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:background="@color/black"
+    android:layout_height="wrap_content">
+
+    <CheckedTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:id="@+id/sub_text_view"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:checkMark="?android:attr/listChoiceIndicatorSingle"
+        android:padding="5dp"
+        android:text="Subtitle 1"
+        />
+
+
+</LinearLayout>

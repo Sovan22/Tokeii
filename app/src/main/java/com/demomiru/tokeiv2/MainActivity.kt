@@ -34,7 +34,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.withContext
 
 
 @Suppress("DEPRECATION")
@@ -231,7 +231,7 @@ class MainActivity : AppCompatActivity() {
 //        super.onPause()
 //    }
 
-    override fun onStart() {
+    override fun onResume() {
 
 //        if(nestedScrollView !=null) {
 //
@@ -241,14 +241,18 @@ class MainActivity : AppCompatActivity() {
 //            }
 //
 //            nestedScrollView?.postDelayed({
+                adapter.notifyDataSetChanged()
                 GlobalScope.launch(Dispatchers.IO) {
                     continueWatchingRepository.loadData()
+                    withContext(Dispatchers.Main){
+                        continueWatchingRepository.allWatchHistory.observe(this@MainActivity,continueWatchingObserver)
+                    }
                 }
 //                nestedScrollView?.scrollTo(0, 0)
 //            }, 0)
 //        }
 //        imageback.performClick()
-        super.onStart()
+        super.onResume()
     }
 
 }

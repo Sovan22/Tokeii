@@ -19,11 +19,14 @@ import com.demomiru.tokeiv2.R
 import com.demomiru.tokeiv2.TVShowAdapter
 import com.demomiru.tokeiv2.TVShowFragmentDirections
 import com.demomiru.tokeiv2.TVshow
+import com.demomiru.tokeiv2.VideoPlayActivity
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingAdapter
+import com.demomiru.tokeiv2.watching.VideoData
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 
 fun retrofitBuilder (): Retrofit
@@ -119,6 +122,23 @@ fun passData(data : ContinueWatching,context : Context) : Intent{
     intent.putExtras(bundle)
     intent.putExtra("type","continue")
     return intent
+}
+
+fun passVideoData(data: VideoData, context: Context) : Intent{
+    val bundle = Bundle()
+    bundle.putSerializable("VidData", data)
+    val intent =  Intent(context, VideoPlayActivity::class.java)
+    intent.putExtras(bundle)
+    return intent
+}
+
+fun setSeekBarTime(rem: Long) : String{
+    return String.format(
+        "%02d:%02d:%02d",
+        TimeUnit.MILLISECONDS.toHours(rem),
+        TimeUnit.MILLISECONDS.toMinutes(rem) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(rem)),
+        TimeUnit.MILLISECONDS.toSeconds(rem) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(rem))
+    )
 }
 fun fixHtml(html : String) : String
 {
