@@ -48,7 +48,7 @@ suspend fun getTvImdb(tmdbID: String): String{
     ).okhttpResponse
     val gson = Gson()
     val response = tvImdb.body.string()
-    Log.i("response", response)
+//    Log.i("response", response)
     val imdbID = gson.fromJson(response, TvIMDB::class.java)
     return if(imdbID.languages[0] == "hi")
         imdbID.external_ids.imdb_id

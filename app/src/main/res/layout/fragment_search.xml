@@ -120,5 +120,8 @@
         android:id="@+id/search_loading"
 
         />
+    <include layout="@layout/activity_main"
+        android:visibility="gone"
+        />
 
 </LinearLayout>

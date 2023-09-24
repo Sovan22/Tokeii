@@ -58,7 +58,7 @@ suspend fun getTvSeasons(tmdbID: String): Int {
     ).okhttpResponse
     val gson = Gson()
     val response = tvImdb.body.string()
-    Log.i("response", response)
+//    Log.i("response", response)
     val imdbID = gson.fromJson(response, TvIMDB::class.java)
     return imdbID.number_of_seasons.toInt()
 }
@@ -77,7 +77,7 @@ suspend fun getSeasonEpisodes(tmdbID: String, season: Int): Int {
 
     val gson = Gson()
     val response = seasonImdb.body.string()
-    Log.i("response", response)
+//    Log.i("response", response)
     val episodesList = gson.fromJson(response, ImdbEpisode::class.java)
     return episodesList.episodes.size
 }

@@ -46,6 +46,7 @@ class SearchFragment : Fragment() {
 //    private lateinit var searchHistoryList: List<String>
     private lateinit var searchHistoryRC: RecyclerView
     private lateinit var deleteAll : TextView
+    private var isClicked = true
     private lateinit var adapter: SearchHistoryAdapter2
     private lateinit var searchResultsRc : RecyclerView
     private lateinit var searchEt: EditText
@@ -105,6 +106,7 @@ class SearchFragment : Fragment() {
             } else {
                 searchHistoryRC.visibility = View.GONE
                 deleteAll.visibility = View.GONE
+                isClicked = true
             }
 
         }
@@ -121,8 +123,16 @@ class SearchFragment : Fragment() {
 
         searchEt = view.findViewById(R.id.search_et)
         searchEt.setOnClickListener{
-               deleteAll.visibility = View.VISIBLE
-               searchHistoryRC.visibility = View.VISIBLE
+            if(isClicked) {
+                deleteAll.visibility = View.VISIBLE
+                searchHistoryRC.visibility = View.VISIBLE
+                isClicked = false
+            }
+            else{
+                deleteAll.visibility = View.GONE
+                searchHistoryRC.visibility = View.GONE
+                isClicked = true
+            }
 
         }
         searchEt.setOnKeyListener { _, actionId, event ->
@@ -153,6 +163,7 @@ class SearchFragment : Fragment() {
     {
         searchResultsRc.visibility = View.GONE
         searchHistoryRC.visibility = View.GONE
+        isClicked = true
         deleteAll.visibility = View.GONE
         searchLoading.visibility = View.VISIBLE
 
@@ -201,6 +212,7 @@ class SearchFragment : Fragment() {
     {
         searchResultsRc.visibility = View.GONE
         searchHistoryRC.visibility = View.GONE
+        isClicked = true
         searchLoading.visibility = View.VISIBLE
         deleteAll.visibility = View.GONE
 

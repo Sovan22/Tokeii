@@ -105,7 +105,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var totalSeasons = 0
     private var totalEpisode = 0
     private var superId: Int? = null
-    private var isNextEpisode = MutableLiveData<Boolean>(false)
+    private var isNextEpisode = MutableLiveData(false)
     private var isControllerVisible = true
 
     private lateinit var id:String
@@ -137,7 +137,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private lateinit var volumeSeek : SeekBar
     private var audioManager: AudioManager? = null
     private lateinit var seekBar:SeekBar
-
+    private var subUrl : List<String> = listOf()
     private lateinit var mediaSource: MediaSource
     private lateinit var playPause: ImageButton
     private lateinit var titleTv : TextView
@@ -169,6 +169,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         setContentView(R.layout.activity_video_play)
         powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "VideoPlayerActivity:wakelock")
+        wakeLock.acquire()
 
 //        val sub =PlayerControlView.findViewById<SubtitleView>(R.id.exo_subtitles)
         val videoNext = findViewById<LinearLayout>(R.id.videoView_next_ep)
@@ -187,6 +188,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         title = data.title
         imgLink = data.imgLink
         superId = data.superId
+        subUrl = data.superSub
         imdbId = data.imdbId
         println(superId)
         if (type == "tvshow"){
@@ -210,7 +212,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
         var play = true
 
-        videoLoading = findViewById<FrameLayout>(R.id.video_loading_fl)
+        videoLoading = findViewById(R.id.video_loading_fl)
         val webView = findViewById<WebView>(R.id.web_view2)
 
         webView.settings.javaScriptEnabled = true
@@ -393,18 +395,23 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
 
 
+        if(subUrl.isEmpty()) {
+            println("empty")
+            lifecycleScope.launch(Dispatchers.IO) {
+                val fileID: List<String> = if (type == "movie") {
+                    getSubtitles(id)
+                } else {
+                    getSubtitles(id, season, episode)
+                }
 
-        lifecycleScope.launch (Dispatchers.IO){
-            val fileID : List<String> = if (type == "movie") {
-                getSubtitles(id)
-            } else {
-                getSubtitles(id,season,episode)
-            }
-
-            subList.postValue(getAuthToken(fileID))
-            withContext(Dispatchers.IO){
+                subList.postValue(getAuthToken(fileID))
+                withContext(Dispatchers.IO) {
 //                    Log.i("DownloadSubCount1", subList.value!![0])
+                }
             }
+        }
+        else{
+            subList.postValue(subUrl)
         }
 
         isNextEpisode.observe(this){isNext ->
@@ -511,7 +518,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
                 player.prepare()
                 player.playWhenReady = true
-                wakeLock.acquire()
+
                 playerPlay()
 
                 subTracks.setOnClickListener {

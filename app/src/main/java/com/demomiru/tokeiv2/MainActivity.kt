@@ -61,8 +61,7 @@ class MainActivity : AppCompatActivity() {
         }
     )
     private lateinit var continueText: TextView
-    private lateinit var imageback: ImageView
-    private lateinit var continueWatchingObserver: Observer<List<ContinueWatching>>
+//    private lateinit var continueWatchingObserver: Observer<List<ContinueWatching>>
     private var nestedScrollView : NestedScrollView? = null
     private lateinit var adapter: ContinueWatchingAdapter
     private lateinit var continueWatchingRepository: ContinueWatchingRepository
@@ -78,7 +77,6 @@ class MainActivity : AppCompatActivity() {
         nestedScrollView = findViewById(R.id.nestedScrollView)
         val navController = findNavController(R.id.nav_host_fragment)
         val bottomNavigationView : BottomNavigationView = findViewById(R.id.bottom_nav_bar)
-        imageback = findViewById(R.id.back_listener)
         continueWatchingRepository = ContinueWatchingRepository(watchHistoryDao)
         watchHistoryRc = findViewById(R.id.watch_history_rc)
         watchHistoryRc.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,false)
@@ -122,12 +120,6 @@ class MainActivity : AppCompatActivity() {
 
 //        continueWatchingRepository.allWatchHistory.observe(this,continueWatchingObserver)
 
-
-        imageback.setOnClickListener {
-            GlobalScope.launch  (Dispatchers.IO) {
-                continueWatchingRepository.loadData()
-            }
-        }
 
        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {

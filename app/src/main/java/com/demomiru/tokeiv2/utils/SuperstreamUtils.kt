@@ -510,33 +510,34 @@ class SuperstreamUtils() {
     )
 
     data class SubtitleDataProp(
-        @JsonProperty("code") val code: Int? = null,
-        @JsonProperty("msg") val msg: String? = null,
-        @JsonProperty("data") val data: PrivateSubtitleData? = PrivateSubtitleData()
+        val code: Int? = null,
+        val msg: String? = null,
+        val data: PrivateSubtitleData? = PrivateSubtitleData()
     )
 
-     data class Subtitles(
-        @JsonProperty("sid") val sid: Int? = null,
-        @JsonProperty("mid") val mid: String? = null,
-        @JsonProperty("file_path") val filePath: String? = null,
-        @JsonProperty("lang") val lang: String? = null,
-        @JsonProperty("language") val language: String? = null,
-        @JsonProperty("delay") val delay: Int? = null,
-        @JsonProperty("point") val point: String? = null,
-        @JsonProperty("order") val order: Int? = null,
-        @JsonProperty("admin_order") val adminOrder: Int? = null,
-        @JsonProperty("myselect") val myselect: Int? = null,
-        @JsonProperty("add_time") val addTime: Long? = null,
-        @JsonProperty("count") val count: Int? = null
+    data class Subtitles(
+        val sid: Int? = null,
+        val tid: String? = null,
+        val file_path: String? = null,
+        val lang: String? = null,
+        val language: String? = null,
+        val delay: Int? = null,
+        val point: String? = null,
+        val order: Int? = null,
+        val admin_order: Int? = null,
+        val myselect: Int? = null,
+        val add_time: Long? = null,
+        val count: Int? = null
     )
 
-     data class SubtitleList(
-        @JsonProperty("language") val language: String? = null,
-        @JsonProperty("subtitles") val subtitles: ArrayList<Subtitles> = arrayListOf()
+    data class SubtitleList(
+        val language: String? = null,
+        val subtitles: ArrayList<Subtitles> = arrayListOf()
     )
 
-     data class PrivateSubtitleData(
-        @JsonProperty("select") val select: ArrayList<String> = arrayListOf(),
-        @JsonProperty("list") val list: ArrayList<SubtitleList> = arrayListOf()
+    data class PrivateSubtitleData(
+        val select: ArrayList<String> = arrayListOf(),
+        val list: ArrayList<SubtitleList> = arrayListOf()
     )
+
 }

@@ -46,9 +46,10 @@ import com.demomiru.tokeiv2.watching.ContinueWatching
 
 import com.demomiru.tokeiv2.watching.VideoData
 import com.lagradost.nicehttp.Requests
+import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.withContext
 
 
 @Suppress("DEPRECATION")
@@ -59,12 +60,6 @@ class MoviePlayActivity : AppCompatActivity(){
     private var isSuper = false
     private var superId: Int? = null
     private var IMDBid: String? = null
-
-//    private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
-//    private val watchHistoryDao by lazy { database.watchDao() }
-
-//    private lateinit var player: ExoPlayer
-//    private lateinit var videoView: PlayerView
     private val superStream = SuperstreamUtils()
     private lateinit var loading:ProgressBar
     private lateinit var id:String
@@ -77,7 +72,7 @@ class MoviePlayActivity : AppCompatActivity(){
     private lateinit var title:String
     private var type : String? = null
     private val videoUrl = MutableLiveData<String?>()
-    private var subUrl : String? = null
+    private var subUrl : MutableList<String> = mutableListOf()
 
     private val COVER_SCREEN_PARAMS = FrameLayout.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -306,7 +301,7 @@ class MoviePlayActivity : AppCompatActivity(){
                     if(imdbId.isNotBlank()){
                         origin = "hi"
                         IMDBid = imdbId
-                        videoUrl.value = getTvLink(imdbId,season-1,episode-1)?:""
+                        videoUrl.value = getTvLink(imdbId,season-1,episode-1)
                     }
                     else{
 
@@ -321,29 +316,26 @@ class MoviePlayActivity : AppCompatActivity(){
                                 if(!it.path.isNullOrBlank()){
                                     println("${it.quality} : ${it.path}")
                                     if(it.quality == "720p") {
-//                                        val subtitle = superStream.loadSubtile(false,it.fid!!,superId!!,season,episode)
-//                                        subtitle.data?.list?.forEach {sub->
-//                                            if(sub.language == "English"){
-////                                                subUrl = sub.subtitles[0].filePath
-//                                                sub.subtitles.forEach { s->
-//                                                    if (!s.filePath.isNullOrBlank()) {
-//                                                        subUrl = s.filePath
-//                                                        println("Sub Url : $subUrl")
-//                                                        return@forEach
-//                                                    }
-//                                                }
+                                        val subtitle = superStream.loadSubtile(false,it.fid!!,superId!!,season,episode).data
 //
-//                                                return@forEach
-//                                            }
-//                                        }
+                                        getSub(subtitle)
                                         videoUrl.value = it.path
                                         return@forEach
                                     }
                                 }
                             }
+                            if(videoUrl.value.isNullOrBlank()){
+                                withContext(Dispatchers.Main){
+                                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+                                    finish()
+                                }
+                            }
                         }
                         else{
-                            println("Not Available")
+                            withContext(Dispatchers.Main){
+                                Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+                                finish()
+                            }
                         }
 
                     }
@@ -371,7 +363,7 @@ class MoviePlayActivity : AppCompatActivity(){
                     lifecycleScope.launch {
                         val imdbId = getMovieImdb(id)
                         IMDBid = imdbId
-                        videoUrl.value = getMovieLink(imdbId) ?: ""
+                        videoUrl.value = getMovieLink(imdbId)
 
                     }
                 }
@@ -380,6 +372,7 @@ class MoviePlayActivity : AppCompatActivity(){
 
 
         }
+
 
 
 
@@ -428,6 +421,25 @@ class MoviePlayActivity : AppCompatActivity(){
 //            return responseBody?:""
 //        }
 //    }
+
+    fun getSub(subtitle: SuperstreamUtils.PrivateSubtitleData?){
+        subtitle?.list?.forEach { subList->
+            if(subList.language == "English"){
+                subList.subtitles.forEach { sub->
+                        if (sub.lang == "en" && !sub.file_path.isNullOrBlank()) {
+                            subUrl.add(sub.file_path)
+                            println(sub.file_path)
+                        }
+
+                        if (subUrl.size == 3) {
+                        println(subUrl)
+                        return
+                        }
+                }
+            }
+        }
+    }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

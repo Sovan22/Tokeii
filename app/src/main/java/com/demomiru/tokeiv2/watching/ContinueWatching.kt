@@ -30,5 +30,5 @@ data class VideoData(
         val type : String,
         val videoUrl: String,
         val superId : Int? = null,
-        val superSub : String? = null
+        val superSub : List<String>
         ) : Serializable
