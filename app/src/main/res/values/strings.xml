@@ -14,4 +14,5 @@
     <string name="expandtvshow">expandTvShow</string>
     <string name="continue_watching">Continue Watching</string>
     <string name="season_episode">S1E1</string>
+    <string name="clear_all">Clear All</string>
 </resources>
