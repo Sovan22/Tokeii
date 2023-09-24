@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-
+    android:background="@drawable/player_controller_bg"
     android:layout_height="match_parent">
 
     <LinearLayout
@@ -282,6 +282,40 @@
                     android:background="@android:color/transparent"
                     android:id="@+id/screen_resize_text"
                     android:text="Fit"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/videoView_next_ep"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                >
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="5dp"
+                    android:id="@+id/next_ep_img"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/next_episode" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@android:color/transparent"
+                    android:id="@+id/next_ep_text"
+                    android:text="Next"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
 

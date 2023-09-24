@@ -23,9 +23,12 @@ data class VideoData(
         val imgLink : String,
         @PrimaryKey
         val tmdbID: Int,
+        val imdbId: String? = null,
         val title: String,
         val episode : Int = 0,
         val season : Int = 0,
         val type : String,
-        val videoUrl: String
+        val videoUrl: String,
+        val superId : Int? = null,
+        val superSub : String? = null
         ) : Serializable

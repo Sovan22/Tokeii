@@ -43,7 +43,7 @@ private val onClick : (SubtitleConfig) -> Unit
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val sub = subList[position]
         holder.subTitle.text = "$title Subtitle ${position + 1}"
-//        holder.subTitle.isChecked = position == selectedPosition
+        holder.subTitle.isChecked = position == selectedPosition
 
         holder.itemView.setOnClickListener {
             setSelectedPosition(holder.bindingAdapterPosition)

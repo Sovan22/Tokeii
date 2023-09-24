@@ -11,3 +11,19 @@ data class Movie(
     val release_date : String
 ) : Serializable
 
+data class MovieFile(
+    val file: String, //episode file
+    val title: String// language
+)
+
+data class MovieIMDB(
+    val id: String,
+    val imdb_id : String
+)
+
+
+
+data class Keys(
+    val file: String,
+    val key : String
+)

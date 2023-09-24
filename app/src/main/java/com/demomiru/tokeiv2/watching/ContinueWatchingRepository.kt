@@ -8,7 +8,6 @@ class ContinueWatchingRepository(private val continueWatchingDao : ContinueWatch
     private val _allWatchHistory = MutableLiveData<List<ContinueWatching>>()
     val allWatchHistory : LiveData<List<ContinueWatching>> = _allWatchHistory
 
-
     fun loadData(){
         _allWatchHistory.postValue(continueWatchingDao.getContinueWatching())
     }
@@ -32,4 +31,8 @@ class ContinueWatchingRepository(private val continueWatchingDao : ContinueWatch
     fun deleteAll(){
         continueWatchingDao.deleteAll()
     }
+
+//    fun getProgress(id:Int) : ContinueWatching?{
+//       return continueWatchingDao.getProgress(id)
+//    }
 }

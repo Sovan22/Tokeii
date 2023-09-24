@@ -1,5 +1,6 @@
 package com.demomiru.tokeiv2.watching
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -20,7 +21,12 @@ interface ContinueWatchingDao {
 
     @Query("SELECT * FROM continue_watching")
     fun getContinueWatching(): List<ContinueWatching>
+    @Query("SELECT * FROM continue_watching")
+    fun getContinueWatchingTest(): LiveData<List<ContinueWatching>>
 
     @Query("DELETE FROM continue_watching")
     fun deleteAll()
+
+    @Query("SELECT * FROM continue_watching WHERE `tmdbID`=:id")
+    fun getProgress(id:Int) : LiveData<ContinueWatching?>
 }

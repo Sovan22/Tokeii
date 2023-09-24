@@ -1,23 +1,34 @@
 @file:OptIn(DelicateCoroutinesApi::class)
 
 package com.demomiru.tokeiv2
+import android.annotation.SuppressLint
 import android.os.Bundle
 
 import android.view.KeyEvent
 
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.viewModels
 
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 
 import androidx.core.widget.NestedScrollView
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory2
 
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.passData
@@ -43,6 +54,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var watchHistoryRc : RecyclerView
     private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
     private val watchHistoryDao by lazy { database.watchDao() }
+    private lateinit var viewModelFactory: ContinueWatchingViewModelFactory2
+    private val viewModel: ContinueWatchingViewModel2 by viewModels(
+        factoryProducer = {
+            viewModelFactory
+        }
+    )
     private lateinit var continueText: TextView
     private lateinit var imageback: ImageView
     private lateinit var continueWatchingObserver: Observer<List<ContinueWatching>>
@@ -52,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        viewModelFactory = ContinueWatchingViewModelFactory2(watchHistoryDao)
         val options = NavOptions.Builder()
             .setEnterAnim(R.anim.enter_from_bottom)
             .setExitAnim(R.anim.exit_to_top)
@@ -66,11 +83,12 @@ class MainActivity : AppCompatActivity() {
         watchHistoryRc = findViewById(R.id.watch_history_rc)
         watchHistoryRc.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,false)
         continueText = findViewById(R.id.continue_watching_text)
+
         adapter = ContinueWatchingAdapter{it,delete->
             if(delete){
-                GlobalScope.launch  (Dispatchers.IO) {
+                lifecycleScope.launch  (Dispatchers.IO) {
                     continueWatchingRepository.delete(it)
-                    continueWatchingRepository.loadData()
+//                    continueWatchingRepository.loadData()
                 }
             }
             else {
@@ -82,46 +100,28 @@ class MainActivity : AppCompatActivity() {
 
         watchHistoryRc.adapter = adapter
 
-        GlobalScope.launch  (Dispatchers.IO) {
-            continueWatchingRepository.loadData()
-        }
+        //TODO Remove comment if continue watching not working
+//        GlobalScope.launch  (Dispatchers.IO) {
+//            continueWatchingRepository.loadData()
+//        }
 
 
 
-        continueWatchingObserver = Observer{
-            if(it.isNotEmpty()){
-                watchHistoryRc.visibility = View.VISIBLE
-                continueText.visibility = View.VISIBLE
-                adapter.submitList(it)
-                addRecyclerAnimation(watchHistoryRc,adapter)
-            }
-            else{
-                watchHistoryRc.visibility = View.GONE
-                continueText.visibility = View.GONE
-            }
-        }
-
-        continueWatchingRepository.allWatchHistory.observe(this,continueWatchingObserver)
-
-//        val retrofit = superStreamRetrofitBuilder()
-//        val apiService = retrofit.create(MovieService::class.java)
-//
-//        GlobalScope.launch (Dispatchers.Main){
-//            val response = apiService.fetchDataFromServer()
-//            if (response.isSuccessful) {
-//                val serverResponse = response.body()
-//                if (serverResponse != null) {
-//                    // Handle the server response here
-//                    val videoLink = serverResponse.videoLink
-//                    // Do something with videoLinks
-//                    Log.i("link",videoLink)
-//                } else {
-//                    Toast.makeText(this@MainActivity, "Response body is empty", Toast.LENGTH_SHORT).show()
-//                }
-//            } else {
-//                Toast.makeText(this@MainActivity, "Request failed", Toast.LENGTH_SHORT).show()
+//        continueWatchingObserver = Observer{
+//            if(it.isNotEmpty()){
+//                watchHistoryRc.visibility = View.VISIBLE
+//                continueText.visibility = View.VISIBLE
+//                adapter.submitList(it)
+//                addRecyclerAnimation(watchHistoryRc,adapter)
+//            }
+//            else{
+//                watchHistoryRc.visibility = View.GONE
+//                continueText.visibility = View.GONE
 //            }
 //        }
+
+//        continueWatchingRepository.allWatchHistory.observe(this,continueWatchingObserver)
+
 
         imageback.setOnClickListener {
             GlobalScope.launch  (Dispatchers.IO) {
@@ -133,9 +133,11 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.moviesFragment -> {
                     navController.navigate(R.id.moviesFragment, null, options)
-                    GlobalScope.launch  (Dispatchers.IO) {
-                        continueWatchingRepository.loadData()
+                    if (viewModel.allWatchHistory.value?.size !=0){
+                        watchHistoryRc.visibility = View.VISIBLE
+                        continueText.visibility = View.VISIBLE
                     }
+
                 }
                 R.id.searchFragment -> {
                     navController.navigate(R.id.searchFragment, null, options)
@@ -144,9 +146,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.TVShowFragment -> {
                     navController.navigate(R.id.TVShowFragment, null, options)
-                    GlobalScope.launch  (Dispatchers.IO) {
-                        continueWatchingRepository.loadData()
+                    if (viewModel.allWatchHistory.value?.size !=0){
+                        watchHistoryRc.visibility = View.VISIBLE
+                        continueText.visibility = View.VISIBLE
                     }
+
                 }
             }
             true
@@ -231,27 +235,23 @@ class MainActivity : AppCompatActivity() {
 //        super.onPause()
 //    }
 
+    @SuppressLint("SetTextI18n")
     override fun onResume() {
 
-//        if(nestedScrollView !=null) {
-//
-//
-//            nestedScrollView?.post {
-//                nestedScrollView?.scrollTo(0, 0)
-//            }
-//
-//            nestedScrollView?.postDelayed({
-                adapter.notifyDataSetChanged()
-                GlobalScope.launch(Dispatchers.IO) {
-                    continueWatchingRepository.loadData()
-                    withContext(Dispatchers.Main){
-                        continueWatchingRepository.allWatchHistory.observe(this@MainActivity,continueWatchingObserver)
-                    }
-                }
-//                nestedScrollView?.scrollTo(0, 0)
-//            }, 0)
-//        }
-//        imageback.performClick()
+        val viewStateObserver = Observer<List<ContinueWatching>> {watchFrom ->
+            if(watchFrom.isNotEmpty()){
+                watchHistoryRc.visibility = View.VISIBLE
+                continueText.visibility = View.VISIBLE
+                adapter.submitList(watchFrom)
+                addRecyclerAnimation(watchHistoryRc,adapter)
+            }
+            else{
+                watchHistoryRc.visibility = View.GONE
+                continueText.visibility = View.GONE
+            }
+        }
+        viewModel.allWatchHistory.observe(this,viewStateObserver)
+
         super.onResume()
     }
 

@@ -19,14 +19,7 @@ class ContinueWatchingViewModelFactory(private val watchingDao: ContinueWatching
 }
 
 class ContinueWatchingViewModel(watchingDao: ContinueWatchingDao, id:Int) : ViewModel(){
-//    private val _watchFrom = MutableLiveData<ContinueWatching?>()
     val watchFrom : LiveData<ContinueWatching?> = watchingDao.getProgress(id)
-
-
-//    fun getProgress(id: Int, watchingDao: ContinueWatchingDao){
-//        viewModelScope.launch (Dispatchers.IO) {
-//            _watchFrom.postValue(watchingDao.getProgress(id))
-//        }
 
 }
 

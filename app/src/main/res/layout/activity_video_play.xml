@@ -19,6 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/video_view"
+        android:background="@color/black"
         app:controller_layout_id="@layout/custom_video_player2"/>
 
     <LinearLayout
@@ -113,9 +114,25 @@
             android:src="@drawable/baseline_lock_open_24"
             />
 
+        <androidx.media3.ui.SubtitleView
+            android:id="@+id/custom_subtitles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
 
     </FrameLayout>
-
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        android:id="@+id/video_loading_fl"
+        >
+        <WebView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            android:id="@+id/web_view2"/>
     <ProgressBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -123,6 +140,7 @@
         android:visibility="visible"
         android:id="@+id/video_loading"
         />
+    </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -148,6 +166,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/apply_sub"
+            android:layout_margin="25dp"
             android:text="Apply"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

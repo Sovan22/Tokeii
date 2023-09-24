@@ -9,14 +9,14 @@
     <WebView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible"
+        android:visibility="invisible"
         android:id="@+id/web_view"/>
-    <androidx.media3.ui.PlayerView
-        android:layout_width="match_parent"
-        android:id="@+id/video_view"
-        android:visibility="gone"
-        android:layout_height="match_parent"
-        />
+<!--    <androidx.media3.ui.PlayerView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:id="@+id/video_view"-->
+<!--        android:visibility="gone"-->
+<!--        android:layout_height="match_parent"-->
+<!--        />-->
 
     <ProgressBar
         android:id="@+id/loading_content"

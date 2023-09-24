@@ -54,6 +54,7 @@ class ContinueWatchingAdapter(private val onClick: (ContinueWatching,Boolean)->U
         holder.imageView.load("https://image.tmdb.org/t/p/w500${item.imgLink}")
         holder.progressBar.progress = item.progress
         holder.progressBar.visibility = View.VISIBLE
+        holder.tvShowDetail.visibility = View.GONE
         if(item.type == "tvshow"){
 
             holder.tvShowDetail.text = "S${item.season} E${item.episode}"
@@ -74,7 +75,7 @@ class ContinueWatchingAdapter(private val onClick: (ContinueWatching,Boolean)->U
            Handler(Looper.getMainLooper()).postDelayed({
                holder.backGround.visibility = View.GONE
                holder.delete.visibility = View.GONE
-           }, 5000)  // Delay of 1 second
+           }, 4000)  // Delay of 4 second
 
            true
        }

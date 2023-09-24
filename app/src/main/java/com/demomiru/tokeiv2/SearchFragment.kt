@@ -57,6 +57,10 @@ class SearchFragment : Fragment() {
     private val searchHistoryDao by lazy { database.searchDao() }
     private lateinit var queryRepository:QueryRepository
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

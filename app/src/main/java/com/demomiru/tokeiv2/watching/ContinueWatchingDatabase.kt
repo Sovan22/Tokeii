@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [ContinueWatching::class], version = 2)
+@Database(entities = [ContinueWatching::class], version = 1)
 abstract class ContinueWatchingDatabase : RoomDatabase(){
 
     abstract fun watchDao() : ContinueWatchingDao

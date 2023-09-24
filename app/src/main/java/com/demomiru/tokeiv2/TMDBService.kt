@@ -78,3 +78,34 @@ data class Episode(
     val name: String,
     val still_path: String
 ) : Serializable
+
+data class Season(
+    val id : String,
+    val title:String,
+    val folder: List<Folder>
+)
+data class Folder(
+    val episode: String,
+    val folder: List<EpisodeID>
+)
+data class EpisodeID(
+    val file: String, //episode file
+    val title: String// language
+)
+
+data class TvIMDB(
+    val languages: List<String>,
+    val external_ids : ExternalIDs,
+    val number_of_seasons: String
+)
+data class ExternalIDs(
+    val imdb_id : String
+)
+
+data class ImdbEpisode(
+    val episodes : List<EP>
+)
+data class EP(
+    val episode_number: String
+)
+

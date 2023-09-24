@@ -9,9 +9,12 @@ import androidx.navigation.fragment.findNavController
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.playShow
 import com.demomiru.tokeiv2.utils.retrofitBuilder
@@ -40,6 +43,7 @@ class TVShowFragment : Fragment() {
     private lateinit var trenTvRc: RecyclerView
     private lateinit var topTvRc : RecyclerView
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -59,6 +63,7 @@ class TVShowFragment : Fragment() {
         popTvRc = view.findViewById(R.id.popular_tvshow_rc)
         trenTvRc = view.findViewById(R.id.trending_tvshow_rc)
         topTvRc = view.findViewById(R.id.toprated_tvshow_rc)
+
 
         val retrofit = retrofitBuilder()
         topTvRc.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
