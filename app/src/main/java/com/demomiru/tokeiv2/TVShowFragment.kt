@@ -74,17 +74,17 @@ class TVShowFragment : Fragment() {
 
         GlobalScope.launch(Dispatchers.Main) {
             val tvPopularResponse = tvService.getPopularTVShows(
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 
             val tvTrendingResponse = tvService.getTrendingTVShows(
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 
             val tvTopResponse = tvService.getTopRatedTVShows(
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 

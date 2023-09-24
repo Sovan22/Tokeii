@@ -69,17 +69,17 @@ class MoviesFragment : Fragment() {
 
         GlobalScope.launch(Dispatchers.Main) {
             val pmovieResponse = movieService.getPopularMovies(
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 
             val tmovieResponse = movieService.getTrendingMovies(
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 
             val topMovieResponse = movieService.getTopRatedMovies(
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 

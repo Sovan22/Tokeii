@@ -6,6 +6,7 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.MotionEvent
 import android.webkit.WebView
+import com.demomiru.tokeiv2.BuildConfig
 import com.demomiru.tokeiv2.ImdbEpisode
 import com.demomiru.tokeiv2.TvIMDB
 import com.google.gson.Gson
@@ -47,7 +48,7 @@ suspend fun getTvSeasons(tmdbID: String): Int {
     val requests = Requests()
     val headers = mapOf(
         "accept" to " application/json",
-        "Authorization" to "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjYWI3MzE4OTFiMjhjNWFkNjFjODVjZDk5Mzg1MWVkNyIsInN1YiI6IjY0YTk1MzUyZDFhODkzMDBhZGJlYTc5YSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8Z_74qWdW5q6iPS7G7_j3NXFFUOUUszmWNZYupFH4Fc"
+        "Authorization" to "Bearer ${BuildConfig.TMDB_TOKEN}"
 
     )
 
@@ -66,7 +67,7 @@ suspend fun getSeasonEpisodes(tmdbID: String, season: Int): Int {
     val requests = Requests()
     val headers = mapOf(
         "accept" to " application/json",
-        "Authorization" to "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjYWI3MzE4OTFiMjhjNWFkNjFjODVjZDk5Mzg1MWVkNyIsInN1YiI6IjY0YTk1MzUyZDFhODkzMDBhZGJlYTc5YSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8Z_74qWdW5q6iPS7G7_j3NXFFUOUUszmWNZYupFH4Fc"
+        "Authorization" to "Bearer ${BuildConfig.TMDB_TOKEN}"
 
     )
     val seasonImdb = requests.get(

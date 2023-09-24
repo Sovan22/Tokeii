@@ -2,6 +2,7 @@ package com.demomiru.tokeiv2.utils
 
 import android.util.Log
 import android.view.MotionEvent
+import com.demomiru.tokeiv2.BuildConfig
 import com.demomiru.tokeiv2.Keys
 import com.demomiru.tokeiv2.MovieFile
 import com.demomiru.tokeiv2.MovieIMDB
@@ -21,7 +22,7 @@ suspend fun getMovieImdb(tmdbID: String) : String{
     val requests = Requests()
     val headers = mapOf(
         "accept" to " application/json",
-        "Authorization" to "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjYWI3MzE4OTFiMjhjNWFkNjFjODVjZDk5Mzg1MWVkNyIsInN1YiI6IjY0YTk1MzUyZDFhODkzMDBhZGJlYTc5YSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8Z_74qWdW5q6iPS7G7_j3NXFFUOUUszmWNZYupFH4Fc"
+        "Authorization" to "Bearer ${BuildConfig.TMDB_TOKEN}"
 
     )
     val gson = Gson()
@@ -38,7 +39,7 @@ suspend fun getTvImdb(tmdbID: String): String{
     val requests = Requests()
     val headers = mapOf(
         "accept" to " application/json",
-        "Authorization" to "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjYWI3MzE4OTFiMjhjNWFkNjFjODVjZDk5Mzg1MWVkNyIsInN1YiI6IjY0YTk1MzUyZDFhODkzMDBhZGJlYTc5YSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.8Z_74qWdW5q6iPS7G7_j3NXFFUOUUszmWNZYupFH4Fc"
+        "Authorization" to "Bearer ${BuildConfig.TMDB_TOKEN}"
 
     )
 

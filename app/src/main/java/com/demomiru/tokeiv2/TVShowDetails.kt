@@ -164,7 +164,7 @@ class TVShowDetails : Fragment() {
         GlobalScope.launch(Dispatchers.Main) {
             val tvDetailsResponse = tvService.getTVShowDetails(
                 id,
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 
@@ -196,7 +196,7 @@ class TVShowDetails : Fragment() {
                         GlobalScope.launch(Dispatchers.Main) {
                             val episodeResponse = tvService.getEpisodeDetails(
                                 id, seasonNumber,
-                                "cab731891b28c5ad61c85cd993851ed7",
+                                BuildConfig.TMDB_API_KEY,
                                 "en-US"
                             )
 
@@ -223,69 +223,6 @@ class TVShowDetails : Fragment() {
                     }
 
                 }
-
- //               dropDownMenu
-//                val itemClickListener =
-//                 AdapterView.OnItemClickListener { parent, _, position, _ ->
-////                        hintTil.hint = ""
-//
-//                    val selectedItem = parent.getItemAtPosition(position) as String
-//                    seasonNumber = selectedItem.substringAfter(" ")
-//                    Log.i("Season Number", seasonNumber)
-//
-//                    GlobalScope.launch(Dispatchers.Main) {
-//                        val episodeResponse = tvService.getEpisodeDetails(
-//                            id, seasonNumber,
-//                            "cab731891b28c5ad61c85cd993851ed7",
-//                            "en-US"
-//                        )
-//
-//                        if (episodeResponse.isSuccessful) {
-//                            val episodes = episodeResponse.body()?.episodes ?: emptyList()
-//                            val adapter = EpisodeAdapter2(episodes) {
-//
-//
-////                                episodeImg.load("https://image.tmdb.org/t/p/w500${it.still_path}")
-////                                episodeOverview.text = it.overview
-////                                view.findViewById<LinearLayout>(R.id.episode_card_ll).visibility = View.VISIBLE
-////                                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-//
-//
-////                                val action =
-////                                    TVShowDetailsDirections.actionTVShowDetailsToMoviePlayActivity(
-////                                        id,
-////                                        "show",
-////                                        it.episode_number.toInt(),
-////                                        it.season_number
-////                                    )
-////                                findNavController().navigate(action)
-//                                startActivity(passData(it,requireContext(),title,tvShows.poster_path,id))
-//
-//                            }
-//                            episodesRc.adapter = adapter
-//                            val context = episodesRc.context
-//                            val controller = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
-//                            episodesRc.layoutAnimation = controller
-//                            adapter.notifyDataSetChanged()
-//                            episodesRc.scheduleLayoutAnimation()
-//                            view.findViewById<TextView>(R.id.episodes_text).visibility = View.VISIBLE
-//
-//                        }
-//                    }
-//                }
-//                dropdownMenu.onItemClickListener = itemClickListener
-
-
-
-
-
-
-
-
-//                episodesRc.adapter = EpisodeAdapter(episodeNumber){
-//                    val action = TVShowDetailsDirections.actionTVShowDetailsToMoviePlayActivity(id,"show",it)
-//                    findNavController().navigate(action)
-//                }
 
                 withContext(Dispatchers.Main) {
 

@@ -173,7 +173,7 @@ class SearchFragment : Fragment() {
 
             val searchResults = movieService.searchMovie(
                 query,
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 
@@ -220,7 +220,7 @@ class SearchFragment : Fragment() {
 
             val searchResults = tvService.searchShow(
                 query,
-                "cab731891b28c5ad61c85cd993851ed7",
+                BuildConfig.TMDB_API_KEY,
                 "en-US"
             )
 

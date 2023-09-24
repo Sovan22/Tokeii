@@ -96,7 +96,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 //    private var side = "left"
 //
     private val superStream = SuperstreamUtils()
-    private val openSubtitleAPI = "6YnKoBPSsK8VXYwwrPoZBzVmki0ooTcf"
+    private val openSubtitleAPI = BuildConfig.OPEN_SUBTITLE_API_KEY
 //        "XeM3ngDLQIPF6ySf37z6PIIzTbAMIb8x"
     private var subUpdateProgress = 0L
     private var isShowFinished = false
@@ -773,7 +773,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     .url("https://api.opensubtitles.com/api/v1/subtitles?languages=en&order_by=ratings&parent_tmdb_id=$tmdbId&season_number=$season&episode_number=$episode&page=1")
                     .get()
                     .addHeader("User-Agent", "")
-                    .addHeader("Api-Key", "6YnKoBPSsK8VXYwwrPoZBzVmki0ooTcf")
+                    .addHeader("Api-Key", openSubtitleAPI)
                     .build()
             }
 
