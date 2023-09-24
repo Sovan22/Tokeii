@@ -9,6 +9,9 @@ plugins {
 
 }
 
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+
 android {
     namespace 'com.demomiru.tokeiv2'
     compileSdk 34
@@ -25,6 +28,12 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "OPEN_SUBTITLE_API_KEY", "\"${localProperties["OPEN_SUBTITLE_API_KEY"]}\"")
+        buildConfigField("String", "TMDB_API_KEY", "\"${localProperties["TMDB_API_KEY"]}\"")
+        buildConfigField("String", "TMDB_TOKEN", "\"${localProperties["TMDB_TOKEN"]}\"")
+        buildConfigField("String", "SUPERSTREAM_API1", "\"${localProperties["SUPERSTREAM_API1"]}\"")
+        buildConfigField("String", "SUPERSTREAM_API2", "\"${localProperties["SUPERSTREAM_API2"]}\"")
     }
 
     buildTypes {
@@ -42,6 +51,7 @@ android {
     }
     buildFeatures{
         viewBinding true
+        buildConfig true
     }
 }
 
