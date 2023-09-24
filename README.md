@@ -1,4 +1,4 @@
-# Tokei    <img src="https://github.com/Sovan22/Tokeii/assets/12212201/db6750b5-54c5-441c-829a-a46971dae4c2" width="40" height="40" alt="Image Description">
+# Tokei    <img src="https://github.com/Sovan22/Tokeii/blob/master/app/tokei_logo.jpeg" width="40" height="40" alt="Image Description">
 Movie and TV Streaming App 
 
 
