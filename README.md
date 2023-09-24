@@ -6,6 +6,17 @@ Movie and TV Streaming App
 https://github.com/Sovan22/Tokeii/releases/download/v1.0.0-tokei/tokei-release_v1.0.0.apk <br>
 Compatibility : Android 7+
 
+## App Demo
+
+### Movies
+![Movies](https://github.com/Sovan22/Tokeii/assets/12212201/3478d609-86f6-476e-92e3-9257207c59fd)
+
+### Search
+![Search](https://github.com/Sovan22/Tokeii/assets/12212201/42b562ed-de9b-4e70-bd70-0680790f82c0)
+
+### Player
+![Player](https://github.com/Sovan22/Tokeii/assets/12212201/f160510c-d93c-4e83-98fa-60e97176fbb9)
+
 
 ### Features:
 + **AdFree**
