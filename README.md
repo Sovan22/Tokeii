@@ -7,7 +7,7 @@ https://github.com/Sovan22/Tokeii/releases/download/v1.0.0-tokei/tokei-release_v
 
 
 ### Features:
-+ **AdFree**, No ads whatsoever
++ **AdFree**
 + No tracking/analytics
 + Lesser Loading Time
 + Good sources for Indian OTT Content
