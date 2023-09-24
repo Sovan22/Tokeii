@@ -6,6 +6,12 @@ Movie and TV Streaming App
 https://github.com/Sovan22/Tokeii/releases/download/v1.0.0-tokei/tokei-release_v1.0.0.apk <br>
 Compatibility : Android 7+
 
+## Features:
++ **AdFree**
++ No tracking/analytics
++ Lesser Loading Time
++ Good sources for Indian OTT Content
+
 ## App Demo
 
 ### Movies
@@ -18,11 +24,7 @@ Compatibility : Android 7+
 ![Player](https://github.com/Sovan22/Tokeii/assets/12212201/f160510c-d93c-4e83-98fa-60e97176fbb9)
 
 
-### Features:
-+ **AdFree**
-+ No tracking/analytics
-+ Lesser Loading Time
-+ Good sources for Indian OTT Content
+
 
 
 ## DISCLAIMER
