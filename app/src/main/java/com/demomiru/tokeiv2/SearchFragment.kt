@@ -28,7 +28,6 @@ import com.demomiru.tokeiv2.history.QueryRepository
 
 import com.demomiru.tokeiv2.history.SearchDatabase
 import com.demomiru.tokeiv2.history.SearchHistory
-import com.demomiru.tokeiv2.history.SearchHistoryAdapter
 import com.demomiru.tokeiv2.history.SearchHistoryAdapter2
 
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
@@ -45,6 +44,7 @@ import kotlinx.coroutines.withContext
 class SearchFragment : Fragment() {
 //    private lateinit var searchHistoryList: List<String>
     private lateinit var searchHistoryRC: RecyclerView
+
     private lateinit var deleteAll : TextView
     private var isClicked = true
     private lateinit var adapter: SearchHistoryAdapter2
@@ -58,9 +58,7 @@ class SearchFragment : Fragment() {
     private val searchHistoryDao by lazy { database.searchDao() }
     private lateinit var queryRepository:QueryRepository
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

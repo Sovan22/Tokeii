@@ -1,5 +1,6 @@
 package com.demomiru.tokeiv2
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +30,7 @@ class MovieAdapter(private val movies: List<Movie>,
     }
 
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val movie = movies[position]
         holder.titleTextView.text = movie.title + " (${yearExtract(movie.release_date)})"

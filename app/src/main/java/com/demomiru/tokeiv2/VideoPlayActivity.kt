@@ -46,7 +46,7 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.dash.DashMediaSource
+
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -54,7 +54,7 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerControlView
+
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.SubtitleView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -63,7 +63,7 @@ import com.demomiru.tokeiv2.subtitles.SubTrackAdapter
 import com.demomiru.tokeiv2.subtitles.Subtitle
 import com.demomiru.tokeiv2.subtitles.SubtitleConfig
 import com.demomiru.tokeiv2.utils.SuperstreamUtils
-import com.demomiru.tokeiv2.utils.clickMiddle
+
 import com.demomiru.tokeiv2.utils.getHiTvSeasons
 import com.demomiru.tokeiv2.utils.getSeasonEpisodes
 import com.demomiru.tokeiv2.utils.getTvLink
@@ -91,13 +91,11 @@ import kotlin.math.abs
 class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeListener, GestureDetector.OnGestureListener {
 
 
-//    private val doubleTapTime = 200L
-//    private var touchState = 1
-//    private var side = "left"
+
 //
     private val superStream = SuperstreamUtils()
     private val openSubtitleAPI = BuildConfig.OPEN_SUBTITLE_API_KEY
-//        "XeM3ngDLQIPF6ySf37z6PIIzTbAMIb8x"
+
     private var subUpdateProgress = 0L
     private var isShowFinished = false
 
@@ -169,7 +167,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         setContentView(R.layout.activity_video_play)
         powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "VideoPlayerActivity:wakelock")
-        wakeLock.acquire()
+
 
 //        val sub =PlayerControlView.findViewById<SubtitleView>(R.id.exo_subtitles)
         val videoNext = findViewById<LinearLayout>(R.id.videoView_next_ep)
@@ -820,6 +818,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     }
 
     override fun onPause(){
+        wakeLock.release()
         player.pause()
         playPause.setImageResource(R.drawable.icon_play)
         super.onPause()
@@ -827,7 +826,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     }
 
     override fun onDestroy() {
-
+        handler.removeCallbacks(updateSeekBarRunnable)
         val currentPosition = player.currentPosition
         val duration = player.duration
         val progress = (currentPosition * 100 / duration).toInt()
@@ -865,9 +864,9 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         player.playWhenReady = false
         player.stop()
         player.seekTo(0)
-        wakeLock.release()
+
         player.release() // or pause, depending on your requirements
-        handler.removeCallbacks(updateSeekBarRunnable)
+
         Log.i("Finish", "Called finish() go back pressed")
         super.onDestroy()
     }
@@ -945,6 +944,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
     override fun onResume() {
         super.onResume()
+            wakeLock.acquire()
         if(audioManager == null) audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         audioManager!!.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
         if(brightness != 0) setScreenBrightness(brightness)

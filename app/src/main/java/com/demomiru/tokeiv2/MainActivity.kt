@@ -1,4 +1,4 @@
-@file:OptIn(DelicateCoroutinesApi::class)
+
 
 package com.demomiru.tokeiv2
 import android.annotation.SuppressLint
@@ -7,17 +7,13 @@ import android.os.Bundle
 import android.view.KeyEvent
 
 import android.view.View
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
+
 
 import androidx.core.widget.NestedScrollView
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 
@@ -25,27 +21,18 @@ import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
-import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory2
-
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.passData
-
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingAdapter
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
 import com.demomiru.tokeiv2.watching.ContinueWatchingRepository
-
-
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.DelicateCoroutinesApi
-
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+
 
 
 @Suppress("DEPRECATION")
@@ -60,6 +47,7 @@ class MainActivity : AppCompatActivity() {
             viewModelFactory
         }
     )
+    private var currentFragment = R.id.moviesFragment
     private lateinit var continueText: TextView
 //    private lateinit var continueWatchingObserver: Observer<List<ContinueWatching>>
     private var nestedScrollView : NestedScrollView? = null
@@ -128,6 +116,7 @@ class MainActivity : AppCompatActivity() {
                     if (viewModel.allWatchHistory.value?.size !=0){
                         watchHistoryRc.visibility = View.VISIBLE
                         continueText.visibility = View.VISIBLE
+                        currentFragment = R.id.moviesFragment
                     }
 
                 }
@@ -135,12 +124,14 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.searchFragment, null, options)
                     watchHistoryRc.visibility = View.GONE
                     continueText.visibility = View.GONE
+                    currentFragment = R.id.searchFragment
                 }
                 R.id.TVShowFragment -> {
                     navController.navigate(R.id.TVShowFragment, null, options)
                     if (viewModel.allWatchHistory.value?.size !=0){
                         watchHistoryRc.visibility = View.VISIBLE
                         continueText.visibility = View.VISIBLE
+                        currentFragment = R.id.TVShowFragment
                     }
 
                 }
@@ -169,11 +160,20 @@ class MainActivity : AppCompatActivity() {
                 continueText.visibility = View.VISIBLE
                 adapter.submitList(watchFrom)
                 addRecyclerAnimation(watchHistoryRc,adapter)
+                if(currentFragment == R.id.searchFragment){
+                    watchHistoryRc.visibility = View.GONE
+                    continueText.visibility = View.GONE
+                }else
+                {
+                    watchHistoryRc.visibility = View.VISIBLE
+                    continueText.visibility = View.VISIBLE
+                }
             }
             else{
                 watchHistoryRc.visibility = View.GONE
                 continueText.visibility = View.GONE
             }
+
         }
         viewModel.allWatchHistory.observe(this,viewStateObserver)
 

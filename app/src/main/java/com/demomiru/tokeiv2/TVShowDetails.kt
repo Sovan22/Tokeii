@@ -3,8 +3,7 @@ package com.demomiru.tokeiv2
 import android.annotation.SuppressLint
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,7 +12,7 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
+
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -23,9 +22,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
+
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,11 +34,11 @@ import com.demomiru.tokeiv2.utils.passData
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
-import com.google.android.material.textfield.TextInputLayout
+
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.NonDisposableHandle.parent
+
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -129,7 +126,7 @@ class TVShowDetails : Fragment() {
         val titleTv = view.findViewById<TextView>(R.id.title_show)
 
         val position = args.position
-        val continueButton  = view.findViewById<Button>(R.id.continue_button)
+//        val continueButton  = view.findViewById<Button>(R.id.continue_button)
         expandView.transitionName = "image_$position"
 
 
