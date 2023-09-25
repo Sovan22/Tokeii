@@ -71,6 +71,7 @@ import com.demomiru.tokeiv2.utils.getTvSeasons
 import com.demomiru.tokeiv2.utils.setSeekBarTime
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -98,8 +99,9 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
     private var subUpdateProgress = 0L
     private var isShowFinished = false
-
+    private lateinit var subSelectBg : ConstraintLayout
     private lateinit var videoLoading: FrameLayout
+    private lateinit var showSubs: SwitchMaterial
     private var totalSeasons = 0
     private var totalEpisode = 0
     private var superId: Int? = null
@@ -167,7 +169,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         setContentView(R.layout.activity_video_play)
         powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "VideoPlayerActivity:wakelock")
-
+        showSubs = findViewById(R.id.switchcompat)
 
 //        val sub =PlayerControlView.findViewById<SubtitleView>(R.id.exo_subtitles)
         val videoNext = findViewById<LinearLayout>(R.id.videoView_next_ep)
@@ -241,7 +243,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         val seekBack : ImageButton = findViewById(R.id.videoView_rewind)
         val subTracks : LinearLayout = findViewById(R.id.videoView_track)
         val subSelectionView: RecyclerView = findViewById(R.id.sub_tracks_rc)
-        val subSelectBg : ConstraintLayout = findViewById(R.id.subtitle_select)
+        subSelectBg = findViewById(R.id.subtitle_select)
         val applySub : Button = findViewById(R.id.apply_sub)
         val screenResizeTv : TextView = findViewById(R.id.screen_resize_text)
         val screenResizeIv : ImageView = findViewById(R.id.screen_resize_img)
@@ -278,6 +280,10 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         subtitleView.setApplyEmbeddedStyles(false)
 
         player = ExoPlayer.Builder(this).build()
+        showSubs.setOnClickListener {
+            if (showSubs.isChecked) subtitleView.visibility = View.VISIBLE
+            else subtitleView.visibility = View.GONE
+        }
 
 
        PlayerView.ControllerVisibilityListener { visibility -> isControllerVisible = visibility == View.VISIBLE }
@@ -942,6 +948,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         }
     }
 
+
     override fun onResume() {
         super.onResume()
             wakeLock.acquire()
@@ -952,11 +959,16 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
 
 
-//    @Deprecated("Deprecated in Java")
-//    override fun onBackPressed() {
-//        onDestroy()
-//        super.onBackPressed()
-//    }
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if(subSelectBg.visibility != View.VISIBLE)
+        super.onBackPressed()
+        else{
+            subSelectBg.visibility = View.GONE
+            mainPlayer.visibility = View.VISIBLE
+            playerPlay()
+        }
+    }
 
     override fun onLongPress(p0: MotionEvent) = Unit
     override fun onFling(p0: MotionEvent?, p1: MotionEvent, p2: Float, p3: Float): Boolean  = false

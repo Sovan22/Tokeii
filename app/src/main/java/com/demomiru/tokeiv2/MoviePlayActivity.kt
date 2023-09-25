@@ -301,11 +301,17 @@ class MoviePlayActivity : AppCompatActivity(){
                     if(imdbId.isNotBlank()){
                         origin = "hi"
                         IMDBid = imdbId
-                        videoUrl.value = getTvLink(imdbId,season-1,episode-1)
+                        val link = getTvLink(imdbId,season-1,episode-1)
+                        if(link.isNotBlank())
+                        videoUrl.value = link
+                        else{
+                            withContext(Dispatchers.Main){
+                                Toast.makeText(this@MoviePlayActivity,"No Links Available", Toast.LENGTH_SHORT).show()
+                                finish()
+                            }
+                        }
                     }
                     else{
-
-
                         //Superstream add
                         val mainData = superStream.search(title)
                         superId = mainData.data[0].id
@@ -363,64 +369,22 @@ class MoviePlayActivity : AppCompatActivity(){
                     lifecycleScope.launch {
                         val imdbId = getMovieImdb(id)
                         IMDBid = imdbId
-                        videoUrl.value = getMovieLink(imdbId)
+                        println(imdbId)
+//                        videoUrl.value = getMovieLink(imdbId)
+                        val link = getMovieLink(imdbId)
+                        if (link.isBlank()) {
+                            val mainData = superStream.search(title)
+                            superId = mainData.data[0].id
+                            getMovie()
 
+                        }
+                        else
+                            videoUrl.value = link
                     }
                 }
             }
-
-
-
         }
-
-
-
-
-
-//        GlobalScope.launch (Dispatchers.IO){
-//            val videoUrl= sendGetRequest("https://loon-neat-troll.ngrok-free.app/scrape?id=$id").replace("\"", "")
-//            Log.i("final",videoUrl)
-//            withContext(Dispatchers.Main){
-////
-////                val mediaController = MediaController(this@MoviePlayActivity)
-////                mediaController.setAnchorView(videoView)
-////                videoView.setMediaController(mediaController)
-//
-//                // Set the video URI and start playback
-//                val videoUri = Uri.parse(videoUrl)
-//                videoView.setVideoURI(videoUri)
-//                loading.visibility = View.GONE
-//                videoView.start()
-//                ppButton.setOnClickListener{
-//                    play = if(play){
-//                        videoView.pause()
-//                        ppButton.load(R.drawable.baseline_play_arrow_24)
-//                        false
-//                    }else{
-//                        videoView.resume()
-//                        ppButton.load(R.drawable.netflix_pause_button)
-//                        true
-//                    }
-//
-//                }
-//            }
-//        }
-
     }
-
-//    private fun sendGetRequest(url: String) : String {
-//        val client  = OkHttpClient.Builder()
-//            .connectTimeout(20, TimeUnit.SECONDS) // Set connection timeout
-//            .readTimeout(20, TimeUnit.SECONDS)    // Set read timeout
-//            .build()
-//        val request = Request.Builder().url(url).addHeader("ngrok-skip-browser-warning","20").build()
-//
-//        client.newCall(request).execute().use { response ->
-//            val responseBody = response.body()?.string()
-//            Log.i("response", responseBody?:"systemHang")
-//            return responseBody?:""
-//        }
-//    }
 
     fun getSub(subtitle: SuperstreamUtils.PrivateSubtitleData?){
         subtitle?.list?.forEach { subList->
@@ -436,6 +400,38 @@ class MoviePlayActivity : AppCompatActivity(){
                         return
                         }
                 }
+            }
+        }
+    }
+
+    suspend fun getMovie()
+    {
+        if (superId != null) {
+            isSuper = true
+            val movieLinks = superStream.loadLinks(true, superId!!)
+            movieLinks.data?.list?.forEach {
+                if(!it.path.isNullOrBlank()){
+                    println("${it.quality} : ${it.path}")
+                    if(it.quality == "720p") {
+                        val subtitle = superStream.loadSubtile(true,it.fid!!,superId!!).data
+//
+                        getSub(subtitle)
+                        videoUrl.value = it.path
+                        return@forEach
+                    }
+                }
+            }
+            if(videoUrl.value.isNullOrBlank()){
+                withContext(Dispatchers.Main){
+                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+        }
+        else{
+            withContext(Dispatchers.Main){
+                Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+                finish()
             }
         }
     }

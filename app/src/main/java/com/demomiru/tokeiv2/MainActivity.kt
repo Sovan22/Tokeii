@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 
 
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
             viewModelFactory
         }
     )
-    private var currentFragment = R.id.moviesFragment
+    private var currentFragment = MutableLiveData(R.id.moviesFragment)
     private lateinit var continueText: TextView
 //    private lateinit var continueWatchingObserver: Observer<List<ContinueWatching>>
     private var nestedScrollView : NestedScrollView? = null
@@ -116,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                     if (viewModel.allWatchHistory.value?.size !=0){
                         watchHistoryRc.visibility = View.VISIBLE
                         continueText.visibility = View.VISIBLE
-                        currentFragment = R.id.moviesFragment
+                        currentFragment.value = R.id.moviesFragment
                     }
 
                 }
@@ -124,14 +125,14 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.searchFragment, null, options)
                     watchHistoryRc.visibility = View.GONE
                     continueText.visibility = View.GONE
-                    currentFragment = R.id.searchFragment
+                    currentFragment.value = R.id.searchFragment
                 }
                 R.id.TVShowFragment -> {
                     navController.navigate(R.id.TVShowFragment, null, options)
                     if (viewModel.allWatchHistory.value?.size !=0){
                         watchHistoryRc.visibility = View.VISIBLE
                         continueText.visibility = View.VISIBLE
-                        currentFragment = R.id.TVShowFragment
+                        currentFragment.value = R.id.TVShowFragment
                     }
 
                 }
@@ -153,14 +154,23 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     override fun onResume() {
-
-        val viewStateObserver = Observer<List<ContinueWatching>> {watchFrom ->
+        currentFragment.observe(this){
+            if(it == R.id.searchFragment){
+                watchHistoryRc.visibility = View.GONE
+                continueText.visibility = View.GONE
+            }
+            else{
+                watchHistoryRc.visibility = View.VISIBLE
+                continueText.visibility = View.VISIBLE
+            }
+        }
+            val viewStateObserver = Observer<List<ContinueWatching>> {watchFrom ->
             if(watchFrom.isNotEmpty()){
                 watchHistoryRc.visibility = View.VISIBLE
                 continueText.visibility = View.VISIBLE
                 adapter.submitList(watchFrom)
                 addRecyclerAnimation(watchHistoryRc,adapter)
-                if(currentFragment == R.id.searchFragment){
+                if(currentFragment.value  == R.id.searchFragment){
                     watchHistoryRc.visibility = View.GONE
                     continueText.visibility = View.GONE
                 }else

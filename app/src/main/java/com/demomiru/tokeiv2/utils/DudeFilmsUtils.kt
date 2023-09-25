@@ -10,6 +10,7 @@ import com.demomiru.tokeiv2.Season
 import com.demomiru.tokeiv2.TvIMDB
 import com.google.gson.Gson
 import com.lagradost.nicehttp.Requests
+import okhttp3.internal.platform.Jdk9Platform.Companion.isAvailable
 import okio.GzipSource
 import okio.buffer
 import org.json.JSONArray
@@ -70,7 +71,11 @@ suspend fun getMovieLink(imdbId : String): String {
         "https://dudefilms.bio/"
     ).document.getElementsByTag("script")
 
-    if (doc2.size < 2) exitProcess(0)
+//    val notAvailable = doc.toString().contains("Video Not Found")
+//    if (notAvailable) return ""
+//    val doc2 = doc.getElementsByTag("script")
+
+    if (doc2.size < 2) return ""
 
     val script = doc2[5].toString()
     val regex = Regex("""let playerConfigs = (.*?);""")
@@ -140,7 +145,7 @@ suspend fun getTvLink(imdbId: String, s : Int, e: Int) : String{
         "https://dudefilms.bio/"
     ).document.getElementsByTag("script")
 
-    if (doc2.size < 2) exitProcess(0)
+    if (doc2.size < 2) return ""
     val script = doc2[7].toString()
     val regex =
         Regex("""HDVBPlayer\((.*?)\);""")

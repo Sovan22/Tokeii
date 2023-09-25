@@ -118,3 +118,52 @@ suspend fun getSeasonEpisodes(tmdbID: String, season: Int): Int {
 //                                finish()
 //                            }
 //                        }, 20000)
+
+//Movie Play Activity
+//    private fun sendGetRequest(url: String) : String {
+//        val client  = OkHttpClient.Builder()
+//            .connectTimeout(20, TimeUnit.SECONDS) // Set connection timeout
+//            .readTimeout(20, TimeUnit.SECONDS)    // Set read timeout
+//            .build()
+//        val request = Request.Builder().url(url).addHeader("ngrok-skip-browser-warning","20").build()
+//
+//        client.newCall(request).execute().use { response ->
+//            val responseBody = response.body()?.string()
+//            Log.i("response", responseBody?:"systemHang")
+//            return responseBody?:""
+//        }
+//    }
+
+
+
+
+
+
+//        GlobalScope.launch (Dispatchers.IO){
+//            val videoUrl= sendGetRequest("https://loon-neat-troll.ngrok-free.app/scrape?id=$id").replace("\"", "")
+//            Log.i("final",videoUrl)
+//            withContext(Dispatchers.Main){
+////
+////                val mediaController = MediaController(this@MoviePlayActivity)
+////                mediaController.setAnchorView(videoView)
+////                videoView.setMediaController(mediaController)
+//
+//                // Set the video URI and start playback
+//                val videoUri = Uri.parse(videoUrl)
+//                videoView.setVideoURI(videoUri)
+//                loading.visibility = View.GONE
+//                videoView.start()
+//                ppButton.setOnClickListener{
+//                    play = if(play){
+//                        videoView.pause()
+//                        ppButton.load(R.drawable.baseline_play_arrow_24)
+//                        false
+//                    }else{
+//                        videoView.resume()
+//                        ppButton.load(R.drawable.netflix_pause_button)
+//                        true
+//                    }
+//
+//                }
+//            }
+//        }
