@@ -88,12 +88,8 @@ import java.lang.reflect.Type
 import kotlin.math.abs
 
 
-//TODO Implement TVShowPlay
 class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeListener, GestureDetector.OnGestureListener {
 
-
-
-//
     private val superStream = SuperstreamUtils()
     private val openSubtitleAPI = BuildConfig.OPEN_SUBTITLE_API_KEY
 
@@ -111,7 +107,6 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private lateinit var id:String
     private var season: Int = 1
     private var episode: Int = 1
-//    private var origin : String = ""
     private var progress : Int = 0
     private var imgLink : String? = null
     private lateinit var title:String
@@ -138,13 +133,14 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var audioManager: AudioManager? = null
     private lateinit var seekBar:SeekBar
     private var subUrl : List<String> = listOf()
+    private var newSubUrl: MutableList<String> = mutableListOf()
     private lateinit var mediaSource: MediaSource
     private lateinit var playPause: ImageButton
     private lateinit var titleTv : TextView
     private lateinit var screenScale: LinearLayout
     private var volume : Int = 0
     private var minSwipeY: Float = 0f
-    private var fit = true
+    private var fit = 1
 
     private lateinit var powerManager: PowerManager
     private lateinit var wakeLock: PowerManager.WakeLock
@@ -196,7 +192,6 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
             episode = data.episode
         }
 
-        // This code goes in your activity's onCreate method
         window.decorView.apply {
             systemUiVisibility = (
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
@@ -446,10 +441,19 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                                     if (!it.path.isNullOrBlank()) {
                                         println("${it.quality} : ${it.path}")
                                         if (it.quality == "720p") {
+                                            val subtitle = superStream.loadSubtile(false,it.fid!!,superId!!,season,episode).data
+                                            getSub(subtitle)
                                             newVideoUrl.postValue(it.path!!)
+
                                         }
                                     }
                                 }
+//                                if(newVideoUrl.value.isNullOrBlank()){
+//                                    withContext(Dispatchers.Main){
+//                                        Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+//                                        finish()
+//                                    }
+//                                }
                             } else {
                                 withContext(Dispatchers.Main){
                                     Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
@@ -465,10 +469,10 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         subList.observe(this) {
             if (!it.isNullOrEmpty()) {
                 val subtitleConfig: MutableList<SubtitleConfig> = mutableListOf()
-                for (i in 0 until it.size) {
+                for (element in it) {
                     val subtitleMediaSource =
                         SingleSampleMediaSource.Factory(dataSourceFactory).createMediaSource(
-                            MediaItem.SubtitleConfiguration.Builder(Uri.parse(it[i]))
+                            MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
                                 .setMimeType(MimeTypes.APPLICATION_SUBRIP)
                                 .setLanguage("en")
                                 .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
@@ -574,17 +578,25 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 }
 
                 screenScale.setOnClickListener {
-                    if (fit) {
-                        playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
-                        screenResizeTv.text = "Fill"
-                        screenResizeIv.setImageResource(R.drawable.fill_screen)
-                        fit = false
-                    } else {
-//                        playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                        playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                        screenResizeTv.text = "Fit"
-                        screenResizeIv.setImageResource(R.drawable.fit_screen)
-                        fit = true
+                    when (fit) {
+                        1 -> {
+                            playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+                            screenResizeTv.text = "Fill"
+                            screenResizeIv.setImageResource(R.drawable.fill_screen)
+                            fit = 2
+                        }
+                        2 -> {
+                            playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                            screenResizeTv.text = "Fit"
+                            screenResizeIv.setImageResource(R.drawable.fit_screen)
+                            fit = 3
+                        }
+                        else -> {
+                            playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                            screenResizeTv.text = "Zoom"
+                            screenResizeIv.setImageResource(R.drawable.baseline_zoom_out_map_24)
+                            fit = 1
+                        }
                     }
                 }
 
@@ -610,25 +622,28 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 }
 
         }
+
         newVideoUrl.observe(this){newUrl ->
             if (!newUrl.isNullOrEmpty()) {
                 videoUri = Uri.parse(newUrl)
                 progress = 0
                 subUpdateProgress = 0
 
-                lifecycleScope.launch (Dispatchers.IO){
-                    val fileID : List<String> = if (type == "movie") {
-                        getSubtitles(id)
-                    } else {
-                        getSubtitles(id,season,episode)
-                    }
+                if(newSubUrl.isEmpty()) {
+                    println("empty")
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val fileID: List<String> = if (type == "movie") {
+                            getSubtitles(id)
+                        } else {
+                            getSubtitles(id, season, episode)
+                        }
 
-                    subList.postValue(getAuthToken(fileID))
-                    withContext(Dispatchers.IO){
-//                    Log.i("DownloadSubCount", subList.value!!.size.toString())
+                        subList.postValue(getAuthToken(fileID))
                     }
                 }
-
+                else{
+                    subList.postValue(newSubUrl.toList())
+                }
             }
         }
 
@@ -656,9 +671,11 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     val rem = player.duration - progress.toLong()
                     if (fromUser) {
                         player.seekTo(progress.toLong())
+                        subUpdateProgress = player.currentPosition
                         remTimeTv.text = setSeekBarTime(rem)
                     }
                     remTimeTv.text = setSeekBarTime(rem)
+                    subUpdateProgress = player.currentPosition
                 }
             }
 
@@ -679,6 +696,26 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         // Start updating the SeekBar
         handler.post(updateSeekBarRunnable)
 
+    }
+
+    private fun getSub(subtitle: SuperstreamUtils.PrivateSubtitleData?){
+        subtitle?.list?.forEach { subList->
+            if(subList.language == "English"){
+                subList.subtitles.forEach { sub->
+
+                    if (newSubUrl.size == 3) {
+                        return
+                    }
+                    if (sub.lang == "en" && !sub.file_path.isNullOrBlank()) {
+                        newSubUrl.add(sub.file_path)
+                        println("${sub.language} : ${sub.file_path}")
+                    }
+
+
+                }
+                return
+            }
+        }
     }
 
 
@@ -949,6 +986,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     }
 
 
+    @SuppressLint("WakelockTimeout")
     override fun onResume() {
         super.onResume()
             wakeLock.acquire()

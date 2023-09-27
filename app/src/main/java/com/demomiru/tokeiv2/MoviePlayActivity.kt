@@ -5,8 +5,6 @@ import android.content.Context
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.MotionEvent
 
@@ -32,7 +30,7 @@ import androidx.lifecycle.lifecycleScope
 
 import androidx.media3.common.Player.*
 import com.demomiru.tokeiv2.utils.SuperstreamUtils
-import com.demomiru.tokeiv2.utils.clickMiddle
+
 import com.demomiru.tokeiv2.utils.getMovieImdb
 import com.demomiru.tokeiv2.utils.getMovieLink
 import com.demomiru.tokeiv2.utils.getTvImdb
@@ -45,7 +43,6 @@ import com.demomiru.tokeiv2.utils.passVideoData
 import com.demomiru.tokeiv2.watching.ContinueWatching
 
 import com.demomiru.tokeiv2.watching.VideoData
-import com.lagradost.nicehttp.Requests
 import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.launch
@@ -56,14 +53,13 @@ import kotlinx.coroutines.withContext
 class MoviePlayActivity : AppCompatActivity(){
     private lateinit var webView : WebView
     private  var fullscreenContainer: FullscreenHolder? = null
-    private var urlNo = 0
     private var isSuper = false
     private var superId: Int? = null
     private var IMDBid: String? = null
     private val superStream = SuperstreamUtils()
     private lateinit var loading:ProgressBar
     private lateinit var id:String
-    private var clickedMiddle = false
+//    private var clickedMiddle = false
     private var season: Int = 1
     private var episode: Int = 1
     private var origin : String = ""
@@ -350,20 +346,13 @@ class MoviePlayActivity : AppCompatActivity(){
 
 
                 if (origin != "hi") {
-                    webView.loadUrl(url)
-//                    clickMiddle(webView,1000)
-//                    clickMiddle(webView, 5000)
-//                    clickedMiddle = true
-//                    Handler(Looper.getMainLooper()).postDelayed({
-//                        if (clickedMiddle && videoUrl.value.isNullOrBlank()) {
-//                            Toast.makeText(
-//                                this@MoviePlayActivity,
-//                                "Not Released Yet",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                            finish()
-//                        }
-//                    }, 20000)
+                    lifecycleScope.launch {
+                        val mainData = superStream.search(title)
+                        superId = mainData.data[0].id
+                        getMovieEn()
+//                        webView.loadUrl(url)
+                    }
+
                 }
                 else {
                     lifecycleScope.launch {
@@ -386,25 +375,59 @@ class MoviePlayActivity : AppCompatActivity(){
         }
     }
 
-    fun getSub(subtitle: SuperstreamUtils.PrivateSubtitleData?){
+    private fun getSub(subtitle: SuperstreamUtils.PrivateSubtitleData?){
         subtitle?.list?.forEach { subList->
             if(subList.language == "English"){
                 subList.subtitles.forEach { sub->
-                        if (sub.lang == "en" && !sub.file_path.isNullOrBlank()) {
-                            subUrl.add(sub.file_path)
-                            println(sub.file_path)
-                        }
 
                         if (subUrl.size == 3) {
-                        println(subUrl)
                         return
                         }
+                        if (sub.lang == "en" && !sub.file_path.isNullOrBlank()) {
+                            subUrl.add(sub.file_path)
+                            println("${sub.language} : ${sub.file_path}")
+                        }
+
+
                 }
+                return
             }
         }
     }
 
-    suspend fun getMovie()
+    private suspend fun getMovie()
+    {
+        if (superId != null) {
+            isSuper = true
+            val movieLinks = superStream.loadLinks(true, superId!!)
+            movieLinks.data?.list?.forEach {
+                if(!it.path.isNullOrBlank()){
+                    println("${it.quality} : ${it.path}")
+                    if(it.quality == "720p") {
+                        val subtitle = superStream.loadSubtile(true,it.fid!!,superId!!).data
+//
+                        getSub(subtitle)
+                        videoUrl.value = it.path
+                        return
+                    }
+                }
+            }
+            if(videoUrl.value.isNullOrBlank()){
+                withContext(Dispatchers.Main){
+                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+        }
+        else{
+            withContext(Dispatchers.Main){
+                Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
+    }
+
+    private suspend fun getMovieEn()
     {
         if (superId != null) {
             isSuper = true
@@ -423,15 +446,15 @@ class MoviePlayActivity : AppCompatActivity(){
             }
             if(videoUrl.value.isNullOrBlank()){
                 withContext(Dispatchers.Main){
-                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
-                    finish()
+                    webView.loadUrl(url)
+                    isSuper = false
                 }
             }
         }
         else{
             withContext(Dispatchers.Main){
-                Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
-                finish()
+                webView.loadUrl(url)
+                isSuper = false
             }
         }
     }
@@ -461,49 +484,6 @@ class MoviePlayActivity : AppCompatActivity(){
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
-
-
-//    override fun onDestroy() {
-
-//        val currentPosition = player.currentPosition
-//        val duration = player.duration
-//        val progress = (currentPosition * 100 / duration).toInt()
-//
-//        if (progress > 2) {
-//            GlobalScope.launch(Dispatchers.IO) {
-//                if (type == "movie") {
-//                    watchHistoryDao.insert(
-//                        ContinueWatching(
-//                            progress = progress,
-//                            imgLink = imgLink!!,
-//                            tmdbID = id.toInt(),
-//                            title = title,
-//                            type = type!!
-//                        )
-//                    )
-//                } else if (type == "tvshow") {
-//                    watchHistoryDao.insert(
-//                        ContinueWatching(
-//                            progress = progress,
-//                            imgLink = imgLink!!,
-//                            tmdbID = id.toInt(),
-//                            title = title,
-//                            season = season,
-//                            episode = episode,
-//                            type = type!!
-//                        )
-//                    )
-//                }
-//            }
-//        }
-//        Log.i("Progress", progress.toString())
-//        player.playWhenReady = false
-//        player.stop()
-//        player.seekTo(0)
-//
-//        super.onDestroy()
-//    }
-
 
 }
 

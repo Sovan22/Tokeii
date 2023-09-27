@@ -43,20 +43,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [TVShowDetails.newInstance] factory method to
- * create an instance of this fragment.
- */
 class TVShowDetails : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
     private val args : TVShowDetailsArgs by navArgs()
     private lateinit var id: String
 
@@ -66,29 +54,13 @@ class TVShowDetails : Fragment() {
             viewModelFactory
         }
     )
-
+    private lateinit var episodeProgress : ContinueWatching
     private val database by lazy { ContinueWatchingDatabase.getInstance(requireContext()) }
     private val watchHistoryDao by lazy { database.watchDao() }
     private lateinit var episodesRc: RecyclerView
     private lateinit var progressBar: ProgressBar
-//    private lateinit var dropdownMenu: AutoCompleteTextView
-//    private lateinit var hintTil : TextInputLayout
     private lateinit var dropDownSpinner: Spinner
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-
-//        sharedElementEnterTransition = MaterialContainerTransform().apply {
-//            drawingViewId = R.id.nav_host_fragment
-//            scrimColor = Color.TRANSPARENT
-//            duration = 750
-//        }
-
-    }
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -96,6 +68,7 @@ class TVShowDetails : Fragment() {
         val viewStateObserver = Observer<ContinueWatching?> {watchFrom ->
             val continueButton =  view.findViewById<Button>(R.id.continue_button)
             if (watchFrom != null) {
+                episodeProgress = watchFrom
                 continueButton.visibility = View.VISIBLE
                continueButton.text =
                     "Continue Watching \t S${watchFrom.season} E${watchFrom.episode}"
@@ -233,25 +206,5 @@ class TVShowDetails : Fragment() {
 
 
         return view
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment TVShowDetails.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            TVShowDetails().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
     }
 }

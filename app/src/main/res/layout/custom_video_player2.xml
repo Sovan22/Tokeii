@@ -273,7 +273,7 @@
                     android:layout_marginRight="5dp"
                     android:id="@+id/screen_resize_img"
                     android:background="@android:color/transparent"
-                    android:src="@drawable/fit_screen" />
+                    android:src="@drawable/baseline_zoom_out_map_24" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -281,7 +281,7 @@
                     android:layout_gravity="center"
                     android:background="@android:color/transparent"
                     android:id="@+id/screen_resize_text"
-                    android:text="Fit"
+                    android:text="Zoom"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
 

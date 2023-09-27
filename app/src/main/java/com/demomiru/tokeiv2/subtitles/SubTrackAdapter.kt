@@ -19,7 +19,7 @@ data class SubtitleConfig(
 class SubTrackAdapter(private val subList: List<SubtitleConfig>, private val title : String,
 private val onClick : (SubtitleConfig) -> Unit
                       ): RecyclerView.Adapter<SubTrackAdapter.ViewHolder> (){
-    private var selectedPosition = RecyclerView.NO_POSITION
+    private var selectedPosition = 0
 
     private fun setSelectedPosition(position: Int) {
         selectedPosition = position
