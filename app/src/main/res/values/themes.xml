@@ -5,6 +5,9 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
 
     </style>
+    <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:navigationBarColor">@color/navBar</item>
+    </style>
 
     <style name="Theme.TokeiV2" parent="Base.Theme.TokeiV2" />
 

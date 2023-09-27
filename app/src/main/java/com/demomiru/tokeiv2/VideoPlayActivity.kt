@@ -179,6 +179,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
         Log.i("Video Url", data.videoUrl)
 
+
         videoUri = Uri.parse(data.videoUrl)
         progress = data.progress
         title = data.title
