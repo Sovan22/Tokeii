@@ -14,7 +14,7 @@ class ContinueWatchingRepository(private val continueWatchingDao : ContinueWatch
 
     @WorkerThread
     fun deleteRecord(query: ContinueWatching){
-        continueWatchingDao.deleteRecord(query.tmdbID)
+        continueWatchingDao.deleteRecord(query.tmdbID!!)
     }
 
     @WorkerThread

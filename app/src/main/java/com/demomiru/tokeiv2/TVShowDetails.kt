@@ -19,16 +19,22 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.demomiru.tokeiv2.anime.AnimeEpisodeAdapter
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory
+import com.demomiru.tokeiv2.utils.GogoAnime
+import com.demomiru.tokeiv2.utils.dateToUnixTime
 import com.demomiru.tokeiv2.utils.dropDownMenu
 import com.demomiru.tokeiv2.utils.passData
 import com.demomiru.tokeiv2.utils.retrofitBuilder
@@ -43,11 +49,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-
 class TVShowDetails : Fragment() {
     private val args : TVShowDetailsArgs by navArgs()
     private lateinit var id: String
-
+    private lateinit var title: String
+    private var isAnime: Boolean = false
+    private var animeDetails = MutableLiveData<GogoAnime.AnimeDetails>(null)
     private lateinit var viewModelFactory: ContinueWatchingViewModelFactory
     private val viewModel: ContinueWatchingViewModel by viewModels(
         factoryProducer = {
@@ -89,18 +96,41 @@ class TVShowDetails : Fragment() {
     ): View? {
 //        postponeEnterTransition()
         // Inflate the layout for this fragment
-       val view =  inflater.inflate(R.layout.fragment_tv_show_details, container, false)
+        val view = inflater.inflate(R.layout.fragment_tv_show_details, container, false)
+//        val animeDetails = arguments?.getSerializable("anime-details") as? GogoAnime.AnimeDetails
+//        if (animeDetails!= null) isAnime = true
 
-        id = args.tmdbID
-        viewModelFactory = ContinueWatchingViewModelFactory(watchHistoryDao,id.toInt())
-        val title = args.title
+        val animeUrl: String = args.animeUrl
+        println(animeUrl)
+        isAnime = animeUrl.length > 5
 
-        val expandView = view.findViewById<ConstraintLayout>(R.id.expand_tvshow_view)
-        val titleTv = view.findViewById<TextView>(R.id.title_show)
-
-        val position = args.position
+        if (!isAnime) {
+            id = args.tmdbID
+            viewModelFactory = ContinueWatchingViewModelFactory(watchHistoryDao, id.toInt())
+            title = args.title
+            val position = args.position
+        }
+        else
+        {
+            id=args.tmdbID
+            viewModelFactory = ContinueWatchingViewModelFactory(watchHistoryDao, id.toInt())
+            title = args.title
+            val gogoSrc = GogoAnime()
+            lifecycleScope.launch {
+                val details  = gogoSrc.load(animeUrl)
+                withContext(Dispatchers.Main){
+                    animeDetails.value = details
+                    if (animeDetails!=null){
+                        title = details.title!!
+                    }
+                    else{
+                        Toast.makeText(requireContext(),"Error Loading", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
 //        val continueButton  = view.findViewById<Button>(R.id.continue_button)
-        expandView.transitionName = "image_$position"
+
 
 
 //        hintTil = view.findViewById(R.id.dropdown_menu)
@@ -108,28 +138,18 @@ class TVShowDetails : Fragment() {
         episodesRc = view.findViewById(R.id.episode_display_rc)
         episodesRc.layoutManager = LinearLayoutManager(requireContext())
 
-        val backdropImg : ImageView = view.findViewById(R.id.show_backdrop)
-        val posterImg : ImageView = view.findViewById(R.id.show_poster)
-        val overview : TextView = view.findViewById(R.id.overview)
+
+        val expandView = view.findViewById<ConstraintLayout>(R.id.expand_tvshow_view)
+        val titleTv = view.findViewById<TextView>(R.id.title_show)
+        val backdropImg: ImageView = view.findViewById(R.id.show_backdrop)
+        val posterImg: ImageView = view.findViewById(R.id.show_poster)
+        val overview: TextView = view.findViewById(R.id.overview)
         val retrofit = retrofitBuilder()
+        dropDownSpinner = view.findViewById(R.id.dropdown_spinner)
+//        expandView.transitionName = "image_$position"
 
 
-//    lifecycleScope.launch (Dispatchers.IO) {
-//        val watchFrom = watchHistoryDao.getProgress(id.toInt())
-//        withContext(Dispatchers.Main) {
-//            if (watchFrom != null) {
-//                continueButton.visibility = View.VISIBLE
-//                continueButton.text =
-//                    "Continue Watching \t S${watchFrom.season} E${watchFrom.episode}"
-//            }
-//
-//            continueButton.setOnClickListener {
-//                startActivity(passData(watchFrom!!, requireContext()))
-//            }
-//        }
-//    }
-
-
+        if (!isAnime){
         val tvService = retrofit.create(TMDBService::class.java)
         GlobalScope.launch(Dispatchers.Main) {
             val tvDetailsResponse = tvService.getTVShowDetails(
@@ -138,8 +158,7 @@ class TVShowDetails : Fragment() {
                 "en-US"
             )
 
-
-            if(tvDetailsResponse.isSuccessful){
+            if (tvDetailsResponse.isSuccessful) {
                 val tvShows = tvDetailsResponse.body()
 
                 posterImg.load("https://image.tmdb.org/t/p/w500${tvShows?.poster_path}")
@@ -149,50 +168,82 @@ class TVShowDetails : Fragment() {
 
 
                 val seasons = dropDownMenu(tvShows!!.number_of_seasons.toInt()) // Fetch the data
-                val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, seasons) // Create an ArrayAdapter
+                val arrayAdapter = ArrayAdapter(
+                    requireContext(),
+                    android.R.layout.simple_dropdown_item_1line,
+                    seasons
+                ) // Create an ArrayAdapter
 //                dropdownMenu = view.findViewById(R.id.autoCompleteTextView)
 //                dropdownMenu.setAdapter(arrayAdapter) // Set the adapter
-                dropDownSpinner = view.findViewById(R.id.dropdown_spinner)
+
                 dropDownSpinner.adapter = arrayAdapter
 
 
                 var seasonNumber: String
-                dropDownSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-                    override fun onItemSelected(parent: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
-                        val selectedItem = parent?.getItemAtPosition(position) as String
-                        seasonNumber = selectedItem.substringAfter(" ")
-                        Log.i("Season Number", seasonNumber)
+                dropDownSpinner.onItemSelectedListener =
+                    object : AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(
+                            parent: AdapterView<*>?,
+                            p1: View?,
+                            position: Int,
+                            p3: Long
+                        ) {
+                            val selectedItem = parent?.getItemAtPosition(position) as String
+                            seasonNumber = selectedItem.substringAfter(" ")
+                            Log.i("Season Number", seasonNumber)
 
-                        GlobalScope.launch(Dispatchers.Main) {
-                            val episodeResponse = tvService.getEpisodeDetails(
-                                id, seasonNumber,
-                                BuildConfig.TMDB_API_KEY,
-                                "en-US"
-                            )
+                            GlobalScope.launch(Dispatchers.Main) {
+                                val episodeResponse = tvService.getEpisodeDetails(
+                                    id, seasonNumber,
+                                    BuildConfig.TMDB_API_KEY,
+                                    "en-US"
+                                )
 
-                            if (episodeResponse.isSuccessful) {
-                                val episodes = episodeResponse.body()?.episodes ?: emptyList()
-                                val adapter = EpisodeAdapter2(episodes) {
-                                    startActivity(passData(it,requireContext(),title,tvShows.poster_path,id))
+                                if (episodeResponse.isSuccessful) {
+                                    var episodes = episodeResponse.body()?.episodes ?: emptyList()
+
+                                    if(episodes.isNotEmpty()){
+                                        val condition: (Episode) -> Boolean = { episode ->
+                                            dateToUnixTime(episode.air_date) > System.currentTimeMillis()
+                                        }
+                                        val repisodes =  episodes.toMutableList()
+                                        repisodes.removeIf(condition)
+                                        episodes = repisodes
+                                    }
+
+                                    val adapter = EpisodeAdapter2(episodes) {
+                                        startActivity(
+                                            passData(
+                                                it,
+                                                requireContext(),
+                                                title,
+                                                tvShows.poster_path,
+                                                id
+                                            )
+                                        )
+
+                                    }
+                                    episodesRc.adapter = adapter
+                                    val context = episodesRc.context
+                                    val controller = AnimationUtils.loadLayoutAnimation(
+                                        context,
+                                        R.anim.layout_animation
+                                    )
+                                    episodesRc.layoutAnimation = controller
+                                    adapter.notifyDataSetChanged()
+                                    episodesRc.scheduleLayoutAnimation()
+                                    view.findViewById<TextView>(R.id.episodes_text).visibility =
+                                        View.VISIBLE
 
                                 }
-                                episodesRc.adapter = adapter
-                                val context = episodesRc.context
-                                val controller = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
-                                episodesRc.layoutAnimation = controller
-                                adapter.notifyDataSetChanged()
-                                episodesRc.scheduleLayoutAnimation()
-                                view.findViewById<TextView>(R.id.episodes_text).visibility = View.VISIBLE
-
                             }
                         }
+
+                        override fun onNothingSelected(p0: AdapterView<*>?) {
+
+                        }
+
                     }
-
-                    override fun onNothingSelected(p0: AdapterView<*>?) {
-
-                    }
-
-                }
 
                 withContext(Dispatchers.Main) {
 
@@ -202,9 +253,45 @@ class TVShowDetails : Fragment() {
 
             }
         }
+    }else
+        {
+        dropDownSpinner.visibility = View.GONE
+        animeDetails.observe(viewLifecycleOwner) {animeDetails->
+            if(animeDetails!=null){
 
+                view.findViewById<LinearLayout>(R.id.progress_layout).visibility = View.GONE
+                posterImg.load(animeDetails.poster)
+                backdropImg.load(animeDetails.poster)
+                overview.text = animeDetails.description
+                titleTv.text = animeDetails.title
 
-
+                val episodes = animeDetails.episodes
+                val adapter = AnimeEpisodeAdapter() { _, epPos->
+                    startActivity(
+                        passData(
+                            animeDetails,
+                            requireContext(),
+                            "0",
+                            epPos,
+                            animeDetails.title?:""
+                        )
+                    )
+                }
+                episodesRc.adapter = adapter
+                adapter.submitList(episodes)
+                val context = episodesRc.context
+                val controller = AnimationUtils.loadLayoutAnimation(
+                    context,
+                    R.anim.layout_animation
+                )
+                episodesRc.layoutAnimation = controller
+                adapter.notifyDataSetChanged()
+                episodesRc.scheduleLayoutAnimation()
+                view.findViewById<TextView>(R.id.episodes_text).visibility =
+                    View.VISIBLE
+                }
+            }
+        }
         return view
     }
 }

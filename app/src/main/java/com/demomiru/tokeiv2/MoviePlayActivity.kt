@@ -2,6 +2,7 @@ package com.demomiru.tokeiv2
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -29,6 +30,10 @@ import androidx.lifecycle.lifecycleScope
 
 
 import androidx.media3.common.Player.*
+import com.demomiru.tokeiv2.utils.GoMovies
+import com.demomiru.tokeiv2.utils.GogoAnime
+import com.demomiru.tokeiv2.utils.HdMovie2
+import com.demomiru.tokeiv2.utils.SmashyStream
 import com.demomiru.tokeiv2.utils.SuperstreamUtils
 
 import com.demomiru.tokeiv2.utils.getMovieImdb
@@ -53,6 +58,7 @@ import kotlinx.coroutines.withContext
 class MoviePlayActivity : AppCompatActivity(){
     private lateinit var webView : WebView
     private  var fullscreenContainer: FullscreenHolder? = null
+    private var animeEp : List<GogoAnime.Episode> = listOf()
     private var isSuper = false
     private var superId: Int? = null
     private var IMDBid: String? = null
@@ -60,6 +66,7 @@ class MoviePlayActivity : AppCompatActivity(){
     private lateinit var loading:ProgressBar
     private lateinit var id:String
 //    private var clickedMiddle = false
+    private var animeUrl = ""
     private var season: Int = 1
     private var episode: Int = 1
     private var origin : String = ""
@@ -88,7 +95,10 @@ class MoviePlayActivity : AppCompatActivity(){
         when (type) {
         "movie" -> {
             val data = bundle?.getSerializable("Data") as? Movie
+
             origin = data!!.original_language
+            if(origin == "kn" || origin == "ml" || origin == "ta" || origin == "te")
+                origin = "hi"
             id = data.id
             title = data.title
             imgLink = data.poster_path
@@ -104,16 +114,30 @@ class MoviePlayActivity : AppCompatActivity(){
             episode = data.episode_number.toInt()
 
         }
+        "anime" ->{
+            val data =  bundle?.getParcelable("Data") as? GogoAnime.AnimeDetails
+            id = bundle?.getString("id")!!
+            title = data?.title!!
+            imgLink = data.poster
+            season = 1
+            episode = bundle.getInt("ep")
+            animeEp = data.episodes!!
+            animeUrl = data.episodes[episode].url
+        }
         else -> {
-            val data = bundle?.getSerializable("Data") as? ContinueWatching
+            val data = bundle?.getParcelable("Data") as? ContinueWatching
             id = data!!.tmdbID.toString()
             title = data.title
             imgLink = data.imgLink
             seekProgress = data.progress
             type = data.type
-            if (type == "tvshow"){
+            if (type != "movie"){
                 season = data.season
                 episode = data.episode
+                if(type == "anime"){
+                    animeEp = data.animeEp!!
+                    animeUrl = data.animeEp[episode].url
+                }
             }
         }
     }
@@ -191,10 +215,12 @@ class MoviePlayActivity : AppCompatActivity(){
                     type!!,
                     hlsUri,
                     superId,
-                   subUrl
+                   subUrl,
+                   animeEp
                    ),this)
                 intent.putExtra("origin", origin)
                 intent.putExtra("superstream",isSuper)
+                intent.putExtra("animeUrl",animeUrl)
                 startActivity(intent)
                 finish()
             }
@@ -327,22 +353,24 @@ class MoviePlayActivity : AppCompatActivity(){
                                 }
                             }
                             if(videoUrl.value.isNullOrBlank()){
-                                withContext(Dispatchers.Main){
-                                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
-                                    finish()
-                                }
+//                                withContext(Dispatchers.Main){
+//                                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+//                                    finish()
+//                                }
+                                isSuper = false
+                                getGoMovieLink(false)
+//                                getSmashLink(false)
                             }
                         }
                         else{
-                            withContext(Dispatchers.Main){
-                                Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
-                                finish()
-                            }
+                            isSuper = false
+                            getGoMovieLink(false)
+//                            getSmashLink(false)
                         }
 
                     }
                 }
-            }else {
+            }else if(type == "movie"){
 
 
                 if (origin != "hi") {
@@ -362,9 +390,12 @@ class MoviePlayActivity : AppCompatActivity(){
 //                        videoUrl.value = getMovieLink(imdbId)
                         val link = getMovieLink(imdbId)
                         if (link.isBlank()) {
-                            val mainData = superStream.search(title)
-                            superId = mainData.data[0].id
-                            getMovie()
+
+                            //add smash link
+                            getSmashLink(true)
+//                            val mainData = superStream.search(title)
+//                            superId = mainData.data[0].id
+//                            getMovie()
 
                         }
                         else
@@ -372,6 +403,27 @@ class MoviePlayActivity : AppCompatActivity(){
                     }
                 }
             }
+            else{
+                lifecycleScope.launch {
+                    val gogoSrc = GogoAnime()
+                    videoUrl.value = gogoSrc.extractVideos(animeUrl)
+                }
+            }
+        }
+    }
+
+    private suspend fun getGoMovieLink(isMovie: Boolean){
+        val goMovie = GoMovies()
+        val data = goMovie.search(season,episode,title)
+        val vidLink = data.first
+        val subLinks = data.second
+        if(vidLink.isNullOrBlank()){
+            Toast.makeText(this@MoviePlayActivity, "Not Available", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+        else{
+            if (!subLinks.isNullOrEmpty())subUrl.addAll(subLinks)
+            videoUrl.value = vidLink
         }
     }
 
@@ -446,15 +498,45 @@ class MoviePlayActivity : AppCompatActivity(){
             }
             if(videoUrl.value.isNullOrBlank()){
                 withContext(Dispatchers.Main){
-                    webView.loadUrl(url)
+//                    webView.loadUrl(url)
+                    getSmashLink(true)
                     isSuper = false
                 }
             }
         }
         else{
             withContext(Dispatchers.Main){
-                webView.loadUrl(url)
+//                webView.loadUrl(url)
+                getSmashLink(true)
                 isSuper = false
+            }
+        }
+    }
+
+    private fun getSmashLink(isMovie:Boolean)
+    {
+        val smashSrc = SmashyStream()
+        lifecycleScope.launch {
+            val links = smashSrc.getLink(isMovie,id, season, episode)
+            val vidLink = links.first
+            val subLink = links.second
+            if(vidLink.isNullOrBlank()){
+                if (isMovie){
+                    val mainData = superStream.search(title)
+                    superId = mainData.data[0].id
+                    getMovie()
+                }
+                else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MoviePlayActivity, "Not Available", Toast.LENGTH_SHORT)
+                            .show()
+                        finish()
+                    }
+                }
+            }
+            else{
+                if (!subLink.isNullOrBlank())subUrl.add(subLink)
+                videoUrl.value = vidLink
             }
         }
     }

@@ -87,6 +87,10 @@
             android:name="title"
             app:argType="string"
             android:defaultValue='""' />
+        <argument
+            android:name="animeUrl"
+            app:argType="string"
+            android:defaultValue='""' />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
@@ -107,5 +111,34 @@
             app:exitAnim="@anim/nav_exit_anim"
             app:popEnterAnim="@anim/nav_pop_enter"
             app:popExitAnim="@anim/nav_pop_exit" />
+        <action
+            android:id="@+id/action_searchFragment_to_animeDetailsFragment"
+            app:destination="@id/animeDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/animeFragment"
+        android:name="com.demomiru.tokeiv2.anime.AnimeFragment"
+        android:label="fragment_anime"
+        tools:layout="@layout/fragment_anime" >
+        <action
+            android:id="@+id/action_animeFragment_to_TVShowDetails"
+            app:destination="@id/TVShowDetails" />
+        <action
+            android:id="@+id/action_animeFragment_to_animeDetailsFragment"
+            app:destination="@id/animeDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/animeDetailsFragment"
+        android:name="com.demomiru.tokeiv2.anime.AnimeDetailsFragment"
+        android:label="AnimeDetailsFragment" >
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="url"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_animeDetailsFragment_self"
+            app:destination="@id/animeDetailsFragment" />
     </fragment>
 </navigation>

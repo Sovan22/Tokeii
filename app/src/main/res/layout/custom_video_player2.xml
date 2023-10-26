@@ -34,12 +34,15 @@
             android:text="Movie Name"
             android:textColor="@color/white" />
 
-        <ImageButton
-            android:id="@+id/videoView_more"
+        <TextView
+            android:id="@+id/videoView_quality"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_weight="0"
-            android:background="@android:color/transparent"
+            android:text="1080p"
+            android:gravity="center"
+            android:textColor="@color/white"
+
              />
 
     </LinearLayout>
@@ -316,6 +319,41 @@
                     android:background="@android:color/transparent"
                     android:id="@+id/next_ep_text"
                     android:text="Next"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/videoView_skip_op"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                >
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="5dp"
+                    android:id="@+id/skip_op_img"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/baseline_double_arrow_24" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:layout_gravity="center"
+                    android:background="@android:color/transparent"
+                    android:id="@+id/skip_op_text"
+                    android:text="Skip OP"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
 

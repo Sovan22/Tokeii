@@ -48,6 +48,22 @@
             android:textStyle="bold"
             />
 
+        <RadioButton
+            android:id="@+id/anime_search"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:layout_weight="0.5"
+            android:background="@drawable/tab_selector"
+            android:button="@null"
+            android:checked="false"
+            android:fontFamily="@font/exo_2"
+            android:text="@string/anime"
+            android:gravity="center"
+            android:textColor="@drawable/tab_text_color_selector"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            />
+
     </RadioGroup>
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"

@@ -34,6 +34,8 @@ android {
         buildConfigField("String", "TMDB_TOKEN", "\"${localProperties["TMDB_TOKEN"]}\"")
         buildConfigField("String", "SUPERSTREAM_API1", "\"${localProperties["SUPERSTREAM_API1"]}\"")
         buildConfigField("String", "SUPERSTREAM_API2", "\"${localProperties["SUPERSTREAM_API2"]}\"")
+        buildConfigField("String", "PROXY_URL", "\"${localProperties["PROXY_URL"]}\"")
+        buildConfigField("String", "MAL_API", "\"${localProperties["MAL_API"]}\"")
     }
 
     buildTypes {
@@ -79,7 +81,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'io.coil-kt:coil:1.4.0'
+    implementation("io.coil-kt:coil:2.4.0")
     // Room components
     implementation "androidx.room:room-runtime:2.5.0"
 //    annotationProcessor "androidx.room:room-compiler:2.5.2"

@@ -57,7 +57,7 @@
         android:visibility="gone"
         tools:visibility="visible"
         android:fontFamily="@font/exo_2"
-        android:text="@string/season_episode"
+        android:text="Dub"
         android:textColor="@color/white"
         android:layout_gravity="end"
         android:layout_margin="5dp"

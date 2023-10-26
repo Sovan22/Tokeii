@@ -12,6 +12,11 @@
         android:icon="@drawable/baseline_search_24"
         />
 
+    <item android:id="@+id/animeFragment"
+        android:title=""
+        android:icon="@drawable/anime_bottom_nav"
+        />
+
     <item android:id="@+id/TVShowFragment"
         android:title=""
         android:icon="@drawable/icon_tvshow"

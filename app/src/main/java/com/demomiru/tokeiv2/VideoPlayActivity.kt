@@ -43,6 +43,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
@@ -62,7 +63,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.subtitles.SubTrackAdapter
 import com.demomiru.tokeiv2.subtitles.Subtitle
 import com.demomiru.tokeiv2.subtitles.SubtitleConfig
+import com.demomiru.tokeiv2.utils.GoMovies
+import com.demomiru.tokeiv2.utils.GogoAnime
+import com.demomiru.tokeiv2.utils.SmashyStream
 import com.demomiru.tokeiv2.utils.SuperstreamUtils
+import com.demomiru.tokeiv2.utils.encodeStringToInt
 
 import com.demomiru.tokeiv2.utils.getHiTvSeasons
 import com.demomiru.tokeiv2.utils.getSeasonEpisodes
@@ -92,18 +97,17 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
     private val superStream = SuperstreamUtils()
     private val openSubtitleAPI = BuildConfig.OPEN_SUBTITLE_API_KEY
-
     private var subUpdateProgress = 0L
     private var isShowFinished = false
+    private var animeEpList : List<GogoAnime.Episode>? = null
     private lateinit var subSelectBg : ConstraintLayout
     private lateinit var videoLoading: FrameLayout
     private lateinit var showSubs: SwitchMaterial
-    private var totalSeasons = 0
+    private var totalSeasons = 1
     private var totalEpisode = 0
     private var superId: Int? = null
     private var isNextEpisode = MutableLiveData(false)
     private var isControllerVisible = true
-
     private lateinit var id:String
     private var season: Int = 1
     private var episode: Int = 1
@@ -126,6 +130,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var maxVolume: Int = 0
     private var brightness: Int = 0
     private lateinit var brightnessLL: LinearLayout
+    private var animeUrl = ""
     private lateinit var brightnessSeek : SeekBar
     private lateinit var volumeLL: LinearLayout
     private lateinit var mainPlayer:FrameLayout
@@ -173,8 +178,13 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         val bundle = intent.extras
         val origin = intent.getStringExtra("origin")
         val isSuper = intent.getBooleanExtra("superstream",false)
-        val data = bundle?.getSerializable("VidData") as? VideoData
+        val data = bundle?.getParcelable("VidData") as? VideoData
         type = data!!.type
+        if(type == "anime") {
+            animeEpList = data.animeEpisode
+            totalEpisode = animeEpList!!.size
+        }
+
         id = data.tmdbID.toString()
 
         Log.i("Video Url", data.videoUrl)
@@ -187,8 +197,10 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         superId = data.superId
         subUrl = data.superSub
         imdbId = data.imdbId
-        println(superId)
-        if (type == "tvshow"){
+
+        println("SuperID: $superId")
+
+        if (type != "movie"){
             season = data.season
             episode = data.episode
         }
@@ -202,9 +214,6 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     )
         }
         gestureDetectorCompat = GestureDetectorCompat(this,this)
-
-
-
 
         var play = true
 
@@ -238,6 +247,9 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         val seekForward: ImageButton = findViewById(R.id.videoView_forward)
         val seekBack : ImageButton = findViewById(R.id.videoView_rewind)
         val subTracks : LinearLayout = findViewById(R.id.videoView_track)
+        if(type == "anime") subTracks.visibility = View.GONE
+        val skipOp : LinearLayout = findViewById(R.id.videoView_skip_op)
+        if(type == "anime") skipOp.visibility = View.VISIBLE
         val subSelectionView: RecyclerView = findViewById(R.id.sub_tracks_rc)
         subSelectBg = findViewById(R.id.subtitle_select)
         val applySub : Button = findViewById(R.id.apply_sub)
@@ -248,6 +260,8 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         screenScale = findViewById(R.id.videoView_screen_size)
         lockLL  = findViewById(R.id.videoView_lock_screen)
         unlockIv = findViewById(R.id.unlock_controls)
+
+
 
 
 
@@ -269,7 +283,14 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         val subtitleView = findViewById<SubtitleView>(R.id.custom_subtitles)
         val playerView = findViewById<PlayerView>(R.id.video_view)
 
+        if(type!="anime")
         playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+        else {
+            playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+            fit = 3
+            screenResizeTv.text = "Fit"
+            screenResizeIv.setImageResource(R.drawable.fit_screen)
+        }
         playerView.subtitleView?.visibility = View.GONE
 
         subtitleView.setFractionalTextSize(0.05f)
@@ -282,7 +303,12 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         }
 
 
-       PlayerView.ControllerVisibilityListener { visibility -> isControllerVisible = visibility == View.VISIBLE }
+       val a = PlayerView.ControllerVisibilityListener { visibility ->
+           if(visibility == View.VISIBLE) subtitleView.visibility = View.GONE
+           else subtitleView.visibility = View.VISIBLE
+       }
+        playerView.setControllerVisibilityListener(a)
+
 
         val gestureDetectorDouble = GestureDetectorCompat(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
@@ -321,11 +347,23 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
             .setReadTimeoutMs(50000)
             .setTransferListener(DefaultBandwidthMeter.Builder(this).build())
 
+
         playPause = findViewById(R.id.videoView_play_pause_btn)
         seekBar = findViewById(R.id.videoView_seekbar)
         titleTv = findViewById(R.id.videoView_title)
 
+        val videoQuality = findViewById<TextView>(R.id.videoView_quality)
+        videoQuality.text = ""
+
         val listener = object : Player.Listener {
+
+            override fun onVideoSizeChanged(videoSize: VideoSize) {
+               if(videoSize.width !=0 && videoSize.height!=0 ){
+                   videoQuality.text = "${videoSize.height}p"
+               }
+                super.onVideoSizeChanged(videoSize)
+            }
+
             @SuppressLint("UnsafeOptInUsageError")
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 if (player.duration != C.TIME_UNSET) {
@@ -416,6 +454,10 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
         isNextEpisode.observe(this){isNext ->
             if(isNext) {
+                if(type == "anime"){
+                    getNextAnimeEp()
+                    return@observe
+                }
                 if (origin == "hi") {
                     episodeNext()
                     if (!isShowFinished)
@@ -434,35 +476,48 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 }
                 else{
                     episodeNext()
-                    if (!isShowFinished)
+                    if (!isShowFinished) {
                         lifecycleScope.launch(Dispatchers.IO) {
-                            if (superId != null) {
-                                val tvLinks = superStream.loadLinks(false, superId!!, season, episode)
+                            if (superId != null && isSuper) {
+                                val tvLinks =
+                                    superStream.loadLinks(false, superId!!, season, episode)
                                 tvLinks.data?.list?.forEach {
                                     if (!it.path.isNullOrBlank()) {
                                         println("${it.quality} : ${it.path}")
                                         if (it.quality == "720p") {
-                                            val subtitle = superStream.loadSubtile(false,it.fid!!,superId!!,season,episode).data
+                                            val subtitle = superStream.loadSubtile(
+                                                false,
+                                                it.fid!!,
+                                                superId!!,
+                                                season,
+                                                episode
+                                            ).data
                                             getSub(subtitle)
                                             newVideoUrl.postValue(it.path!!)
 
                                         }
                                     }
                                 }
-//                                if(newVideoUrl.value.isNullOrBlank()){
+                                if (newVideoUrl.value.isNullOrBlank()) {
 //                                    withContext(Dispatchers.Main){
 //                                        Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                        finish()
 //                                    }
-//                                }
-                            } else {
-                                withContext(Dispatchers.Main){
-                                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
-                                    finish()
+                                        getGoMovieLink()
+//                                    getSmashLink()
                                 }
+                            } else {
+//                                withContext(Dispatchers.Main){
+//                                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+//                                    finish()
+//                                }
+                                getGoMovieLink()
+//                                getSmashLink()
                             }
                         }
+                    }
                 }
+                isNextEpisode.value = false
             }
         }
 
@@ -471,7 +526,18 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
             if (!it.isNullOrEmpty()) {
                 val subtitleConfig: MutableList<SubtitleConfig> = mutableListOf()
                 for (element in it) {
-                    val subtitleMediaSource =
+                    println(element)
+                    val subtitleMediaSource = if(element.contains("vtt")) {
+                        SingleSampleMediaSource.Factory(dataSourceFactory).createMediaSource(
+                            MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
+                                .setMimeType(MimeTypes.TEXT_VTT)
+                                .setLanguage("en")
+                                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                                .build(),
+                            C.TIME_UNSET
+                        )
+                    }
+                        else{
                         SingleSampleMediaSource.Factory(dataSourceFactory).createMediaSource(
                             MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
                                 .setMimeType(MimeTypes.APPLICATION_SUBRIP)
@@ -480,13 +546,14 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                                 .build(),
                             C.TIME_UNSET
                         )
+
+                    }
                     subtitleConfig.add(SubtitleConfig(subtitleMediaSource))
                 }
 
                 val videoMediaSource = if(isSuper) {
                     ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(videoUri))
                 } else {
-
                     HlsMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(MediaItem.fromUri(videoUri))
                 }
@@ -507,9 +574,8 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 mediaSource =  if(isSuper) {
                     ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(videoUri))
                 } else {
-
-                    HlsMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(MediaItem.fromUri(videoUri))
+                        HlsMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(MediaItem.fromUri(videoUri))
                 }
             }
 
@@ -518,7 +584,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     titleTv.text = title
                 else {
                     videoNext.visibility = View.VISIBLE
-                    titleTv.text = "$title S$season E$episode"
+                    titleTv.text = if(type == "tvshow") "$title S$season E$episode" else  "$title E${episode+1}"
                 }
 
                 mainPlayer.visibility = View.VISIBLE
@@ -527,6 +593,8 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
                 player.prepare()
                 player.playWhenReady = true
+
+                println("${player.videoSize.width} x ${player.videoSize.height}")
 
                 playerPlay()
 
@@ -622,6 +690,12 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     isNextEpisode.value = true
                 }
 
+                skipOp.setOnClickListener {
+                    val progress = (player.currentPosition + 90000)
+                    player.seekTo(progress)
+                    seekBar.progress = progress.toInt()
+                }
+
         }
 
         newVideoUrl.observe(this){newUrl ->
@@ -630,7 +704,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 progress = 0
                 subUpdateProgress = 0
 
-                if(newSubUrl.isEmpty()) {
+                if(newSubUrl.isEmpty() && type!="anime" ) {
                     println("empty")
                     lifecycleScope.launch(Dispatchers.IO) {
                         val fileID: List<String> = if (type == "movie") {
@@ -699,7 +773,49 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
     }
 
+    private suspend fun getGoMovieLink(){
+        val goMovie = GoMovies()
+        newSubUrl.clear()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val data = goMovie.search(season, episode, title)
+            val vidLink = data.first
+            val subLinks = data.second
+            if(vidLink.isNullOrBlank()){
+                withContext(Dispatchers.Main){
+                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+            else{
+                if (!subLinks.isNullOrEmpty())newSubUrl.addAll(subLinks)
+                newVideoUrl.postValue(vidLink!!)
+            }
+        }
+    }
+
+    private fun getSmashLink()
+    {
+        newSubUrl.clear()
+        val smashSrc = SmashyStream()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val links = smashSrc.getLink(false,id, season, episode)
+            val vidLink = links.first
+            val subLink = links.second
+            if(vidLink.isNullOrBlank()){
+                withContext(Dispatchers.Main){
+                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+            else{
+                if (!subLink.isNullOrBlank())newSubUrl.add(subLink)
+                newVideoUrl.postValue(vidLink!!)
+            }
+        }
+    }
+
     private fun getSub(subtitle: SuperstreamUtils.PrivateSubtitleData?){
+        newSubUrl.clear()
         subtitle?.list?.forEach { subList->
             if(subList.language == "English"){
                 subList.subtitles.forEach { sub->
@@ -720,6 +836,25 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     }
 
 
+    private fun getNextAnimeEp()
+    {
+        val gogoSrc = GogoAnime()
+        episode+=1
+        if (episode == totalEpisode) {
+            Toast.makeText(this, "No further episodes", Toast.LENGTH_SHORT).show()
+            isShowFinished = true
+            episode = totalEpisode-1
+            return
+        }
+        animeUrl = animeEpList?.get(episode)?.url ?: ""
+        mainPlayer.visibility = View.GONE
+        playerPause()
+        videoLoading.visibility = View.VISIBLE
+
+        lifecycleScope.launch {
+            newVideoUrl.postValue(gogoSrc.extractVideos(animeUrl))
+        }
+    }
 
 
     private fun getAuthToken(fileId: List<String>): List<String>{
@@ -830,10 +965,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
             if (response.isSuccessful){
                 val gson = Gson()
                 val responseBody = response.body
-                val subtitle: Subtitle =
-                    gson.fromJson(responseBody.string(), Subtitle::class.java)
-
-
+                val subtitle: Subtitle = gson.fromJson(responseBody.string(), Subtitle::class.java)
                 responseBody.close()
                 val fileIDs = mutableListOf<String>()
                 val count = if(subtitle.data.size> 3) 3
@@ -878,7 +1010,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
         GlobalScope.launch(Dispatchers.IO) {
                 if (type == "movie") {
-                    if (progress > 2){
+                    if (progress in 3..96){
                         watchHistoryDao.insert(
                             ContinueWatching(
                                 progress = progress,
@@ -902,6 +1034,21 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                         )
                     )
                 }
+                else {
+                    watchHistoryDao.insert(
+                        ContinueWatching(
+                            progress = progress,
+                            imgLink = imgLink!!,
+                            tmdbID = encodeStringToInt(title),
+                            title = title,
+                            season = season,
+                            episode = episode,
+                            type = type!!,
+                            animeEp = animeEpList
+                        )
+                    )
+                }
+
             }
 
         Log.i("Progress", progress.toString())

@@ -51,13 +51,16 @@ class ContinueWatchingAdapter(private val onClick: (ContinueWatching,Boolean)->U
         val item = getItem(position)
 
         holder.titleTextView.text = item.title
-        holder.imageView.load("https://image.tmdb.org/t/p/w500${item.imgLink}")
+        if (item.type != "anime")
+            holder.imageView.load("https://image.tmdb.org/t/p/w500${item.imgLink}")
+        else
+            holder.imageView.load(item.imgLink)
         holder.progressBar.progress = item.progress
         holder.progressBar.visibility = View.VISIBLE
         holder.tvShowDetail.visibility = View.GONE
-        if(item.type == "tvshow"){
+        if(item.type != "movie"){
 
-            holder.tvShowDetail.text = "S${item.season} E${item.episode}"
+            holder.tvShowDetail.text = if(item.type == "tvshow") "S${item.season} E${item.episode}" else "E${item.episode+1}"
             holder.tvShowDetail.visibility = View.VISIBLE
         }
         holder.itemView.setOnClickListener {
@@ -67,7 +70,7 @@ class ContinueWatchingAdapter(private val onClick: (ContinueWatching,Boolean)->U
            // User performed a long press
            holder.backGround.visibility = View.VISIBLE
            holder.delete.visibility = View.VISIBLE
-
+           holder.itemView.setOnClickListener(null)
            holder.delete.setOnClickListener {
                onClick(item,true)
            }
@@ -75,6 +78,7 @@ class ContinueWatchingAdapter(private val onClick: (ContinueWatching,Boolean)->U
            Handler(Looper.getMainLooper()).postDelayed({
                holder.backGround.visibility = View.GONE
                holder.delete.visibility = View.GONE
+               holder.itemView.setOnClickListener { onClick(item,false) }
            }, 4000)  // Delay of 4 second
 
            true

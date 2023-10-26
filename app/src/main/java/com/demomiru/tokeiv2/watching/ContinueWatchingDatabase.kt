@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 @Database(entities = [ContinueWatching::class], version = 1)
+@TypeConverters(EpisodeListTypeConverter::class)
 abstract class ContinueWatchingDatabase : RoomDatabase(){
 
     abstract fun watchDao() : ContinueWatchingDao

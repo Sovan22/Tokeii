@@ -9,6 +9,7 @@ import android.view.animation.AnimationUtils
 
 import androidx.navigation.NavDirections
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.anime.AnimeAdapter
 import com.demomiru.tokeiv2.Episode
 import com.demomiru.tokeiv2.Movie
 import com.demomiru.tokeiv2.MovieAdapter
@@ -26,8 +27,8 @@ import com.demomiru.tokeiv2.watching.VideoData
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
-
 
 fun retrofitBuilder (): Retrofit
 {
@@ -40,6 +41,17 @@ fun retrofitBuilder (): Retrofit
 //fun getHiID(id:String) : String{
 //
 //}
+
+fun dateToUnixTime(dateStr: String): Long {
+    try {
+        val sdf = SimpleDateFormat("yyyy-MM-dd")
+        val date = sdf.parse(dateStr)
+        return date?.time ?: 0L
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return 0L
+}
 
 fun createNumberList(n: Int): List<Int> {
     return List(n) { it + 1 }
@@ -74,6 +86,16 @@ fun addRecyclerAnimation(view :RecyclerView, adapter : ContinueWatchingAdapter){
     adapter.notifyDataSetChanged()
     view.scheduleLayoutAnimation()
 }
+
+fun addRecyclerAnimation(view :RecyclerView, adapter : AnimeAdapter){
+    view.adapter = adapter
+    val context = view.context
+    val controller = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
+    view.layoutAnimation = controller
+    adapter.notifyDataSetChanged()
+    view.scheduleLayoutAnimation()
+}
+
 @SuppressLint("NotifyDataSetChanged")
 fun addRecyclerAnimation(view :RecyclerView, adapter : TVShowAdapter){
     view.adapter = adapter
@@ -103,6 +125,18 @@ fun addRecyclerAnimation(view :RecyclerView, adapter : MovieAdapter){
     return intent
 }
 
+fun passData(data: GogoAnime.AnimeDetails,context : Context,id: String,ep: Int,title: String): Intent{
+    val bundle = Bundle()
+    bundle.putParcelable("Data", data)
+    val intent = Intent(context, MoviePlayActivity::class.java)
+    intent.putExtras(bundle)
+    intent.putExtra("type","anime")
+    intent.putExtra("id",id)
+    intent.putExtra("ep",ep)
+    return intent
+}
+
+
 fun passData(data : Episode,context : Context,title : String, imgLink : String,id : String) : Intent{
     val bundle = Bundle()
     bundle.putSerializable("Data", data)
@@ -117,16 +151,23 @@ fun passData(data : Episode,context : Context,title : String, imgLink : String,i
 
 fun passData(data : ContinueWatching,context : Context) : Intent{
     val bundle = Bundle()
-    bundle.putSerializable("Data", data)
+    bundle.putParcelable("Data", data)
     val intent = Intent(context, MoviePlayActivity::class.java)
     intent.putExtras(bundle)
     intent.putExtra("type","continue")
     return intent
 }
 
+fun encodeStringToInt(input : String) : Int{
+    return if(input == "") 0
+        else input.hashCode()
+
+}
+
+
 fun passVideoData(data: VideoData, context: Context) : Intent{
     val bundle = Bundle()
-    bundle.putSerializable("VidData", data)
+    bundle.putParcelable("VidData", data)
     val intent =  Intent(context, VideoPlayActivity::class.java)
     intent.putExtras(bundle)
     return intent

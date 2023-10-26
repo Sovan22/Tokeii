@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.activity.viewModels
 
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 
 
 import androidx.core.widget.NestedScrollView
@@ -24,16 +25,20 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory2
+import com.demomiru.tokeiv2.utils.GogoAnime
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.passData
+import com.demomiru.tokeiv2.utils.passVideoData
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingAdapter
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
 import com.demomiru.tokeiv2.watching.ContinueWatchingRepository
+import com.demomiru.tokeiv2.watching.VideoData
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.withContext
+import kotlin.math.ceil
 
 
 @Suppress("DEPRECATION")
@@ -87,29 +92,6 @@ class MainActivity : AppCompatActivity() {
 
         watchHistoryRc.adapter = adapter
 
-        //TODO Remove comment if continue watching not working
-//        GlobalScope.launch  (Dispatchers.IO) {
-//            continueWatchingRepository.loadData()
-//        }
-
-
-
-//        continueWatchingObserver = Observer{
-//            if(it.isNotEmpty()){
-//                watchHistoryRc.visibility = View.VISIBLE
-//                continueText.visibility = View.VISIBLE
-//                adapter.submitList(it)
-//                addRecyclerAnimation(watchHistoryRc,adapter)
-//            }
-//            else{
-//                watchHistoryRc.visibility = View.GONE
-//                continueText.visibility = View.GONE
-//            }
-//        }
-
-//        continueWatchingRepository.allWatchHistory.observe(this,continueWatchingObserver)
-
-
        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.moviesFragment -> {
@@ -136,6 +118,14 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 }
+                R.id.animeFragment ->{
+                    navController.navigate(R.id.animeFragment,null,options)
+                    if (viewModel.allWatchHistory.value?.size !=0){
+                        watchHistoryRc.visibility = View.VISIBLE
+                        continueText.visibility = View.VISIBLE
+                        currentFragment.value = R.id.animeFragment
+                    }
+                }
             }
             true
         }
@@ -155,7 +145,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     override fun onResume() {
         currentFragment.observe(this){
-            if(it == R.id.searchFragment){
+            if(it == R.id.searchFragment ){
                 watchHistoryRc.visibility = View.GONE
                 continueText.visibility = View.GONE
             }

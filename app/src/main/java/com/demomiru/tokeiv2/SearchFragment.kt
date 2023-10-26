@@ -18,19 +18,24 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 
 import android.widget.TextView
+import android.widget.Toast
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.anime.AnimeAdapter
 import com.demomiru.tokeiv2.history.QueryRepository
 
 import com.demomiru.tokeiv2.history.SearchDatabase
 import com.demomiru.tokeiv2.history.SearchHistory
 import com.demomiru.tokeiv2.history.SearchHistoryAdapter2
+import com.demomiru.tokeiv2.utils.GogoAnime
 
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
+import com.demomiru.tokeiv2.utils.encodeStringToInt
 import com.demomiru.tokeiv2.utils.passData
 
 import com.demomiru.tokeiv2.utils.retrofitBuilder
@@ -52,6 +57,7 @@ class SearchFragment : Fragment() {
     private lateinit var searchEt: EditText
     private lateinit var movieChoice : RadioButton
     private lateinit var tvChoice : RadioButton
+    private lateinit var animeChoice: RadioButton
     private lateinit var choice : RadioGroup
     private lateinit var searchLoading : ProgressBar
     private val database by lazy { SearchDatabase.getInstance(requireContext()) }
@@ -73,6 +79,7 @@ class SearchFragment : Fragment() {
         searchLoading = view.findViewById(R.id.search_loading)
         movieChoice = view.findViewById(R.id.movies_search)
         tvChoice = view.findViewById(R.id.tvShows_search)
+        animeChoice = view.findViewById(R.id.anime_search)
         choice = view.findViewById(R.id.choice)
 
         searchResultsRc.layoutManager = GridLayoutManager(requireContext(),2)
@@ -140,8 +147,11 @@ class SearchFragment : Fragment() {
                 {
                     performMovieSearch()
                 }
-                else{
+                else if(tvChoice.isChecked){
                     performShowSearch()
+                }
+                else{
+                    performAnimeSearch()
                 }
 
                 choice.setOnCheckedChangeListener { _, _: Int ->
@@ -154,6 +164,47 @@ class SearchFragment : Fragment() {
         }
 
         return view
+    }
+
+    private fun performAnimeSearch()
+    {
+        searchResultsRc.visibility = View.GONE
+        searchHistoryRC.visibility = View.GONE
+        isClicked = true
+        deleteAll.visibility = View.GONE
+        searchLoading.visibility = View.VISIBLE
+        val gogoSrc = GogoAnime()
+
+        val query = searchEt.text.toString()
+
+        val adapter = AnimeAdapter(requireContext()){
+            lifecycleScope.launch {
+
+//                val action = SearchFragmentDirections.actionSearchFragmentToTVShowDetails(
+//                    encodeStringToInt(it.name).toString(), title = "",animeUrl = it.url)
+//                findNavController().navigate(action)
+
+               val action =  SearchFragmentDirections.actionSearchFragmentToAnimeDetailsFragment(it.name,it.url)
+                findNavController().navigate(action)
+
+            }
+        }
+        addRecyclerAnimation(searchResultsRc, adapter)
+        lifecycleScope.launch(Dispatchers.IO) {
+            val history = SearchHistory(query = query)
+            queryRepository.insert(history)
+            queryRepository.loadData()
+            val animeList = gogoSrc.search(query)
+
+            withContext(Dispatchers.Main)
+            {
+                if (animeList.isEmpty()) Toast.makeText(requireContext(),"No Matches",Toast.LENGTH_LONG).show()
+                adapter.submitList(animeList)
+                searchLoading.visibility = View.GONE
+                searchResultsRc.visibility = View.VISIBLE
+            }
+        }
+
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -189,6 +240,7 @@ class SearchFragment : Fragment() {
             if (searchResults.isSuccessful)
             {
                 val movies = searchResults.body()?.results ?: emptyList()
+                if (movies.isEmpty()) Toast.makeText(requireContext(),"No Matches",Toast.LENGTH_LONG).show()
                 val adapter = MovieAdapter(movies){
 //                    val action = SearchFragmentDirections.actionSearchFragmentToMoviePlayActivity(it.id,"movie",title = it.title)
 //                    findNavController().navigate(action)
@@ -237,6 +289,7 @@ class SearchFragment : Fragment() {
             if (searchResults.isSuccessful)
             {
                 val tvShows = searchResults.body()?.results ?: emptyList()
+                if (tvShows.isEmpty()) Toast.makeText(requireContext(),"No Matches",Toast.LENGTH_LONG).show()
                 val adapter = TVShowAdapter(tvShows){it, _ ->
                     val action = SearchFragmentDirections.actionSearchFragmentToTVShowDetails(it.id, title = it.name)
                     findNavController().navigate(action)

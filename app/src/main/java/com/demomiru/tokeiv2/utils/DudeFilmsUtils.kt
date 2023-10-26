@@ -4,6 +4,7 @@ import android.util.Log
 import android.view.MotionEvent
 import com.demomiru.tokeiv2.BuildConfig
 import com.demomiru.tokeiv2.Keys
+import com.demomiru.tokeiv2.MovieArray
 import com.demomiru.tokeiv2.MovieFile
 import com.demomiru.tokeiv2.MovieIMDB
 import com.demomiru.tokeiv2.Season
@@ -18,6 +19,9 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import kotlin.system.exitProcess
 
+
+//https://lordhd.eu/
+//TODO integrate lordhd.eu
 
 suspend fun getMovieImdb(tmdbID: String) : String{
     val requests = Requests()
@@ -51,14 +55,17 @@ suspend fun getTvImdb(tmdbID: String): String{
     val response = tvImdb.body.string()
 //    Log.i("response", response)
     val imdbID = gson.fromJson(response, TvIMDB::class.java)
-    return if(imdbID.languages[0] == "hi")
+    println(imdbID.languages[0])
+    return if(imdbID.origin_country[0] == "IN")
         imdbID.external_ids.imdb_id
     else
         ""
 }
 
+//val origin = "https://log-training-i-254.site"
+
 suspend fun getMovieLink(imdbId : String): String {
-    val origin = "https://log-training-i-254.site"
+    val origin = "https://hurl-party-i-256.site"
     val requests = Requests()
     val encoded = Base64.getEncoder().encodeToString(
         (imdbId + "-" + System.currentTimeMillis()).toByteArray(
@@ -88,7 +95,7 @@ suspend fun getMovieLink(imdbId : String): String {
         val fileKeys: Keys = gson.fromJson(jsonInsideHDVBPlayer, Keys::class.java)
         Log.i("file:", fileKeys.file)
 
-        val srcUrl = "https://log-training-i-254.site"
+        val srcUrl = "https://hurl-party-i-256.site"
         val absoluteUrl = srcUrl + fileKeys.file
         val headers = mapOf(
             "Accept" to "*/*",
@@ -96,7 +103,7 @@ suspend fun getMovieLink(imdbId : String): String {
             "Accept-Language" to "en-US,en;q=0.9",
             "Content-Length" to "0",
             "Content-Type" to "application/x-www-form-urlencoded",
-            "Origin" to "https://log-training-i-254.site",
+            "Origin" to "https://hurl-party-i-256.site",
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
             "X-Csrf-Token" to fileKeys.key
         )
@@ -132,7 +139,7 @@ suspend fun getMovieLink(imdbId : String): String {
 }
 
 suspend fun getTvLink(imdbId: String, s : Int, e: Int) : String{
-    val origin = "https://log-training-i-254.site"
+    val origin = "https://hurl-party-i-256.site"
     val requests = Requests()
     val encoded = Base64.getEncoder().encodeToString(
         (imdbId + "-" + System.currentTimeMillis()).toByteArray(
@@ -158,7 +165,7 @@ suspend fun getTvLink(imdbId: String, s : Int, e: Int) : String{
         val fileKeys: Keys = gson.fromJson(jsonInsideHDVBPlayer, Keys::class.java)
         Log.i("file:", fileKeys.file)
 
-        val srcUrl = "https://log-training-i-254.site"
+        val srcUrl = "https://hurl-party-i-256.site"
         val absoluteUrl = srcUrl + fileKeys.file
         val headers = mapOf(
             "Accept" to "*/*",
@@ -166,7 +173,7 @@ suspend fun getTvLink(imdbId: String, s : Int, e: Int) : String{
             "Accept-Language" to "en-US,en;q=0.9",
             "Content-Length" to "0",
             "Content-Type" to "application/x-www-form-urlencoded",
-            "Origin" to "https://log-training-i-254.site",
+            "Origin" to "https://hurl-party-i-256.site",
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
             "X-Csrf-Token" to fileKeys.key
         )
@@ -208,7 +215,7 @@ suspend fun getTvLink(imdbId: String, s : Int, e: Int) : String{
     return ""
 }
 suspend fun getHiTvSeasons(imdbId: String) : Int{
-    val origin = "https://log-training-i-254.site"
+    val origin = "https://hurl-party-i-256.site"
     val requests = Requests()
     val encoded = Base64.getEncoder().encodeToString(
         (imdbId + "-" + System.currentTimeMillis()).toByteArray(
@@ -234,7 +241,7 @@ suspend fun getHiTvSeasons(imdbId: String) : Int{
         val fileKeys: Keys = gson.fromJson(jsonInsideHDVBPlayer, Keys::class.java)
         Log.i("file:", fileKeys.file)
 
-        val srcUrl = "https://log-training-i-254.site"
+        val srcUrl = "https://hurl-party-i-256.site"
         val absoluteUrl = srcUrl + fileKeys.file
         val headers = mapOf(
             "Accept" to "*/*",
@@ -242,7 +249,7 @@ suspend fun getHiTvSeasons(imdbId: String) : Int{
             "Accept-Language" to "en-US,en;q=0.9",
             "Content-Length" to "0",
             "Content-Type" to "application/x-www-form-urlencoded",
-            "Origin" to "https://log-training-i-254.site",
+            "Origin" to "https://hurl-party-i-256.site",
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
             "X-Csrf-Token" to fileKeys.key
         )

@@ -281,14 +281,19 @@ class SuperstreamUtils() {
         // New api does not return video links :(
         val query = if (isMovie) {
             """{"childmode":"0","uid":"","app_version":"11.5","appid":"$appId","module":"Movie_downloadurl_v3","channel":"Website","mid": "$id","lang":"","expired_date":"${getExpiryDate()}","platform":"android","oss":"1","group":""}"""
-        }else {
+        } else {
 //            val episode = parsed.episode ?: throw RuntimeException("No episode number!")
 //            val season = parsed.season ?: throw RuntimeException("No season number!")
             """{"childmode":"0","app_version":"11.5","module":"TV_downloadurl_v3","channel":"Website","episode":"$episode","expired_date":"${getExpiryDate()}","platform":"android","tid":"$id","oss":"1","uid":"","appid":"$appId","season":"$season","lang":"en","group":""}"""
         }
-        val tvlinks = queryApi(query, false).toString()
-        return gson.fromJson(tvlinks, LinkDataProp::class.java)
-//        return queryApi(query, false)
+        return try {
+            val tvlinks = queryApi(query, false).toString()
+            gson.fromJson(tvlinks, LinkDataProp::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            LinkDataProp()
+        }
+    //        return queryApi(query, false)
     }
 
     suspend fun loadSubtile(isMovie: Boolean, fid:Int, id:Int,season: Int = 1, episode: Int = 1) : SubtitleDataProp{

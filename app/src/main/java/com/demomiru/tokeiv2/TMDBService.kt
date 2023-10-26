@@ -72,11 +72,12 @@ data class TVShowEpisodeDetailsResponse(
     val episodes : List<Episode>
 )
 data class Episode(
+    val air_date: String,
     val season_number: String,
     val episode_number: String,
     val overview: String,
     val name: String,
-    val still_path: String
+    val still_path: String,
 ) : Serializable
 
 data class Season(
@@ -96,7 +97,8 @@ data class EpisodeID(
 data class TvIMDB(
     val languages: List<String>,
     val external_ids : ExternalIDs,
-    val number_of_seasons: String
+    val number_of_seasons: String,
+    val origin_country: List<String>
 )
 data class ExternalIDs(
     val imdb_id : String
