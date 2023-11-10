@@ -1,16 +1,14 @@
 package com.demomiru.tokeiv2.utils
 
-import android.os.Bundle
+
 import android.util.Base64
-import androidx.lifecycle.lifecycleScope
-import com.demomiru.tokeiv2.R
+
 import com.demomiru.tokeiv2.utils.SuperstreamUtils.CipherUtils.getVerify
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.Gson
 import com.lagradost.nicehttp.NiceResponse
 import com.lagradost.nicehttp.Requests
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -210,14 +208,14 @@ class SuperstreamUtils() {
         return unixTime + 60 * 60 * 12
     }
 
-    suspend fun search(query: String): MainData {
+    suspend fun search(query: String): DataJSON{
         val hideNsfw = 0
         val apiQuery =
             // Originally 8 pagelimit
             """{"childmode":"$hideNsfw",
                 |"app_version":"$appVersion",
                 |"appid":"$appIdSecond",
-                |"module":"Search3",
+                |"module":"Search4",
                 |"channel":"Website",
                 |"page":"1",
                 |"lang":"en",
@@ -229,7 +227,7 @@ class SuperstreamUtils() {
                 |"platform":"android"}""".trimMargin()
 
         val response = queryApi(apiQuery,true).toString()
-        return gson.fromJson(response,MainData::class.java)
+        return gson.fromJson(response,DataJSON::class.java)
 
 //        return queryApi(apiQuery, true)
     }
@@ -249,6 +247,28 @@ class SuperstreamUtils() {
 
     data class MainData(
         @JsonProperty("data") val data: ArrayList<Data> = arrayListOf()
+    )
+
+     data class PostJSON(
+        @JsonProperty("id") val id: Int? = null,
+        @JsonProperty("title") val title: String? = null,
+        @JsonProperty("poster") val poster: String? = null,
+        @JsonProperty("poster_2") val poster2: String? = null,
+        @JsonProperty("box_type") val boxType: Int? = null,
+        @JsonProperty("imdb_rating") val imdbRating: String? = null,
+        @JsonProperty("quality_tag") val quality_tag: String? = null,
+    )
+
+     data class ListJSON(
+        @JsonProperty("code") val code: Int? = null,
+        @JsonProperty("type") val type: String? = null,
+        @JsonProperty("name") val name: String? = null,
+        @JsonProperty("box_type") val boxType: Int? = null,
+        @JsonProperty("list") val list: ArrayList<PostJSON> = arrayListOf(),
+    )
+
+     data class DataJSON(
+        @JsonProperty("data") val data: ListJSON
     )
 //
 //    private suspend inline fun <reified T : Any> queryApiParsed(
