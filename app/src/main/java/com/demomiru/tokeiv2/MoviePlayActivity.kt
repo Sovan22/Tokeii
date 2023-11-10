@@ -336,7 +336,7 @@ class MoviePlayActivity : AppCompatActivity(){
                     else{
                         //Superstream add
                         val mainData = superStream.search(title)
-                        superId = mainData.data[0].id
+                        superId = mainData.data.list[0].id
                         if (superId != null) {
                             isSuper = true
                             val tvLinks = superStream.loadLinks(false, superId!!, season, episode)
@@ -358,14 +358,14 @@ class MoviePlayActivity : AppCompatActivity(){
 //                                    finish()
 //                                }
                                 isSuper = false
-                                getGoMovieLink(false)
-//                                getSmashLink(false)
+//                                getGoMovieLink(false)
+                                getSmashLink(false)
                             }
                         }
                         else{
                             isSuper = false
-                            getGoMovieLink(false)
-//                            getSmashLink(false)
+//                            getGoMovieLink(false)
+                            getSmashLink(false)
                         }
 
                     }
@@ -376,7 +376,7 @@ class MoviePlayActivity : AppCompatActivity(){
                 if (origin != "hi") {
                     lifecycleScope.launch {
                         val mainData = superStream.search(title)
-                        superId = mainData.data[0].id
+                        superId = mainData.data.list[0].id
                         getMovieEn()
 //                        webView.loadUrl(url)
                     }
@@ -523,7 +523,7 @@ class MoviePlayActivity : AppCompatActivity(){
             if(vidLink.isNullOrBlank()){
                 if (isMovie){
                     val mainData = superStream.search(title)
-                    superId = mainData.data[0].id
+                    superId = mainData.data.list[0].id
                     getMovie()
                 }
                 else {

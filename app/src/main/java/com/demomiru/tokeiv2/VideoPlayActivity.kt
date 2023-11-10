@@ -503,16 +503,16 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 //                                        Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                        finish()
 //                                    }
-                                        getGoMovieLink()
-//                                    getSmashLink()
+//                                        getGoMovieLink()
+                                    getSmashLink()
                                 }
                             } else {
 //                                withContext(Dispatchers.Main){
 //                                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                    finish()
 //                                }
-                                getGoMovieLink()
-//                                getSmashLink()
+//                                getGoMovieLink()
+                                getSmashLink()
                             }
                         }
                     }
