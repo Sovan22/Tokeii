@@ -164,6 +164,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     @SuppressLint("UnsafeOptInUsageError", "ClickableViewAccessibility", "SetTextI18n",
         "SetJavaScriptEnabled"
     )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -222,7 +223,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
-
+        println("Superstream : $isSuper")
         webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {

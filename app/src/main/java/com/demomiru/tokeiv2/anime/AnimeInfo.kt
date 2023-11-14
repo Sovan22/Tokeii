@@ -102,11 +102,13 @@ class AnimeInfo(context: Context) {
     }
 
     suspend fun getAnimeDetails(query:String): Related{
-        val search = app.get("https://api.myanimelist.net/v2/anime?q=$query&limit=1",
-            headers = headers).toString()
 
+        val search = app.get("https://api.consumet.org/meta/anilist/$query?page=1").toString()
+//        println(search)
+//        val search = app.get("https://api.myanimelist.net/v2/anime?q=$query&limit=1",
+//            headers = headers).toString()
         val anime = gson.fromJson(search,Data::class.java)
-        val id = anime.data[0].node.id
+        val id = anime.results[0].malId
 
         val animeDetails = app.get("https://api.myanimelist.net/v2/anime/${id}?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,my_list_status,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,recommendations,studios,statistics",
             headers = headers).toString()
@@ -127,7 +129,12 @@ class AnimeInfo(context: Context) {
         val large : String
     )
     data class Data(
-        val data: ArrayList<Anime>
+        val results: ArrayList<AnimeAni>
+    )
+
+    data class AnimeAni(
+        val id: Int,
+        val malId: Int,
     )
     data class Anime(
         val node: AnimeDetails,

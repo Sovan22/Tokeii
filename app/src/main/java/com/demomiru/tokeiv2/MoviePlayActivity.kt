@@ -394,7 +394,7 @@ class MoviePlayActivity : AppCompatActivity(){
                             //add smash link
                             getSmashLink(true)
 //                            val mainData = superStream.search(title)
-//                            superId = mainData.data[0].id
+//                            superId = mainData.data.list[0].id
 //                            getMovie()
 
                         }
