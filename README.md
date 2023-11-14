@@ -3,7 +3,7 @@ Movie and TV Streaming App
 
 
 ## Download the app here:
-[tokei-release_v1.0.3.apk](https://github.com/Sovan22/Tokeii/releases/download/v1.0.3-tokei/tokei-v1.0.3.apk) <br>
+[tokei-release_v1.0.4](https://github.com/Sovan22/Tokeii/releases/download/v1.0.4-tokei/tokei-v1.0.4.apk) <br>
 Compatibility : Android 7+
 
 ## Features:
