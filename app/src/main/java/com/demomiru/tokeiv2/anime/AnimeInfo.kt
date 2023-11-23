@@ -2,7 +2,6 @@ package com.demomiru.tokeiv2.anime
 
 import android.content.Context
 import com.demomiru.tokeiv2.BuildConfig
-import com.demomiru.tokeiv2.MainActivity
 import com.demomiru.tokeiv2.utils.GogoAnime
 import com.google.gson.Gson
 
@@ -103,12 +102,14 @@ class AnimeInfo(context: Context) {
 
     suspend fun getAnimeDetails(query:String): Related{
 
-        val search = app.get("https://api.consumet.org/meta/anilist/$query?page=1").toString()
-//        println(search)
+//        val search = app.get("https://api.consumet.org/meta/anilist/$query?page=1").toString()
+        val search = app.get("https://myanimelist.net/search/all?cat=all&q=$query").document.select("div.title a.hoverinfo_trigger")
+
 //        val search = app.get("https://api.myanimelist.net/v2/anime?q=$query&limit=1",
 //            headers = headers).toString()
-        val anime = gson.fromJson(search,Data::class.java)
-        val id = anime.results[0].malId
+//        val anime = gson.fromJson(search,Data::class.java)
+
+        val id = search[0].attr("href").filter { it.isDigit() }
 
         val animeDetails = app.get("https://api.myanimelist.net/v2/anime/${id}?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,my_list_status,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,recommendations,studios,statistics",
             headers = headers).toString()
