@@ -126,7 +126,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private lateinit var player : ExoPlayer
     private lateinit var goBack : ImageView
     private lateinit var videoUri: Uri
-    private var newVideoUrl  = MutableLiveData<String>()
+    private var newVideoUrl  = MutableLiveData<String>("")
     private var maxVolume: Int = 0
     private var brightness: Int = 0
     private lateinit var brightnessLL: LinearLayout
@@ -477,6 +477,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 }
                 else{
                     episodeNext()
+                    var isVideo = false
                     if (!isShowFinished) {
                         lifecycleScope.launch(Dispatchers.IO) {
                             if (superId != null && isSuper) {
@@ -494,12 +495,12 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                                                 episode
                                             ).data
                                             getSub(subtitle)
+                                            if(it.path.isNullOrBlank()) isVideo = true
                                             newVideoUrl.postValue(it.path!!)
-
                                         }
                                     }
                                 }
-                                if (newVideoUrl.value.isNullOrBlank()) {
+                                if (isVideo) {
 //                                    withContext(Dispatchers.Main){
 //                                        Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                        finish()
