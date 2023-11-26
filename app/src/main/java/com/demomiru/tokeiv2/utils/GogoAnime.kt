@@ -159,7 +159,8 @@ class GogoAnime{
         return ""
     }
 
-    private var mainUrl = "https://gogoanime.lu"
+    private var mainUrl = "https://gogoanime3.net"
+//        "https://gogoanime.lu"
     private var name = "GogoAnime"
     private val hasQuickSearch = false
     private val hasMainPage = true

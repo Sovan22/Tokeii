@@ -31,6 +31,7 @@ import com.demomiru.tokeiv2.utils.encodeStringToInt
 import com.demomiru.tokeiv2.utils.passData
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
+import com.google.common.collect.Iterators.getNext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -111,7 +112,10 @@ class AnimeDetailsFragment : Fragment() {
 
         lifecycleScope.launch (Dispatchers.IO) {
             val details = animeInfo.getAnimeDetails(title)
-            val gogoDetails = gogoSrc.load(url)
+            val gogoDetails: GogoAnime.AnimeDetails = try{gogoSrc.load(url)}catch (e:Exception){
+                println(e.printStackTrace())
+                GogoAnime.AnimeDetails()
+            }
 
             withContext(Dispatchers.Main){
                 println(details.related_anime)
