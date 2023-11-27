@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <CheckedTextView
+        android:layout_width="match_parent"
+        android:id="@+id/track_quality"
+        android:checkMark="?android:attr/listChoiceIndicatorSingle"
+        android:layout_height="wrap_content"
+        android:text="360p"
+        android:padding="5dp"
+        android:fontFamily="@font/exo_2"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        />
+
+</LinearLayout>
