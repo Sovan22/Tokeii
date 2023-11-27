@@ -252,6 +252,7 @@ class SuperstreamUtils() {
      data class PostJSON(
         @JsonProperty("id") val id: Int? = null,
         @JsonProperty("title") val title: String? = null,
+        @JsonProperty("year") val year: Int? = null,
         @JsonProperty("poster") val poster: String? = null,
         @JsonProperty("poster_2") val poster2: String? = null,
         @JsonProperty("box_type") val boxType: Int? = null,
