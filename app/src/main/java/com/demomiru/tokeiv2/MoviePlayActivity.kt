@@ -70,6 +70,7 @@ class MoviePlayActivity : AppCompatActivity(){
     private var season: Int = 1
     private var episode: Int = 1
     private var origin : String = ""
+    private var year : String = ""
     private var seekProgress : Int = 0
     private var imgLink : String? = null
     private lateinit var title:String
@@ -97,6 +98,7 @@ class MoviePlayActivity : AppCompatActivity(){
             val data = bundle?.getSerializable("Data") as? Movie
 
             origin = data!!.original_language
+            year = data.release_date.substringBefore("-")
             if(origin == "kn" || origin == "ml" || origin == "ta" || origin == "te")
                 origin = "hi"
             id = data.id
@@ -131,6 +133,7 @@ class MoviePlayActivity : AppCompatActivity(){
             imgLink = data.imgLink
             seekProgress = data.progress
             type = data.type
+            origin = data.origin ?: ""
             if (type != "movie"){
                 season = data.season
                 episode = data.episode
@@ -216,7 +219,8 @@ class MoviePlayActivity : AppCompatActivity(){
                     hlsUri,
                     superId,
                    subUrl,
-                   animeEp
+                   animeEp,
+                   origin
                    ),this)
                 intent.putExtra("origin", origin)
                 intent.putExtra("superstream",isSuper)
@@ -371,12 +375,13 @@ class MoviePlayActivity : AppCompatActivity(){
                     }
                 }
             }else if(type == "movie"){
-
-
                 if (origin != "hi") {
                     lifecycleScope.launch {
                         val mainData = superStream.search(title)
-                        superId = mainData.data.list[0].id
+//                        println(mainData.data.list[0].year)
+                        val item = mainData.data.list[0]
+                        println(year + " ${item.year}")
+                        superId = if(item.title == title && item.year.toString() == year) item.id else null
                         getMovieEn()
 //                        webView.loadUrl(url)
                     }
@@ -521,7 +526,8 @@ class MoviePlayActivity : AppCompatActivity(){
             val vidLink = links.first
             val subLink = links.second
             if(vidLink.isNullOrBlank()){
-                if (isMovie){
+
+                if (isMovie && origin == "hi"){
                     val mainData = superStream.search(title)
                     superId = mainData.data.list[0].id
                     getMovie()

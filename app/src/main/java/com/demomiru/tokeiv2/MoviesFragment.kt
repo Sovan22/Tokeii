@@ -89,6 +89,7 @@ class MoviesFragment : Fragment() {
                 val adapter = MovieAdapter(movies){
 //                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
 //                    findNavController().navigate(play(it))
+                    println(it.release_date)
                     startActivity(passData(it,requireContext()))
 
                 }
@@ -100,6 +101,7 @@ class MoviesFragment : Fragment() {
                 val movies = tmovieResponse.body()?.results?: emptyList()
                 val adapter = MovieAdapter(movies){
 //                    findNavController().navigate(play(it))
+                    println(it.release_date)
                     startActivity(passData(it,requireContext()))
 
                 }
@@ -114,6 +116,7 @@ class MoviesFragment : Fragment() {
 //                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
 //                    findNavController().navigate(action)
 //                    findNavController().navigate(play(it))
+                    println(it.release_date)
                     startActivity(passData(it,requireContext()))
 
                 }
