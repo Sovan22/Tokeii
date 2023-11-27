@@ -5,8 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [ContinueWatching::class], version = 1)
+@Database(entities = [ContinueWatching::class], version = 2)
 @TypeConverters(EpisodeListTypeConverter::class)
 abstract class ContinueWatchingDatabase : RoomDatabase(){
 
@@ -26,7 +28,8 @@ abstract class ContinueWatchingDatabase : RoomDatabase(){
                         context.applicationContext,
                        ContinueWatchingDatabase::class.java,
                         "continue_watching_database"
-                    ).fallbackToDestructiveMigration().build()
+                    ).addMigrations(MIGRATION_1_2).build()
+//                    fallbackToDestructiveMigration().build()
 
                     INSTANCE = instance
                 }
@@ -35,3 +38,10 @@ abstract class ContinueWatchingDatabase : RoomDatabase(){
         }
     }
 }
+
+private val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE continue_watching ADD COLUMN origin TEXT")
+    }
+}
+
