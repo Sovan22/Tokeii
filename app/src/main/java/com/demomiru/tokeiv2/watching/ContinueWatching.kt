@@ -40,7 +40,8 @@ data class ContinueWatching (
         val episode : Int = 0,
         val season : Int = 0,
         val type : String,
-        val animeEp : List<GogoAnime.Episode>? = null
+        val animeEp : List<GogoAnime.Episode>? = null,
+        val origin : String? = null
         ) : Parcelable {
         constructor(parcel: Parcel) : this(
                 parcel.readInt(),
@@ -50,7 +51,8 @@ data class ContinueWatching (
                 parcel.readInt(),
                 parcel.readInt(),
                 parcel.readString()?:"",
-                parcel.createTypedArrayList(GogoAnime.Episode.CREATOR)?: listOf()
+                parcel.createTypedArrayList(GogoAnime.Episode.CREATOR)?: listOf(),
+                parcel.readString()?:""
         ) {
         }
 
@@ -63,6 +65,7 @@ data class ContinueWatching (
                 parcel.writeInt(season)
                 parcel.writeString(type)
                 parcel.writeTypedList(animeEp)
+                parcel.writeString(origin)
         }
 
         override fun describeContents(): Int {
@@ -93,7 +96,8 @@ data class VideoData(
         val videoUrl: String,
         val superId : Int? = null,
         val superSub : List<String>,
-        val animeEpisode : List<GogoAnime.Episode>? = null
+        val animeEpisode : List<GogoAnime.Episode>? = null,
+        val origin: String? = null,
         ) : Parcelable {
 
         constructor(parcel: Parcel) : this(
@@ -108,7 +112,8 @@ data class VideoData(
                 parcel.readString() ?: "",
                 parcel.readInt(),
                 parcel.createStringArrayList() ?: ArrayList(),
-                parcel.createTypedArrayList(GogoAnime.Episode.CREATOR)
+                parcel.createTypedArrayList(GogoAnime.Episode.CREATOR),
+                parcel.readString() ?: ""
         )
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -124,6 +129,7 @@ data class VideoData(
                 parcel.writeInt(superId ?: -1) // Use -1 as the default value for null
                 parcel.writeStringList(superSub)
                 parcel.writeTypedList(animeEpisode)
+                parcel.writeString(origin)
         }
 
         override fun describeContents(): Int {

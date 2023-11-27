@@ -33,8 +33,10 @@ import android.widget.TextView
 import android.widget.Toast
 
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat.getSystemService
 
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
@@ -43,6 +45,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.TrackSelectionOverride
+import androidx.media3.common.TrackSelectionParameters
+import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultHttpDataSource
@@ -53,6 +58,7 @@ import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.source.SingleSampleMediaSource
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import androidx.media3.ui.AspectRatioFrameLayout
 
@@ -63,6 +69,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.subtitles.SubTrackAdapter
 import com.demomiru.tokeiv2.subtitles.Subtitle
 import com.demomiru.tokeiv2.subtitles.SubtitleConfig
+import com.demomiru.tokeiv2.tracks.Track
+import com.demomiru.tokeiv2.tracks.TrackAdapter
 import com.demomiru.tokeiv2.utils.GoMovies
 import com.demomiru.tokeiv2.utils.GogoAnime
 import com.demomiru.tokeiv2.utils.SmashyStream
@@ -101,6 +109,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var isShowFinished = false
     private var animeEpList : List<GogoAnime.Episode>? = null
     private lateinit var subSelectBg : ConstraintLayout
+    private lateinit var qualitySelectBg: ConstraintLayout
     private lateinit var videoLoading: FrameLayout
     private lateinit var showSubs: SwitchMaterial
     private var totalSeasons = 1
@@ -146,6 +155,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var volume : Int = 0
     private var minSwipeY: Float = 0f
     private var fit = 1
+    private var mOrigin: String? = null
 
     private lateinit var powerManager: PowerManager
     private lateinit var wakeLock: PowerManager.WakeLock
@@ -178,9 +188,11 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
         val bundle = intent.extras
         val origin = intent.getStringExtra("origin")
+
         val isSuper = intent.getBooleanExtra("superstream",false)
         val data = bundle?.getParcelable("VidData") as? VideoData
         type = data!!.type
+        mOrigin = data.origin
         if(type == "anime") {
             animeEpList = data.animeEpisode
             totalEpisode = animeEpList!!.size
@@ -248,12 +260,18 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         val seekForward: ImageButton = findViewById(R.id.videoView_forward)
         val seekBack : ImageButton = findViewById(R.id.videoView_rewind)
         val subTracks : LinearLayout = findViewById(R.id.videoView_track)
+        val vidTracks : LinearLayout = findViewById(R.id.videoView_resolution)
+        if (isSuper) vidTracks.visibility = View.GONE
+
         if(type == "anime") subTracks.visibility = View.GONE
         val skipOp : LinearLayout = findViewById(R.id.videoView_skip_op)
         if(type == "anime") skipOp.visibility = View.VISIBLE
         val subSelectionView: RecyclerView = findViewById(R.id.sub_tracks_rc)
         subSelectBg = findViewById(R.id.subtitle_select)
+        qualitySelectBg = findViewById(R.id.quality_select)
+
         val applySub : Button = findViewById(R.id.apply_sub)
+        val applyQuality : Button = findViewById(R.id.apply_quality)
         val screenResizeTv : TextView = findViewById(R.id.screen_resize_text)
         val screenResizeIv : ImageView = findViewById(R.id.screen_resize_img)
         mainPlayer = findViewById(R.id.main_player)
@@ -297,7 +315,12 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         subtitleView.setFractionalTextSize(0.05f)
         subtitleView.setApplyEmbeddedStyles(false)
 
-        player = ExoPlayer.Builder(this).build()
+        val trackSelector = DefaultTrackSelector(this)
+        player = ExoPlayer.Builder(this).setTrackSelector(trackSelector).build()
+        val tracksRv = findViewById<RecyclerView>(R.id.tracks_rc)
+        tracksRv.layoutManager = LinearLayoutManager(this)
+
+
         showSubs.setOnClickListener {
             if (showSubs.isChecked) subtitleView.visibility = View.VISIBLE
             else subtitleView.visibility = View.GONE
@@ -357,6 +380,60 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         videoQuality.text = ""
 
         val listener = object : Player.Listener {
+
+            override fun onTracksChanged(tracks: Tracks) {
+                if(qualitySelectBg.isVisible) return
+                val trackGroup = tracks.groups[0]
+                val trackRv: MutableList<Track> = mutableListOf()
+                for (i in 0 until trackGroup.length) {
+                    val trackDetails = trackGroup.getTrackFormat(i)
+//                    val selected = trackGroup.isTrackSelected(i)
+                    trackRv.add(
+                        Track(
+                            trackDetails.id!!.toInt(),
+                            trackDetails.label.toString(),
+                            Pair(trackDetails.width,trackDetails.height),
+                            selected = false
+                        )
+                    )
+                }
+                trackRv.add(Track(
+                    trackGroup.length,
+                    "Auto",
+                    Pair(0,0),
+                    selected = true
+                ))
+                trackRv.reverse()
+                val trackAdapter = TrackAdapter(trackRv) { track ->
+//                    val trackSelectionOverride = TrackSelectionOverride(0, track.id)
+//                    track.selected = true
+                    player.trackSelectionParameters = if(track.format != "Auto") {
+                            player.trackSelectionParameters
+                                .buildUpon()
+                                .setOverrideForType(
+                                    TrackSelectionOverride(trackGroup.mediaTrackGroup, track.id)
+                                )
+                                .build()
+
+                    }
+                    else{
+                        player.trackSelectionParameters
+                            .buildUpon()
+                            .setOverrideForType(
+                                TrackSelectionOverride(trackGroup.mediaTrackGroup, MutableList(track.id){it})
+                            )
+                            .build()
+
+                    }
+//                    for( i in 0 until ) println(player.currentTracks.groups[0].isTrackSelected(i))
+//                    player.prepare()
+                }
+                for(track in trackRv){
+                    println(track)
+                }
+                tracksRv.adapter = trackAdapter
+                super.onTracksChanged(tracks)
+            }
 
             override fun onVideoSizeChanged(videoSize: VideoSize) {
                if(videoSize.width !=0 && videoSize.height!=0 ){
@@ -604,6 +681,20 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     playerPause()
                     mainPlayer.visibility = View.GONE
                     subSelectBg.visibility = View.VISIBLE
+                }
+
+                vidTracks.setOnClickListener {
+                    playerPause()
+                    mainPlayer.visibility = View.GONE
+                    qualitySelectBg.visibility = View.VISIBLE
+                }
+
+                applyQuality.setOnClickListener {
+                    qualitySelectBg.visibility = View.GONE
+                    mainPlayer.visibility = View.VISIBLE
+                    player.seekTo(subUpdateProgress)
+                    seekBar.progress = subUpdateProgress.toInt()
+                    playerPlay()
                 }
 
                 applySub.setOnClickListener {
@@ -1019,7 +1110,8 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                                 imgLink = imgLink!!,
                                 tmdbID = id.toInt(),
                                 title = title,
-                                type = type!!
+                                type = type!!,
+                                origin = mOrigin,
                             )
                         )
                     }
@@ -1149,10 +1241,11 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if(subSelectBg.visibility != View.VISIBLE)
+        if(subSelectBg.visibility != View.VISIBLE && !qualitySelectBg.isVisible)
         super.onBackPressed()
         else{
             subSelectBg.visibility = View.GONE
+            qualitySelectBg.visibility = View.GONE
             mainPlayer.visibility = View.VISIBLE
             playerPlay()
         }
