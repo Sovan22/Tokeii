@@ -289,6 +289,38 @@
                     android:textSize="12sp" />
 
             </LinearLayout>
+            <LinearLayout
+                android:id="@+id/videoView_resolution"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                >
+
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="5dp"
+                    android:id="@+id/screen_quality_img"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/quality_24" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@android:color/transparent"
+                    android:id="@+id/screen_quality_text"
+                    android:text="Quality"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/videoView_next_ep"
