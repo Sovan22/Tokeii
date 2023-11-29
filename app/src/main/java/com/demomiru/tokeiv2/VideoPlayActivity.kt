@@ -14,6 +14,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -43,6 +44,7 @@ import androidx.media3.common.C
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.TrackSelectionOverride
@@ -84,6 +86,7 @@ import com.demomiru.tokeiv2.utils.getTvSeasons
 import com.demomiru.tokeiv2.utils.setSeekBarTime
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
+import com.fasterxml.jackson.databind.AnnotationIntrospector.pair
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -103,7 +106,10 @@ import kotlin.math.abs
 
 class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeListener, GestureDetector.OnGestureListener {
 
+    private val gson = Gson()
     private val superStream = SuperstreamUtils()
+    private var trackUpdate = 0L
+    private var setTrackAdapter = 1
     private val openSubtitleAPI = BuildConfig.OPEN_SUBTITLE_API_KEY
     private var subUpdateProgress = 0L
     private var isShowFinished = false
@@ -122,9 +128,11 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var episode: Int = 1
     private var progress : Int = 0
     private var imgLink : String? = null
+    private var year : String = ""
     private lateinit var title:String
     private var type : String? = null
     private var imdbId : String? = null
+    private var urlMaps: MutableMap<String,String> = mutableMapOf()
     private lateinit var unlockIv : ImageView
     private var isLocked = false
     private lateinit var lockLL : LinearLayout
@@ -136,6 +144,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private lateinit var goBack : ImageView
     private lateinit var videoUri: Uri
     private var newVideoUrl  = MutableLiveData<String>("")
+    private var isTrackChanged = false
     private var maxVolume: Int = 0
     private var brightness: Int = 0
     private lateinit var brightnessLL: LinearLayout
@@ -156,6 +165,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var minSwipeY: Float = 0f
     private var fit = 1
     private var mOrigin: String? = null
+    private var selectedUrl : String = ""
 
     private lateinit var powerManager: PowerManager
     private lateinit var wakeLock: PowerManager.WakeLock
@@ -190,20 +200,29 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         val origin = intent.getStringExtra("origin")
 
         val isSuper = intent.getBooleanExtra("superstream",false)
+
+
         val data = bundle?.getParcelable("VidData") as? VideoData
+
         type = data!!.type
         mOrigin = data.origin
+        year = data.year?: ""
         if(type == "anime") {
             animeEpList = data.animeEpisode
             totalEpisode = animeEpList!!.size
         }
-
         id = data.tmdbID.toString()
 
         Log.i("Video Url", data.videoUrl)
 
+        videoUri =  if(isSuper){
+            urlMaps = gson.fromJson(data.videoUrl,object : TypeToken<Map<String, String>>() {}.type)
+            selectedUrl = urlMaps["720p"]!!
+            Uri.parse(urlMaps["720p"])
 
-        videoUri = Uri.parse(data.videoUrl)
+        } else Uri.parse(data.videoUrl)
+
+
         progress = data.progress
         title = data.title
         imgLink = data.imgLink
@@ -261,7 +280,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         val seekBack : ImageButton = findViewById(R.id.videoView_rewind)
         val subTracks : LinearLayout = findViewById(R.id.videoView_track)
         val vidTracks : LinearLayout = findViewById(R.id.videoView_resolution)
-        if (isSuper) vidTracks.visibility = View.GONE
+//        if (isSuper) vidTracks.visibility = View.GONE
 
         if(type == "anime") subTracks.visibility = View.GONE
         val skipOp : LinearLayout = findViewById(R.id.videoView_skip_op)
@@ -286,8 +305,11 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
         brightnessLL = findViewById(R.id.videoView_two_layout)
         brightnessSeek = findViewById(R.id.videoView_brightness)
+        val contentResolver = contentResolver
+        val currbrightness = Settings.System.getInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS)*3
+
         brightnessSeek.max = 30
-        brightness = 15
+        brightness = currbrightness / 10
 
         if(audioManager == null) audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         maxVolume = audioManager!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
@@ -377,12 +399,28 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         titleTv = findViewById(R.id.videoView_title)
 
         val videoQuality = findViewById<TextView>(R.id.videoView_quality)
-        videoQuality.text = ""
+        videoQuality.text = if(isSuper) "720p" else "Auto"
+
 
         val listener = object : Player.Listener {
 
+
+
             override fun onTracksChanged(tracks: Tracks) {
                 if(qualitySelectBg.isVisible) return
+                if(isSuper && setTrackAdapter == 1) {
+                    println("Called adapter")
+                    val trackData = superUrlSelector()
+                    val ta = TrackAdapter(trackData){
+                        isTrackChanged = true
+                        selectedUrl = urlMaps[it.resolution.second]!!
+                        videoQuality.text = "${it.resolution.second}"
+                    }
+                    tracksRv.adapter = ta
+                    setTrackAdapter--
+                }
+                else if(setTrackAdapter == 0) return
+                else{
                 val trackGroup = tracks.groups[0]
                 val trackRv: MutableList<Track> = mutableListOf()
                 for (i in 0 until trackGroup.length) {
@@ -392,7 +430,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                         Track(
                             trackDetails.id!!.toInt(),
                             trackDetails.label.toString(),
-                            Pair(trackDetails.width,trackDetails.height),
+                            Pair(trackDetails.width.toString(),trackDetails.height.toString()),
                             selected = false
                         )
                     )
@@ -400,7 +438,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 trackRv.add(Track(
                     trackGroup.length,
                     "Auto",
-                    Pair(0,0),
+                    Pair("",""),
                     selected = true
                 ))
                 trackRv.reverse()
@@ -408,6 +446,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 //                    val trackSelectionOverride = TrackSelectionOverride(0, track.id)
 //                    track.selected = true
                     player.trackSelectionParameters = if(track.format != "Auto") {
+                            videoQuality.text = "${track.resolution.second}p"
                             player.trackSelectionParameters
                                 .buildUpon()
                                 .setOverrideForType(
@@ -417,12 +456,14 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
                     }
                     else{
+                        videoQuality.text = "Auto"
                         player.trackSelectionParameters
                             .buildUpon()
                             .setOverrideForType(
                                 TrackSelectionOverride(trackGroup.mediaTrackGroup, MutableList(track.id){it})
                             )
                             .build()
+
 
                     }
 //                    for( i in 0 until ) println(player.currentTracks.groups[0].isTrackSelected(i))
@@ -432,23 +473,33 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     println(track)
                 }
                 tracksRv.adapter = trackAdapter
+                }
                 super.onTracksChanged(tracks)
             }
 
-            override fun onVideoSizeChanged(videoSize: VideoSize) {
-               if(videoSize.width !=0 && videoSize.height!=0 ){
-                   videoQuality.text = "${videoSize.height}p"
-               }
-                super.onVideoSizeChanged(videoSize)
+//            override fun onVideoSizeChanged(videoSize: VideoSize) {
+//               if(videoSize.width !=0 && videoSize.height!=0 ){
+//                   videoQuality.text = "${videoSize.height}p"
+//               }
+//                super.onVideoSizeChanged(videoSize)
+//            }
+            override fun onPlayerError(error: PlaybackException) {
+                Toast.makeText(this@VideoPlayActivity,"Quality not available or Network Issue",Toast.LENGTH_SHORT).show()
+                super.onPlayerError(error)
             }
 
             @SuppressLint("UnsafeOptInUsageError")
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+
+
                 if (player.duration != C.TIME_UNSET) {
                     // Duration is available
                     seekBar.max = player.duration.toInt()
-
+                    subUpdateProgress = trackUpdate
+                    trackUpdate = 0L
+                    isTrackChanged = false
 //                    val seek = player.duration / 100 * progress
+//                    println(subUpdateProgress)
                     val seek = if(subUpdateProgress > 0)subUpdateProgress else  player.duration / 100 * progress
                     player.seekTo(seek)
                     seekBar.progress = seek.toInt()
@@ -496,6 +547,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     else finish()
 
                 }
+                else if(playbackState == Player.STATE_BUFFERING) Toast.makeText(this@VideoPlayActivity,"Loading", Toast.LENGTH_LONG).show()
                 super.onPlaybackStateChanged(playbackState)
             }
 
@@ -582,16 +634,16 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 //                                        Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                        finish()
 //                                    }
-//                                        getGoMovieLink()
-                                    getSmashLink()
+                                        getGoMovieLink()
+//                                    getSmashLink()
                                 }
                             } else {
 //                                withContext(Dispatchers.Main){
 //                                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                    finish()
 //                                }
-//                                getGoMovieLink()
-                                getSmashLink()
+                                getGoMovieLink()
+//                                getSmashLink()
                             }
                         }
                     }
@@ -692,8 +744,11 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 applyQuality.setOnClickListener {
                     qualitySelectBg.visibility = View.GONE
                     mainPlayer.visibility = View.VISIBLE
+                    newVideoUrl.value = selectedUrl
+
                     player.seekTo(subUpdateProgress)
                     seekBar.progress = subUpdateProgress.toInt()
+
                     playerPlay()
                 }
 
@@ -794,8 +849,15 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         newVideoUrl.observe(this){newUrl ->
             if (!newUrl.isNullOrEmpty()) {
                 videoUri = Uri.parse(newUrl)
-                progress = 0
-                subUpdateProgress = 0
+                if(!isTrackChanged) {
+                    progress = 0
+                    subUpdateProgress = 0
+                }
+                else
+                {
+                    newSubUrl = subUrl.toMutableList()
+                    trackUpdate = subUpdateProgress
+                }
 
                 if(newSubUrl.isEmpty() && type!="anime" ) {
                     println("empty")
@@ -870,14 +932,15 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         val goMovie = GoMovies()
         newSubUrl.clear()
         lifecycleScope.launch(Dispatchers.IO) {
-            val data = goMovie.search(season, episode, title)
+            val data = goMovie.search(season, episode, title,false,year)
             val vidLink = data.first
             val subLinks = data.second
             if(vidLink.isNullOrBlank()){
-                withContext(Dispatchers.Main){
-                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
-                    finish()
-                }
+//                withContext(Dispatchers.Main){
+//                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+//                    finish()
+//                }
+                getSmashLink()
             }
             else{
                 if (!subLinks.isNullOrEmpty())newSubUrl.addAll(subLinks)
@@ -1112,6 +1175,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                                 title = title,
                                 type = type!!,
                                 origin = mOrigin,
+                                year = year
                             )
                         )
                     }
@@ -1225,6 +1289,31 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 isShowFinished = true
             }
         }
+    }
+
+    private fun superUrlSelector() : List<Track>
+    {
+        var id = 0
+        var selectPos = 0
+        var tracks = urlMaps.map {
+            val selected = it.key == "720p"
+
+            val resolution = Pair("",it.key)
+
+            if(selected)selectPos = id
+            Track(id++,"super",resolution,selected)
+        }
+        val selectedQ = tracks.get(selectPos)
+        tracks = tracks - selectedQ
+        tracks = tracks + selectedQ
+        tracks = tracks.reversed()
+        println(tracks)
+        return tracks
+    }
+
+    private fun setAdapter()
+    {
+
     }
 
 

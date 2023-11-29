@@ -1,5 +1,6 @@
 package com.demomiru.tokeiv2.tracks
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.R
 
 
-data class Track(val id: Int, val format: String, val resolution: Pair<Int, Int>, var selected: Boolean)
+data class Track(val id: Int, val format: String, val resolution: Pair<String, String>, var selected: Boolean)
 
-class TrackAdapter(private val tracks: List<Track>, private val onTrackSelected: (Track) -> Unit) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
+class TrackAdapter(private val tracks: List<Track>,private val onTrackSelected: (Track) -> Unit) : RecyclerView.Adapter<TrackAdapter.TrackViewHolder>() {
 
     inner class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val trackResolution: CheckedTextView = itemView.findViewById(R.id.track_quality)
@@ -29,10 +30,13 @@ class TrackAdapter(private val tracks: List<Track>, private val onTrackSelected:
         return TrackViewHolder(view)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
         val track = tracks[position]
-        if (track.format != "Auto")
+        if (track.format != "Auto" && track.format!="super")
             holder.trackResolution.text = "${track.resolution.first} x ${track.resolution.second}"
+        else if( track.format == "super")
+            holder.trackResolution.text = track.resolution.second
         else
             holder.trackResolution.text = "Auto"
         holder.trackResolution.isChecked = position == selectedPosition
