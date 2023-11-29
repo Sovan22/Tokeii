@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [ContinueWatching::class], version = 2)
+@Database(entities = [ContinueWatching::class], version = 3)
 @TypeConverters(EpisodeListTypeConverter::class)
 abstract class ContinueWatchingDatabase : RoomDatabase(){
 
@@ -28,7 +28,7 @@ abstract class ContinueWatchingDatabase : RoomDatabase(){
                         context.applicationContext,
                        ContinueWatchingDatabase::class.java,
                         "continue_watching_database"
-                    ).addMigrations(MIGRATION_1_2).build()
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
 //                    fallbackToDestructiveMigration().build()
 
                     INSTANCE = instance
@@ -42,6 +42,12 @@ abstract class ContinueWatchingDatabase : RoomDatabase(){
 private val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("ALTER TABLE continue_watching ADD COLUMN origin TEXT")
+    }
+}
+
+private val MIGRATION_2_3 = object : Migration(2,3){
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE continue_watching ADD COLUMN year TEXT")
     }
 }
 
