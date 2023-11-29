@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -79,25 +80,30 @@ class AnimeFragment : Fragment() {
             findNavController().navigate(action)
         }
         summerAnimeRc.adapter = suAdapter
+        try {
+            lifecycleScope.launch(Dispatchers.IO) {
 
-        lifecycleScope.launch (Dispatchers.IO){
 
-            val winterList = animeInfo.getSeasonalAnimeInfo(2)
-            val fallList = animeInfo.getSeasonalAnimeInfo(1)
-            val springList = animeInfo.getSeasonalAnimeInfo(3)
-            val summerList = animeInfo.getSeasonalAnimeInfo(4)
+                val winterList = animeInfo.getSeasonalAnimeInfo(2)
+                val fallList = animeInfo.getSeasonalAnimeInfo(1)
+                val springList = animeInfo.getSeasonalAnimeInfo(3)
+                val summerList = animeInfo.getSeasonalAnimeInfo(4)
 
-            withContext(Dispatchers.Main){
-                wAdapter.submitList(winterList)
-                fAdapter.submitList(fallList)
-                spAdapter.submitList(springList)
-                suAdapter.submitList(summerList)
-                binding.loadingAnime.visibility = View.GONE
-                binding.winterText.visibility = View.VISIBLE
-                binding.fallText.visibility = View.VISIBLE
-                binding.springText.visibility = View.VISIBLE
-                binding.summerText.visibility = View.VISIBLE
+                withContext(Dispatchers.Main) {
+                    wAdapter.submitList(winterList)
+                    fAdapter.submitList(fallList)
+                    spAdapter.submitList(springList)
+                    suAdapter.submitList(summerList)
+                    binding.loadingAnime.visibility = View.GONE
+                    binding.winterText.visibility = View.VISIBLE
+                    binding.fallText.visibility = View.VISIBLE
+                    binding.springText.visibility = View.VISIBLE
+                    binding.summerText.visibility = View.VISIBLE
+                }
+
             }
+        }catch (e:Exception){
+            e.printStackTrace()
         }
 
         return binding.root
