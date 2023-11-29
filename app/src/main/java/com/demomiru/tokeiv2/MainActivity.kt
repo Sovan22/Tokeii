@@ -2,6 +2,10 @@
 
 package com.demomiru.tokeiv2
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 
 import android.view.KeyEvent
@@ -35,6 +39,7 @@ import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
 import com.demomiru.tokeiv2.watching.ContinueWatchingRepository
 import com.demomiru.tokeiv2.watching.VideoData
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.lagradost.nicehttp.Requests
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,10 +48,11 @@ import kotlin.math.ceil
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
-
+    private val version = 108
     private lateinit var watchHistoryRc : RecyclerView
     private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
     private val watchHistoryDao by lazy { database.watchDao() }
+    private val app = Requests()
     private lateinit var viewModelFactory: ContinueWatchingViewModelFactory2
     private val viewModel: ContinueWatchingViewModel2 by viewModels(
         factoryProducer = {
@@ -133,12 +139,21 @@ class MainActivity : AppCompatActivity() {
             return@setOnNavigationItemReselectedListener
         }
 
+        lifecycleScope.launch {
+            val update = app.get("https://github.com/Sovan22/Tokeii/").document.select("article.markdown-body.entry-content.container-lg .anchor")[2].attr("href").substringAfter("v").toInt()
+            if( version < update)
+                withContext(Dispatchers.Main){
+                    showDialog()
+                }
+        }
+
 
 
     }
     fun triggerSearchKeyPress() {
         val enterKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
         dispatchKeyEvent(enterKeyEvent)
+
     }
 
 
@@ -178,6 +193,30 @@ class MainActivity : AppCompatActivity() {
         viewModel.allWatchHistory.observe(this,viewStateObserver)
 
         super.onResume()
+    }
+
+    private fun showDialog(){
+        val builder = AlertDialog.Builder(this)
+
+
+        builder.setMessage("There is an update available to this app")
+            .setTitle("Update Found")
+
+
+        builder.setPositiveButton("Download"){ dialog, id ->
+            // User clicked OK button
+            val url = "https://github.com/Sovan22/Tokeii/releases/"
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(url)
+            startActivity(intent)
+            dialog.dismiss()
+        }
+        builder.setNegativeButton("Cancel"){ dialog, id ->
+            // User cancelled the dialog
+        }
+
+        val dialog = builder.create()
+        dialog.show()
     }
 
 }
