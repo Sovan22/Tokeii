@@ -6,6 +6,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.lagradost.nicehttp.Requests
 import org.json.JSONArray
+import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import javax.crypto.Cipher
@@ -99,51 +101,66 @@ class GoMovies{
     private val proxy = BuildConfig.PROXY_URL
     private val headers = mapOf("X-Requested-With" to "XMLHttpRequest")
     private val baseUrl = "https://gomovies.sx"
-    suspend fun search(s: Int, ep:Int ,query: String) : Pair<String?,ArrayList<String>?>{
+    suspend fun search(s: Int, ep:Int ,query: String,isMovie: Boolean,y :String) : Pair<String?,ArrayList<String>?>{
         val squery = query.lowercase().replace(" ","-")
-        val search = app.get(
+        val sources: Elements
+
+        val searchRes = app.get(
             "${proxy}https://gomovies.sx/search/${squery}",
             headers = headers
-        ).document.select("div.flw-item h2 a")
+        ).document
+
+        val search = searchRes.select("div.flw-item h2 a")
+        val year = searchRes.select("div.flw-item div.fd-infor").map{
+            it.getElementsByTag("span")[0].text()
+        }
 
         var mediaId = ""
-
+        var i = 0
         for (se in search) {
-            if (se.attr("title") == query) {
+            if (se.attr("title") == query && onConflict(se,isMovie,year, y,i)) {
                 mediaId = se.attr("href").substringAfter("gomovies-")
                 println(mediaId)
                 break
             }
+            i++
         }
 
         if (mediaId == "") return Pair( null, null)
-
-        val seasons = app.get(
-            "${proxy}https://gomovies.sx/ajax/v2/tv/seasons/${mediaId}", headers = headers
-        ).document.select(".ss-item")
+        if(!isMovie) {
+            val seasons = app.get(
+                "${proxy}https://gomovies.sx/ajax/v2/tv/seasons/${mediaId}", headers = headers
+            ).document.select(".ss-item")
 
 //        for (s in seasons) {
 //            println(s)
 //        }
-        val dataId = seasons[s-1].attr("data-id")
+            val dataId = seasons[s - 1].attr("data-id")
 
-        val episodes = app.get(
-            "${proxy}$baseUrl/ajax/season/episodes/${dataId}", headers = headers
-        ).document.select(".eps-item")
+            val episodes = app.get(
+                "${proxy}$baseUrl/ajax/season/episodes/${dataId}", headers = headers
+            ).document.select(".eps-item")
 
 //            for (ep in episodes)
 //                println(ep)
 
-        val epDataId = episodes[ep-1].attr("data-id")
+            val epDataId = episodes[ep - 1].attr("data-id")
 
-        val sources = app.get(
-            "${proxy}$baseUrl/ajax/episode/servers/$epDataId",
-            headers = headers
-        ).document.select("li.nav-item a")
+            sources = app.get(
+                "${proxy}$baseUrl/ajax/episode/servers/$epDataId",
+                headers = headers
+            ).document.select("li.nav-item a")
+        }else{
+            sources = app.get(
+                "${proxy}$baseUrl/ajax/episode/list/$mediaId",
+                headers = headers
+            ).document.select("li.nav-item a")
+        }
         var upCloudId = ""
         for (source in sources) {
-            if (source.attr("title").contains("UpCloud")) upCloudId = source.attr("data-id")
+            if (source.attr("title").contains("UpCloud")) upCloudId = if(!isMovie)source.attr("data-id") else source.attr("data-linkid")
         }
+        if (upCloudId == "") return Pair( null, null)
 //        println("upcloudid below")
 //        println(upCloudId)
 
@@ -163,28 +180,30 @@ class GoMovies{
 
         val sub = getSubs(stream.tracks)
 
-        val decryptionKeyResponse =
-            app.get("https://raw.githubusercontent.com/enimax-anime/key/e4/key.txt").toString()
 
+        val scriptJs = app.get("https://rabbitstream.net/js/player/prod/e4-player.min.js").toString()
 //        println(decryptionKeyResponse)
 
-        val listType = object : TypeToken<List<List<Int>>>() {}.type
-        val decryptionKey: List<List<Int>> = gson.fromJson(decryptionKeyResponse, listType)
+//        val listType = object : TypeToken<List<List<Int>>>() {}.type
+        val decryptionKey: List<Pair<Int,Int>>? = extractKey(scriptJs)
+        if (decryptionKey.isNullOrEmpty()) println("Cant extract key")
 //        println(decryptionKey)
 
         var extractedKey = ""
-        val sourcesArray = stream.sources.split("").toMutableList()
-        sourcesArray.removeAt(0)
-        sourcesArray.removeAt(sourcesArray.size - 1)
-        println(sourcesArray)
-        decryptionKey.forEach { index ->
-            for (i in index[0] until index[1]) {
-                extractedKey += stream.sources[i]
-                sourcesArray[i] = ""
-            }
+        var strippedSources = stream.sources
+        var totalledOffset = 0
+        decryptionKey?.forEach { pair ->
+            val start = pair.first + totalledOffset;
+            val end = start + pair.second;
+            extractedKey += stream.sources.slice(start until end)
+            strippedSources = strippedSources.replace(
+                stream.sources.substring(start, end),
+                ""
+            )
+            totalledOffset += pair.second
         }
         val key = extractedKey
-        val data = sourcesArray.joinToString("")
+        val data = strippedSources
         val decryptedStream = aes.decrypt(data, key)
 //        println(decryptedStream)
         val jsonArray = JSONArray(decryptedStream)
@@ -192,6 +211,36 @@ class GoMovies{
         println(videoSrc)
         return Pair(videoSrc.file, sub)
 
+    }
+    private fun onConflict(item : Element, movie: Boolean, year: List<String>, y: String, i: Int): Boolean {
+        return if(movie && item.attr("href").contains("/movie/") && year[i] == y ) true
+        else !movie && item.attr("href").contains("/tv/")
+    }
+
+    private fun extractKey(script: String): List<Pair<Int, Int>>? {
+        val startOfSwitch = script.lastIndexOf("switch")
+        val endOfCases = script.indexOf("partKeyStartPosition")
+        val switchBody = script.slice(startOfSwitch until endOfCases)
+
+        val nums = mutableListOf<Pair<Int, Int>>()
+        val matches = Regex(":[a-zA-Z0-9]+=([a-zA-Z0-9]+),[a-zA-Z0-9]+=([a-zA-Z0-9]+);").findAll(switchBody)
+        for (match in matches) {
+            val innerNumbers = mutableListOf<Int>()
+            for (varMatch in listOf(match.groupValues[1], match.groupValues[2])) {
+                val regex = Regex("${varMatch}=0x([a-zA-Z0-9]+)")
+                val varMatches = regex.findAll(script).toList()
+                val lastMatch = varMatches.lastOrNull()
+                if (lastMatch == null) {
+                    return null
+                }
+                val number = Integer.parseInt(lastMatch.groupValues[1], 16)
+                innerNumbers.add(number)
+            }
+
+            nums.add(Pair(innerNumbers[0], innerNumbers[1]))
+        }
+
+        return nums
     }
 
 
