@@ -32,7 +32,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player.*
 import com.demomiru.tokeiv2.utils.GoMovies
 import com.demomiru.tokeiv2.utils.GogoAnime
-import com.demomiru.tokeiv2.utils.HdMovie2
 import com.demomiru.tokeiv2.utils.SmashyStream
 import com.demomiru.tokeiv2.utils.SuperstreamUtils
 
@@ -48,6 +47,7 @@ import com.demomiru.tokeiv2.utils.passVideoData
 import com.demomiru.tokeiv2.watching.ContinueWatching
 
 import com.demomiru.tokeiv2.watching.VideoData
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.launch
@@ -56,6 +56,7 @@ import kotlinx.coroutines.withContext
 
 @Suppress("DEPRECATION")
 class MoviePlayActivity : AppCompatActivity(){
+    private val gson = Gson()
     private lateinit var webView : WebView
     private  var fullscreenContainer: FullscreenHolder? = null
     private var animeEp : List<GogoAnime.Episode> = listOf()
@@ -133,7 +134,10 @@ class MoviePlayActivity : AppCompatActivity(){
             imgLink = data.imgLink
             seekProgress = data.progress
             type = data.type
+            year = data.year ?: ""
+            //TODO add year in continue watching and videoData
             origin = data.origin ?: ""
+            println(data)
             if (type != "movie"){
                 season = data.season
                 episode = data.episode
@@ -220,7 +224,8 @@ class MoviePlayActivity : AppCompatActivity(){
                     superId,
                    subUrl,
                    animeEp,
-                   origin
+                   origin,
+                   year
                    ),this)
                 intent.putExtra("origin", origin)
                 intent.putExtra("superstream",isSuper)
@@ -344,45 +349,55 @@ class MoviePlayActivity : AppCompatActivity(){
                         if (superId != null) {
                             isSuper = true
                             val tvLinks = superStream.loadLinks(false, superId!!, season, episode)
+                            val urlMaps: MutableMap<String,String> = mutableMapOf()
                             tvLinks.data?.list?.forEach {
                                 if(!it.path.isNullOrBlank()){
                                     println("${it.quality} : ${it.path}")
+                                    urlMaps[it.quality!!] = it.path
                                     if(it.quality == "720p") {
                                         val subtitle = superStream.loadSubtile(false,it.fid!!,superId!!,season,episode).data
 //
                                         getSub(subtitle)
-                                        videoUrl.value = it.path
+
                                         return@forEach
                                     }
                                 }
                             }
+                            if(urlMaps.isNotEmpty())
+                                videoUrl.value = gson.toJson(urlMaps)
                             if(videoUrl.value.isNullOrBlank()){
 //                                withContext(Dispatchers.Main){
 //                                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                    finish()
 //                                }
                                 isSuper = false
-//                                getGoMovieLink(false)
-                                getSmashLink(false)
+                                getGoMovieLink(false)
+//                                getSmashLink(false)
                             }
                         }
                         else{
                             isSuper = false
-//                            getGoMovieLink(false)
-                            getSmashLink(false)
+                            getGoMovieLink(false)
+//                            getSmashLink(false)
                         }
 
                     }
                 }
             }else if(type == "movie"){
+                println("Reached here")
                 if (origin != "hi") {
                     lifecycleScope.launch {
-                        val mainData = superStream.search(title)
+                        try {
+                            val mainData = superStream.search(title)
 //                        println(mainData.data.list[0].year)
-                        val item = mainData.data.list[0]
-                        println(year + " ${item.year}")
-                        superId = if(item.title == title && item.year.toString() == year) item.id else null
-                        getMovieEn()
+                            val item = mainData.data.list[0]
+                            println(year + " ${item.year}")
+                            superId =
+                                if (item.title == title && item.year.toString() == year) item.id else null
+                            getMovieEn()
+                        }catch (e : Exception){
+                            getMovieEn()
+                        }
 //                        webView.loadUrl(url)
                     }
 
@@ -419,12 +434,13 @@ class MoviePlayActivity : AppCompatActivity(){
 
     private suspend fun getGoMovieLink(isMovie: Boolean){
         val goMovie = GoMovies()
-        val data = goMovie.search(season,episode,title)
+        val data = goMovie.search(season,episode,title,isMovie,year)
         val vidLink = data.first
         val subLinks = data.second
         if(vidLink.isNullOrBlank()){
-            Toast.makeText(this@MoviePlayActivity, "Not Available", Toast.LENGTH_SHORT).show()
-            finish()
+//            Toast.makeText(this@MoviePlayActivity, "Not Available", Toast.LENGTH_SHORT).show()
+//            finish()
+            getSmashLink(isMovie)
         }
         else{
             if (!subLinks.isNullOrEmpty())subUrl.addAll(subLinks)
@@ -489,31 +505,40 @@ class MoviePlayActivity : AppCompatActivity(){
         if (superId != null) {
             isSuper = true
             val movieLinks = superStream.loadLinks(true, superId!!)
+            val urlMaps: MutableMap<String,String> = mutableMapOf()
             movieLinks.data?.list?.forEach {
                 if(!it.path.isNullOrBlank()){
                     println("${it.quality} : ${it.path}")
+                    urlMaps[it.quality!!] = it.path
                     if(it.quality == "720p") {
                         val subtitle = superStream.loadSubtile(true,it.fid!!,superId!!).data
 //
                         getSub(subtitle)
-                        videoUrl.value = it.path
+
                         return@forEach
                     }
                 }
+
             }
+            if(urlMaps.isNotEmpty())
+            videoUrl.value = gson.toJson(urlMaps)
             if(videoUrl.value.isNullOrBlank()){
                 withContext(Dispatchers.Main){
 //                    webView.loadUrl(url)
-                    getSmashLink(true)
+//                    getSmashLink(true)
                     isSuper = false
+                    getGoMovieLink(true)
+
                 }
             }
         }
         else{
             withContext(Dispatchers.Main){
 //                webView.loadUrl(url)
-                getSmashLink(true)
+//                getSmashLink(true)
                 isSuper = false
+                getGoMovieLink(true)
+
             }
         }
     }
