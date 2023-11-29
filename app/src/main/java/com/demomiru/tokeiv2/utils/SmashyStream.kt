@@ -1,25 +1,36 @@
 package com.demomiru.tokeiv2.utils
 
 
+import android.icu.text.CaseMap.Title
+import com.demomiru.tokeiv2.BuildConfig
 import com.google.gson.Gson
 import com.lagradost.nicehttp.Requests
 
 
-data class SmashyData(
+data class Video1(
     val sourceUrls: ArrayList<String> = arrayListOf(),
     val subtitleUrls: String? = null
 )
+
+data class Video3(
+    val sourceUrls: ArrayList<Sources> = arrayListOf(),
+){
+    data class Sources(
+        val file: String,
+        val title: String,
+    )
+}
 class SmashyStream{
 
     private val app = Requests()
     private val gson = Gson()
-//    private val proxy = BuildConfig.PROXY_URL
+    private val proxy = BuildConfig.PROXY_URL
     suspend fun getLink(isMovie: Boolean = false,id: String,s: Int,e:Int) : Pair<String?,String?>{
         val getUrl = if(!isMovie) "https://embed.smashystream.com/playere.php?tmdb=$id&season=$s&episode=$e" else "https://embed.smashystream.com/playere.php?tmdb=$id"
         try {
             val sources =
                 app.get(
-                    getUrl,
+                    "${proxy}$getUrl",
                     referer = "https://smashystream.xyz/"
                 ).document
                     .select("div.dropdown-menu a.server.dropdown-item").map {
@@ -27,12 +38,18 @@ class SmashyStream{
                     }
             println(sources)
 
+            val srcUrl = sources.find {
+                it.contains("video1")
+            }!!
             val streamRes = app.get(
-                sources[0],
+                srcUrl,
                 referer = getUrl
             ).toString()
 //                .document.getElementsByTag("script")
-            val streamParsed = gson.fromJson(streamRes,SmashyData::class.java)
+            println(streamRes)
+            val streamParsed = gson.fromJson(streamRes,Video1::class.java)
+            if (streamParsed.sourceUrls[0] == "null")
+                return Pair(null,null)
 //            return Pair(streamParsed.sourceUrls[0],streamParsed.subtitleUrls[0])
 
 //            val content = streamRes
