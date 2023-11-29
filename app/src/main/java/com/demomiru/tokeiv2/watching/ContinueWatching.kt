@@ -41,7 +41,8 @@ data class ContinueWatching (
         val season : Int = 0,
         val type : String,
         val animeEp : List<GogoAnime.Episode>? = null,
-        val origin : String? = null
+        val origin : String? = null,
+        val year : String? = null,
         ) : Parcelable {
         constructor(parcel: Parcel) : this(
                 parcel.readInt(),
@@ -52,6 +53,7 @@ data class ContinueWatching (
                 parcel.readInt(),
                 parcel.readString()?:"",
                 parcel.createTypedArrayList(GogoAnime.Episode.CREATOR)?: listOf(),
+                parcel.readString()?:"",
                 parcel.readString()?:""
         ) {
         }
@@ -66,6 +68,7 @@ data class ContinueWatching (
                 parcel.writeString(type)
                 parcel.writeTypedList(animeEp)
                 parcel.writeString(origin)
+                parcel.writeString(year)
         }
 
         override fun describeContents(): Int {
@@ -98,6 +101,7 @@ data class VideoData(
         val superSub : List<String>,
         val animeEpisode : List<GogoAnime.Episode>? = null,
         val origin: String? = null,
+        val year: String? = null
         ) : Parcelable {
 
         constructor(parcel: Parcel) : this(
@@ -113,6 +117,7 @@ data class VideoData(
                 parcel.readInt(),
                 parcel.createStringArrayList() ?: ArrayList(),
                 parcel.createTypedArrayList(GogoAnime.Episode.CREATOR),
+                parcel.readString() ?: "",
                 parcel.readString() ?: ""
         )
 
@@ -130,6 +135,7 @@ data class VideoData(
                 parcel.writeStringList(superSub)
                 parcel.writeTypedList(animeEpisode)
                 parcel.writeString(origin)
+                parcel.writeString(year)
         }
 
         override fun describeContents(): Int {
