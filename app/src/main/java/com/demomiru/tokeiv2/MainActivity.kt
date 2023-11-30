@@ -1,49 +1,35 @@
-
-
 package com.demomiru.tokeiv2
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-
 import android.view.KeyEvent
-
 import android.view.View
 import android.widget.TextView
 import androidx.activity.viewModels
-
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
-
-
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory2
-import com.demomiru.tokeiv2.utils.GogoAnime
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.passData
-import com.demomiru.tokeiv2.utils.passVideoData
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingAdapter
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
 import com.demomiru.tokeiv2.watching.ContinueWatchingRepository
-import com.demomiru.tokeiv2.watching.VideoData
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.lagradost.nicehttp.Requests
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.ceil
 
 
 @Suppress("DEPRECATION")
@@ -61,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     )
     private var currentFragment = MutableLiveData(R.id.moviesFragment)
     private lateinit var continueText: TextView
-//    private lateinit var continueWatchingObserver: Observer<List<ContinueWatching>>
+
     private var nestedScrollView : NestedScrollView? = null
     private lateinit var adapter: ContinueWatchingAdapter
     private lateinit var continueWatchingRepository: ContinueWatchingRepository
@@ -203,7 +189,7 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Update Found")
 
 
-        builder.setPositiveButton("Download"){ dialog, id ->
+        builder.setPositiveButton("Download"){ dialog, _ ->
             // User clicked OK button
             val url = "https://github.com/Sovan22/Tokeii/releases/"
             val intent = Intent(Intent.ACTION_VIEW)
@@ -211,7 +197,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             dialog.dismiss()
         }
-        builder.setNegativeButton("Cancel"){ dialog, id ->
+        builder.setNegativeButton("Cancel"){ _, _ ->
             // User cancelled the dialog
         }
 
