@@ -1,4 +1,5 @@
 package com.demomiru.tokeiv2
+
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
@@ -34,7 +35,7 @@ import kotlinx.coroutines.withContext
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
-    private val version = 108
+    private val version = 109
     private lateinit var watchHistoryRc : RecyclerView
     private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
     private val watchHistoryDao by lazy { database.watchDao() }
