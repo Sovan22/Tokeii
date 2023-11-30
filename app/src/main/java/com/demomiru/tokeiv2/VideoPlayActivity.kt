@@ -350,7 +350,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
 
        val a = PlayerView.ControllerVisibilityListener { visibility ->
-           if(visibility == View.VISIBLE) subtitleView.visibility = View.GONE
+           if(visibility == View.VISIBLE || !showSubs.isChecked) subtitleView.visibility = View.GONE
            else subtitleView.visibility = View.VISIBLE
        }
         playerView.setControllerVisibilityListener(a)
@@ -407,7 +407,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
 
             override fun onTracksChanged(tracks: Tracks) {
-                if(qualitySelectBg.isVisible) return
+                if(qualitySelectBg.isVisible || subSelectBg.isVisible) return
                 if(isSuper && setTrackAdapter == 1) {
                     println("Called adapter")
                     val trackData = superUrlSelector()
@@ -495,9 +495,11 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 if (player.duration != C.TIME_UNSET) {
                     // Duration is available
                     seekBar.max = player.duration.toInt()
-                    subUpdateProgress = trackUpdate
-                    trackUpdate = 0L
-                    isTrackChanged = false
+
+                        subUpdateProgress = trackUpdate
+                        trackUpdate = 0L
+                        isTrackChanged = false
+
 //                    val seek = player.duration / 100 * progress
 //                    println(subUpdateProgress)
                     val seek = if(subUpdateProgress > 0)subUpdateProgress else  player.duration / 100 * progress
@@ -694,6 +696,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 subSelectionView.adapter = SubTrackAdapter(subtitleConfig, title) { sub ->
                     val newMediaSource = MergingMediaSource(videoMediaSource, sub.subConfig)
                     subUpdateProgress = player.currentPosition
+                    trackUpdate = subUpdateProgress
                     player.setMediaSource(newMediaSource)
                     player.prepare()
 //                    player.seekTo(subUpdateProgress)
