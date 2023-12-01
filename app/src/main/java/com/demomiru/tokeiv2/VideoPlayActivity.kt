@@ -28,6 +28,7 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 
 import android.widget.SeekBar
 import android.widget.TextView
@@ -83,6 +84,7 @@ import com.demomiru.tokeiv2.utils.getTvSeasons
 import com.demomiru.tokeiv2.utils.setSeekBarTime
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -191,7 +193,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
 //        val sub =PlayerControlView.findViewById<SubtitleView>(R.id.exo_subtitles)
         val videoNext = findViewById<LinearLayout>(R.id.videoView_next_ep)
-
+        val buffer = findViewById<ProgressBar>(R.id.buffering)
         val bundle = intent.extras
         val origin = intent.getStringExtra("origin")
 
@@ -555,7 +557,14 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                         } else finish()
 
                     }
-//                else if(playbackState == Player.STATE_BUFFERING) Toast.makeText(this@VideoPlayActivity,"Loading", Toast.LENGTH_LONG).show()
+                else if(playbackState == Player.STATE_BUFFERING) {
+                        buffer.visibility = View.VISIBLE
+                        playPause.visibility = View.GONE
+                    }
+                    else {
+                        playPause.visibility = View.VISIBLE
+                        buffer.visibility = View.GONE
+                    }
                     super.onPlaybackStateChanged(playbackState)
                 }
 
