@@ -99,8 +99,8 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.lang.Exception
 import java.lang.reflect.Type
+import kotlin.Exception
 import kotlin.math.abs
 
 
@@ -355,22 +355,25 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
        }
         playerView.setControllerVisibilityListener(a)
 
+        try {
 
-        val gestureDetectorDouble = GestureDetectorCompat(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent): Boolean {
 
-                if (e.x > playerView.width / 2){
-                    // Double tapped on the right side - forward seek
-                    player.seekTo(player.currentPosition + 10000)
-                    seekBar.progress = player.currentPosition.toInt()
-                } else {
-                    // Double tapped on the left side - backward seek
-                    player.seekTo(player.currentPosition - 10000)
-                    seekBar.progress = player.currentPosition.toInt()
-                }
+            val gestureDetectorDouble =
+                GestureDetectorCompat(this, object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onDoubleTap(e: MotionEvent): Boolean {
 
-                return super.onDoubleTap(e)
-            }
+                        if (e.x > playerView.width / 2) {
+                            // Double tapped on the right side - forward seek
+                            player.seekTo(player.currentPosition + 10000)
+                            seekBar.progress = player.currentPosition.toInt()
+                        } else {
+                            // Double tapped on the left side - backward seek
+                            player.seekTo(player.currentPosition - 10000)
+                            seekBar.progress = player.currentPosition.toInt()
+                        }
+
+                        return super.onDoubleTap(e)
+                    }
 
 
 //            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
@@ -385,116 +388,125 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 //                return super.onSingleTapConfirmed(e)
 //            }
 
-        })
+                })
 
-        val dataSourceFactory = DefaultHttpDataSource.Factory()
-            .setAllowCrossProtocolRedirects(true)
-            .setConnectTimeoutMs(50000)
-            .setReadTimeoutMs(50000)
-            .setTransferListener(DefaultBandwidthMeter.Builder(this).build())
-
-
-        playPause = findViewById(R.id.videoView_play_pause_btn)
-        seekBar = findViewById(R.id.videoView_seekbar)
-        titleTv = findViewById(R.id.videoView_title)
-
-        val videoQuality = findViewById<TextView>(R.id.videoView_quality)
-        videoQuality.text = if(isSuper) "720p" else "Auto"
+            val dataSourceFactory = DefaultHttpDataSource.Factory()
+                .setAllowCrossProtocolRedirects(true)
+                .setConnectTimeoutMs(50000)
+                .setReadTimeoutMs(50000)
+                .setTransferListener(DefaultBandwidthMeter.Builder(this).build())
 
 
-        val listener = object : Player.Listener {
+            playPause = findViewById(R.id.videoView_play_pause_btn)
+            seekBar = findViewById(R.id.videoView_seekbar)
+            titleTv = findViewById(R.id.videoView_title)
+
+            val videoQuality = findViewById<TextView>(R.id.videoView_quality)
+            videoQuality.text = if (isSuper) "720p" else "Auto"
 
 
+            val listener = object : Player.Listener {
 
-            override fun onTracksChanged(tracks: Tracks) {
-                if(qualitySelectBg.isVisible || subSelectBg.isVisible) return
-                if(isSuper && setTrackAdapter == 1) {
-                    println("Called adapter")
-                    val trackData = superUrlSelector()
-                    val ta = TrackAdapter(trackData){
-                        isTrackChanged = true
-                        selectedUrl = urlMaps[it.resolution.second]!!
-                        videoQuality.text = "${it.resolution.second}"
-                    }
-                    tracksRv.adapter = ta
-                    setTrackAdapter--
-                }
-                else if(setTrackAdapter == 0) return
-                else{
-                val trackGroup = tracks.groups[0]
-                val trackRv: MutableList<Track> = mutableListOf()
-                for (i in 0 until trackGroup.length) {
-                    val trackDetails = trackGroup.getTrackFormat(i)
+
+                override fun onTracksChanged(tracks: Tracks) {
+                    if (qualitySelectBg.isVisible || subSelectBg.isVisible) return
+                    if (isSuper && setTrackAdapter == 1) {
+                        println("Called adapter")
+                        val trackData = superUrlSelector()
+                        val ta = TrackAdapter(trackData) {
+                            isTrackChanged = true
+                            selectedUrl = urlMaps[it.resolution.second]!!
+                            videoQuality.text = "${it.resolution.second}"
+                        }
+                        tracksRv.adapter = ta
+                        setTrackAdapter--
+                    } else if (setTrackAdapter == 0) return
+                    else if(player.duration == C.TIME_UNSET) return
+                    else {
+                        val trackGroup = tracks.groups[0]
+                        val trackRv: MutableList<Track> = mutableListOf()
+                        for (i in 0 until trackGroup.length) {
+                            val trackDetails = trackGroup.getTrackFormat(i)
 //                    val selected = trackGroup.isTrackSelected(i)
-                    trackRv.add(
-                        Track(
-                            trackDetails.id!!.toInt(),
-                            trackDetails.label.toString(),
-                            Pair(trackDetails.width.toString(),trackDetails.height.toString()),
-                            selected = false
+                            trackRv.add(
+                                Track(
+                                    trackDetails.id!!.toInt(),
+                                    trackDetails.label.toString(),
+                                    Pair(
+                                        trackDetails.width.toString(),
+                                        trackDetails.height.toString()
+                                    ),
+                                    selected = false
+                                )
+                            )
+                        }
+                        trackRv.add(
+                            Track(
+                                trackGroup.length,
+                                "Auto",
+                                Pair("", ""),
+                                selected = true
+                            )
                         )
-                    )
-                }
-                trackRv.add(Track(
-                    trackGroup.length,
-                    "Auto",
-                    Pair("",""),
-                    selected = true
-                ))
-                trackRv.reverse()
-                val trackAdapter = TrackAdapter(trackRv) { track ->
+                        trackRv.reverse()
+                        val trackAdapter = TrackAdapter(trackRv) { track ->
 //                    val trackSelectionOverride = TrackSelectionOverride(0, track.id)
 //                    track.selected = true
-                    player.trackSelectionParameters = if(track.format != "Auto") {
-                            videoQuality.text = "${track.resolution.second}p"
-                            player.trackSelectionParameters
-                                .buildUpon()
-                                .setOverrideForType(
-                                    TrackSelectionOverride(trackGroup.mediaTrackGroup, track.id)
-                                )
-                                .build()
+                            player.trackSelectionParameters = if (track.format != "Auto") {
+                                videoQuality.text = "${track.resolution.second}p"
+                                player.trackSelectionParameters
+                                    .buildUpon()
+                                    .setOverrideForType(
+                                        TrackSelectionOverride(trackGroup.mediaTrackGroup, track.id)
+                                    )
+                                    .build()
 
-                    }
-                    else{
-                        videoQuality.text = "Auto"
-                        player.trackSelectionParameters
-                            .buildUpon()
-                            .setOverrideForType(
-                                TrackSelectionOverride(trackGroup.mediaTrackGroup, MutableList(track.id){it})
-                            )
-                            .build()
+                            } else {
+                                videoQuality.text = "Auto"
+                                player.trackSelectionParameters
+                                    .buildUpon()
+                                    .setOverrideForType(
+                                        TrackSelectionOverride(
+                                            trackGroup.mediaTrackGroup,
+                                            MutableList(track.id) { it })
+                                    )
+                                    .build()
 
 
-                    }
+                            }
 //                    for( i in 0 until ) println(player.currentTracks.groups[0].isTrackSelected(i))
 //                    player.prepare()
+                        }
+                        for (track in trackRv) {
+                            println(track)
+                        }
+                        tracksRv.adapter = trackAdapter
+                    }
+                    super.onTracksChanged(tracks)
                 }
-                for(track in trackRv){
-                    println(track)
-                }
-                tracksRv.adapter = trackAdapter
-                }
-                super.onTracksChanged(tracks)
-            }
 
-//            override fun onVideoSizeChanged(videoSize: VideoSize) {
+                //            override fun onVideoSizeChanged(videoSize: VideoSize) {
 //               if(videoSize.width !=0 && videoSize.height!=0 ){
 //                   videoQuality.text = "${videoSize.height}p"
 //               }
 //                super.onVideoSizeChanged(videoSize)
 //            }
-            override fun onPlayerError(error: PlaybackException) {
-                Toast.makeText(this@VideoPlayActivity,"Quality not available or Network Issue",Toast.LENGTH_SHORT).show()
-                super.onPlayerError(error)
-            }
+                override fun onPlayerError(error: PlaybackException) {
+                    Toast.makeText(
+                        this@VideoPlayActivity,
+                        "Quality not available or Network Issue",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    super.onPlayerError(error)
+                }
 
-            @SuppressLint("UnsafeOptInUsageError")
-            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                @SuppressLint("UnsafeOptInUsageError")
+                override fun onTimelineChanged(timeline: Timeline, reason: Int) {
 
 
-                if (player.duration != C.TIME_UNSET) {
-                    // Duration is available
-                    seekBar.max = player.duration.toInt()
+                    if (player.duration != C.TIME_UNSET) {
+                        // Duration is available
+                        seekBar.max = player.duration.toInt()
 
                         subUpdateProgress = trackUpdate
                         trackUpdate = 0L
@@ -502,223 +514,227 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
 //                    val seek = player.duration / 100 * progress
 //                    println(subUpdateProgress)
-                    val seek = if(subUpdateProgress > 0)subUpdateProgress else  player.duration / 100 * progress
-                    player.seekTo(seek)
-                    seekBar.progress = seek.toInt()
-                    playerView.setOnTouchListener { _, motionEvent ->
-                        if(!isLocked) {
-                            gestureDetectorDouble.onTouchEvent(motionEvent)
-                            gestureDetectorCompat.onTouchEvent(motionEvent)
-                            if (motionEvent.action == MotionEvent.ACTION_UP) {
-                                if (brightnessLL.visibility == View.VISIBLE || volumeLL.visibility == View.VISIBLE) {
-                                    playerView.useController = false
-                                    brightnessLL.visibility = View.GONE
-                                    volumeLL.visibility = View.GONE
+                        val seek =
+                            if (subUpdateProgress > 0) subUpdateProgress else player.duration / 100 * progress
+                        player.seekTo(seek)
+                        seekBar.progress = seek.toInt()
+                        playerView.setOnTouchListener { _, motionEvent ->
+                            if (!isLocked) {
+                                gestureDetectorDouble.onTouchEvent(motionEvent)
+                                gestureDetectorCompat.onTouchEvent(motionEvent)
+                                if (motionEvent.action == MotionEvent.ACTION_UP) {
+                                    if (brightnessLL.visibility == View.VISIBLE || volumeLL.visibility == View.VISIBLE) {
+                                        playerView.useController = false
+                                        brightnessLL.visibility = View.GONE
+                                        volumeLL.visibility = View.GONE
 
+                                    }
                                 }
-                            }
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                playerView.useController = true
-                            }, 1000)
-                        }
-                        else{
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    playerView.useController = true
+                                }, 1000)
+                            } else {
 
-                                if(unlockIv.visibility == View.VISIBLE){
+                                if (unlockIv.visibility == View.VISIBLE) {
                                     unlockIv.visibility = View.GONE
-                                }
-                                else{
+                                } else {
                                     unlockIv.visibility = View.VISIBLE
                                     Handler(Looper.getMainLooper()).postDelayed({
-                                       unlockIv.visibility = View.GONE
+                                        unlockIv.visibility = View.GONE
                                     }, 5000)
                                 }
 
-                        }
-                        return@setOnTouchListener false
-                    }
-                }
-                super.onTimelineChanged(timeline, reason)
-            }
-
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_ENDED){
-                    if(type == "tvshow") {
-                        if (isShowFinished) finish()
-                        isNextEpisode.value = true
-                    }
-                    else finish()
-
-                }
-                else if(playbackState == Player.STATE_BUFFERING) Toast.makeText(this@VideoPlayActivity,"Loading", Toast.LENGTH_LONG).show()
-                super.onPlaybackStateChanged(playbackState)
-            }
-
-            override fun onCues(cueGroup: CueGroup) {
-                subtitleView.setCues(cueGroup.cues)
-                super.onCues(cueGroup)
-            }
-        }
-        player.addListener(listener)
-
-
-
-
-
-
-        if(subUrl.isEmpty()) {
-            println("empty")
-            lifecycleScope.launch(Dispatchers.IO) {
-                val fileID: List<String> = if (type == "movie") {
-                    getSubtitles(id)
-                } else {
-                    getSubtitles(id, season, episode)
-                }
-
-                subList.postValue(getAuthToken(fileID))
-                withContext(Dispatchers.IO) {
-//                    Log.i("DownloadSubCount1", subList.value!![0])
-                }
-            }
-        }
-        else{
-            subList.postValue(subUrl)
-        }
-
-        isNextEpisode.observe(this){isNext ->
-            if(isNext) {
-                if(type == "anime"){
-                    getNextAnimeEp()
-                    return@observe
-                }
-                if (origin == "hi") {
-                    episodeNext()
-                    if (!isShowFinished)
-                        lifecycleScope.launch (Dispatchers.IO){
-                            val res = imdbId?.let { getTvLink(it,season-1,episode-1) } ?:""
-                            if(res.isNotBlank()) newVideoUrl.postValue(res)
-                            else{
-                                withContext(Dispatchers.Main){
-                                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
-                                    finish()
-                                }
                             }
+                            return@setOnTouchListener false
                         }
-
-
+                    }
+                    super.onTimelineChanged(timeline, reason)
                 }
-                else{
-                    episodeNext()
-                    var isVideo = false
-                    if (!isShowFinished) {
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            if (superId != null && isSuper) {
-                                val tvLinks =
-                                    superStream.loadLinks(false, superId!!, season, episode)
-                                tvLinks.data?.list?.forEach {
-                                    if (!it.path.isNullOrBlank()) {
-                                        println("${it.quality} : ${it.path}")
-                                        if (it.quality == "720p") {
-                                            val subtitle = superStream.loadSubtile(
-                                                false,
-                                                it.fid!!,
-                                                superId!!,
-                                                season,
-                                                episode
-                                            ).data
-                                            getSub(subtitle)
-                                            if(it.path.isNullOrBlank()) isVideo = true
-                                            newVideoUrl.postValue(it.path!!)
-                                        }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_ENDED) {
+                        if (type == "tvshow") {
+                            if (isShowFinished || (season == totalSeasons && episode == totalEpisode)) finish()
+                            isNextEpisode.value = true
+                        } else finish()
+
+                    }
+//                else if(playbackState == Player.STATE_BUFFERING) Toast.makeText(this@VideoPlayActivity,"Loading", Toast.LENGTH_LONG).show()
+                    super.onPlaybackStateChanged(playbackState)
+                }
+
+                override fun onCues(cueGroup: CueGroup) {
+                    subtitleView.setCues(cueGroup.cues)
+                    super.onCues(cueGroup)
+                }
+            }
+            player.addListener(listener)
+
+
+
+
+
+
+            if (subUrl.isEmpty()) {
+                println("empty")
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val fileID: List<String> = if (type == "movie") {
+                        getSubtitles(id)
+                    } else {
+                        getSubtitles(id, season, episode)
+                    }
+
+                    subList.postValue(getAuthToken(fileID))
+                    withContext(Dispatchers.IO) {
+//                    Log.i("DownloadSubCount1", subList.value!![0])
+                    }
+                }
+            } else {
+                subList.postValue(subUrl)
+            }
+
+            isNextEpisode.observe(this) { isNext ->
+                if (isNext) {
+                    setTrackAdapter = 1
+                    if (type == "anime") {
+                        getNextAnimeEp()
+                        return@observe
+                    }
+                    if (origin == "hi") {
+                        episodeNext()
+                        if (!isShowFinished)
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                val res =
+                                    imdbId?.let { getTvLink(it, season - 1, episode - 1) } ?: ""
+
+                                if (res.isNotBlank()) newVideoUrl.postValue(res)
+                                else {
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(
+                                            this@VideoPlayActivity,
+                                            "Not Available",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        finish()
                                     }
                                 }
-                                if (isVideo) {
+                            }
+
+
+                    } else {
+                        episodeNext()
+                        var isVideo = false
+                        if (!isShowFinished) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                if (superId != null && isSuper) {
+                                    val tvLinks =
+                                        superStream.loadLinks(false, superId!!, season, episode)
+                                    tvLinks.data?.list?.forEach {
+                                        if (!it.path.isNullOrBlank()) {
+                                            println("${it.quality} : ${it.path}")
+                                            if (it.quality == "720p") {
+                                                val subtitle = superStream.loadSubtile(
+                                                    false,
+                                                    it.fid!!,
+                                                    superId!!,
+                                                    season,
+                                                    episode
+                                                ).data
+                                                getSub(subtitle)
+                                                if (it.path.isNullOrBlank()) isVideo = true
+                                                newVideoUrl.postValue(it.path!!)
+                                            }
+                                        }
+                                    }
+                                    if (isVideo) {
 //                                    withContext(Dispatchers.Main){
 //                                        Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                        finish()
 //                                    }
                                         getGoMovieLink()
 //                                    getSmashLink()
-                                }
-                            } else {
+                                    }
+                                } else {
 //                                withContext(Dispatchers.Main){
 //                                    Toast.makeText(this@VideoPlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
 //                                    finish()
 //                                }
-                                getGoMovieLink()
+                                    getGoMovieLink()
 //                                getSmashLink()
+                                }
                             }
                         }
                     }
+                    isNextEpisode.value = false
                 }
-                isNextEpisode.value = false
             }
-        }
 
-        // When Subtitles are available
-        subList.observe(this) {
-            if (!it.isNullOrEmpty()) {
-                val subtitleConfig: MutableList<SubtitleConfig> = mutableListOf()
-                for (element in it) {
-                    println(element)
-                    val subtitleMediaSource = if(element.contains("vtt")) {
-                        SingleSampleMediaSource.Factory(dataSourceFactory).createMediaSource(
-                            MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
-                                .setMimeType(MimeTypes.TEXT_VTT)
-                                .setLanguage("en")
-                                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
-                                .build(),
-                            C.TIME_UNSET
-                        )
+            // When Subtitles are available
+            subList.observe(this) {
+                if (!it.isNullOrEmpty()) {
+                    val subtitleConfig: MutableList<SubtitleConfig> = mutableListOf()
+                    for (element in it) {
+                        println(element)
+                        val subtitleMediaSource = if (element.contains("vtt")) {
+                            SingleSampleMediaSource.Factory(dataSourceFactory).createMediaSource(
+                                MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
+                                    .setMimeType(MimeTypes.TEXT_VTT)
+                                    .setLanguage("en")
+                                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                                    .build(),
+                                C.TIME_UNSET
+                            )
+                        } else {
+                            SingleSampleMediaSource.Factory(dataSourceFactory).createMediaSource(
+                                MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
+                                    .setMimeType(MimeTypes.APPLICATION_SUBRIP)
+                                    .setLanguage("en")
+                                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                                    .build(),
+                                C.TIME_UNSET
+                            )
+
+                        }
+                        subtitleConfig.add(SubtitleConfig(subtitleMediaSource))
                     }
-                        else{
-                        SingleSampleMediaSource.Factory(dataSourceFactory).createMediaSource(
-                            MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
-                                .setMimeType(MimeTypes.APPLICATION_SUBRIP)
-                                .setLanguage("en")
-                                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
-                                .build(),
-                            C.TIME_UNSET
-                        )
 
+                    val videoMediaSource = if (isSuper) {
+                        ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(MediaItem.fromUri(videoUri))
+                    } else {
+                        HlsMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(MediaItem.fromUri(videoUri))
                     }
-                    subtitleConfig.add(SubtitleConfig(subtitleMediaSource))
-                }
-
-                val videoMediaSource = if(isSuper) {
-                    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(videoUri))
-                } else {
-                    HlsMediaSource.Factory(dataSourceFactory)
-                        .createMediaSource(MediaItem.fromUri(videoUri))
-                }
 
 //                player.setMediaItem(mediaItem)
 
-                subSelectionView.adapter = SubTrackAdapter(subtitleConfig, title) { sub ->
-                    val newMediaSource = MergingMediaSource(videoMediaSource, sub.subConfig)
-                    subUpdateProgress = player.currentPosition
-                    trackUpdate = subUpdateProgress
-                    player.setMediaSource(newMediaSource)
-                    player.prepare()
+                    subSelectionView.adapter = SubTrackAdapter(subtitleConfig, title) { sub ->
+                        val newMediaSource = MergingMediaSource(videoMediaSource, sub.subConfig)
+                        subUpdateProgress = player.currentPosition
+                        trackUpdate = subUpdateProgress
+                        player.setMediaSource(newMediaSource)
+                        player.prepare()
 //                    player.seekTo(subUpdateProgress)
 //                    seekBar.progress = subUpdateProgress.toInt()
-                }
-                mediaSource = MergingMediaSource(videoMediaSource, subtitleConfig[0].subConfig)
-            }
-            else {
-                mediaSource =  if(isSuper) {
-                    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(videoUri))
+                    }
+                    mediaSource = MergingMediaSource(videoMediaSource, subtitleConfig[0].subConfig)
                 } else {
+                    mediaSource = if (isSuper) {
+                        ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(MediaItem.fromUri(videoUri))
+                    } else {
                         HlsMediaSource.Factory(dataSourceFactory)
                             .createMediaSource(MediaItem.fromUri(videoUri))
+                    }
                 }
-            }
 
                 player.setMediaSource(mediaSource)
                 if (type == "movie")
                     titleTv.text = title
                 else {
                     videoNext.visibility = View.VISIBLE
-                    titleTv.text = if(type == "tvshow") "$title S$season E$episode" else  "$title E${episode+1}"
+                    titleTv.text =
+                        if (type == "tvshow") "$title S$season E$episode" else "$title E${episode + 1}"
                 }
 
                 mainPlayer.visibility = View.VISIBLE
@@ -805,12 +821,14 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                             screenResizeIv.setImageResource(R.drawable.fill_screen)
                             fit = 2
                         }
+
                         2 -> {
                             playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
                             screenResizeTv.text = "Fit"
                             screenResizeIv.setImageResource(R.drawable.fit_screen)
                             fit = 3
                         }
+
                         else -> {
                             playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
                             screenResizeTv.text = "Zoom"
@@ -847,87 +865,84 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     seekBar.progress = progress.toInt()
                 }
 
-        }
+            }
 
-        newVideoUrl.observe(this){newUrl ->
-            if (!newUrl.isNullOrEmpty()) {
-                videoUri = Uri.parse(newUrl)
-                if(!isTrackChanged) {
-                    progress = 0
-                    subUpdateProgress = 0
-                }
-                else
-                {
-                    newSubUrl = subUrl.toMutableList()
-                    trackUpdate = subUpdateProgress
-                }
+            newVideoUrl.observe(this) { newUrl ->
+                if (!newUrl.isNullOrEmpty()) {
+                    videoUri = Uri.parse(newUrl)
+                    if (!isTrackChanged) {
+                        progress = 0
+                        subUpdateProgress = 0
+                    } else {
+                        newSubUrl = subUrl.toMutableList()
+                        trackUpdate = subUpdateProgress
+                    }
 
-                if(newSubUrl.isEmpty() && type!="anime" ) {
-                    println("empty")
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        val fileID: List<String> = if (type == "movie") {
-                            getSubtitles(id)
-                        } else {
-                            getSubtitles(id, season, episode)
+                    if (newSubUrl.isEmpty() && type != "anime") {
+                        println("empty")
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val fileID: List<String> = if (type == "movie") {
+                                getSubtitles(id)
+                            } else {
+                                getSubtitles(id, season, episode)
+                            }
+
+                            subList.postValue(getAuthToken(fileID))
                         }
-
-                        subList.postValue(getAuthToken(fileID))
+                    } else {
+                        subList.postValue(newSubUrl.toList())
                     }
                 }
-                else{
-                    subList.postValue(newSubUrl.toList())
-                }
             }
-        }
 
-        if(type == "tvshow") {
+            if (type == "tvshow") {
 
 
                 lifecycleScope.launch(Dispatchers.IO) {
-                    totalSeasons = if (origin!="hi") getTvSeasons(id) else getHiTvSeasons(imdbId!!)
+                    totalSeasons =
+                        if (origin != "hi") getTvSeasons(id) else getHiTvSeasons(imdbId!!)
                     totalEpisode = getSeasonEpisodes(id, season)
                 }
 
-        }
+            }
 
 
 //        if (seekBar.progress == seekBar.max)isNextEpisode.value = true
 
 
-
-
-
-
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if(player.duration != C.TIME_UNSET) {
-                    val rem = player.duration - progress.toLong()
-                    if (fromUser) {
-                        player.seekTo(progress.toLong())
-                        subUpdateProgress = player.currentPosition
+            seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
+                    if (player.duration != C.TIME_UNSET) {
+                        val rem = player.duration - progress.toLong()
+                        if (fromUser) {
+                            player.seekTo(progress.toLong())
+                            subUpdateProgress = player.currentPosition
+                            remTimeTv.text = setSeekBarTime(rem)
+                        }
                         remTimeTv.text = setSeekBarTime(rem)
+                        subUpdateProgress = player.currentPosition
                     }
-                    remTimeTv.text = setSeekBarTime(rem)
-                    subUpdateProgress = player.currentPosition
                 }
-            }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                // Optional: stop updating the SeekBar while the user is dragging it
-                handler.removeCallbacks(updateSeekBarRunnable)
-            }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                    // Optional: stop updating the SeekBar while the user is dragging it
+                    handler.removeCallbacks(updateSeekBarRunnable)
+                }
 
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                // Optional: resume updating the SeekBar after the user finished dragging it
-                handler.post(updateSeekBarRunnable)
-            }
-        })
-
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    // Optional: resume updating the SeekBar after the user finished dragging it
+                    handler.post(updateSeekBarRunnable)
+                }
+            })
 
 
-
-        // Start updating the SeekBar
-        handler.post(updateSeekBarRunnable)
+            // Start updating the SeekBar
+            handler.post(updateSeekBarRunnable)
+        }catch (e :Exception){e.printStackTrace()}
 
     }
 
