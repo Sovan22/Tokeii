@@ -407,19 +407,22 @@ class MoviePlayActivity : AppCompatActivity(){
                         val imdbId = getMovieImdb(id)
                         IMDBid = imdbId
                         println(imdbId)
-//                        videoUrl.value = getMovieLink(imdbId)
-                        val link = getMovieLink(imdbId)
-                        if (link.isBlank()) {
-
-                            //add smash link
-                            getSmashLink(true)
-//                            val mainData = superStream.search(title)
-//                            superId = mainData.data.list[0].id
-//                            getMovie()
-
+                        lifecycleScope.launch {
+                            try {
+                                val mainData = superStream.search(title)
+//                        println(mainData.data.list[0].year)
+                                val item = mainData.data.list[0]
+                                println(year + " ${item.year}")
+                                superId =
+                                    if (item.title == title && item.year.toString() == year) item.id else null
+                                getMovieHi(imdbId)
+                            } catch (e: Exception) {
+                                getMovieHi(imdbId)
+                            }
                         }
-                        else
-                            videoUrl.value = link
+//                        videoUrl.value = getMovieLink(imdbId)
+
+
                     }
                 }
             }
@@ -496,6 +499,58 @@ class MoviePlayActivity : AppCompatActivity(){
             withContext(Dispatchers.Main){
                 Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
                 finish()
+            }
+        }
+    }
+
+    private suspend fun getMovieHi(imdbId: String)
+    {
+        if (superId != null) {
+            isSuper = true
+            val movieLinks = superStream.loadLinks(true, superId!!)
+            val urlMaps: MutableMap<String,String> = mutableMapOf()
+            movieLinks.data?.list?.forEach {
+                if(!it.path.isNullOrBlank()){
+                    println("${it.quality} : ${it.path}")
+                    urlMaps[it.quality!!] = it.path
+                    if(it.quality == "720p") {
+                        val subtitle = superStream.loadSubtile(true,it.fid!!,superId!!).data
+//
+                        getSub(subtitle)
+
+                        return@forEach
+                    }
+                }
+
+            }
+            if(urlMaps.isNotEmpty())
+                videoUrl.value = gson.toJson(urlMaps)
+            if(videoUrl.value.isNullOrBlank()){
+                withContext(Dispatchers.Main){
+//                    webView.loadUrl(url)
+//                    getSmashLink(true)
+                    isSuper = false
+                    val link = getMovieLink(imdbId)
+                    if (link.isBlank()) {
+                        getSmashLink(true)
+                    }
+                    else
+                        videoUrl.value = link
+
+                }
+            }
+        }
+        else{
+            withContext(Dispatchers.Main){
+//                webView.loadUrl(url)
+//                getSmashLink(true)
+                isSuper = false
+                val link = getMovieLink(imdbId)
+                if (link.isBlank())
+                    getSmashLink(true)
+                else
+                    videoUrl.value = link
+
             }
         }
     }

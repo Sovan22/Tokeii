@@ -34,23 +34,20 @@ import android.widget.TextView
 import android.widget.Toast
 
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat.getSystemService
+
 
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
-
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.TrackSelectionOverride
-import androidx.media3.common.TrackSelectionParameters
 import androidx.media3.common.Tracks
-import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
@@ -86,7 +83,6 @@ import com.demomiru.tokeiv2.utils.getTvSeasons
 import com.demomiru.tokeiv2.utils.setSeekBarTime
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
-import com.fasterxml.jackson.databind.AnnotationIntrospector.pair
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -122,7 +118,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var totalEpisode = 0
     private var superId: Int? = null
     private var isNextEpisode = MutableLiveData(false)
-    private var isControllerVisible = true
+//    private var isControllerVisible = true
     private lateinit var id:String
     private var season: Int = 1
     private var episode: Int = 1
@@ -213,7 +209,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         }
         id = data.tmdbID.toString()
 
-        Log.i("Video Url", data.videoUrl)
+        println("Video Url:" + data.videoUrl)
 
         videoUri =  if(isSuper){
             urlMaps = gson.fromJson(data.videoUrl,object : TypeToken<Map<String, String>>() {}.type)
@@ -1327,11 +1323,6 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         tracks = tracks.reversed()
         println(tracks)
         return tracks
-    }
-
-    private fun setAdapter()
-    {
-
     }
 
 
