@@ -1,17 +1,14 @@
 package com.demomiru.tokeiv2.utils
 
 import android.util.Log
-import android.view.MotionEvent
 import com.demomiru.tokeiv2.BuildConfig
 import com.demomiru.tokeiv2.Keys
-import com.demomiru.tokeiv2.MovieArray
 import com.demomiru.tokeiv2.MovieFile
 import com.demomiru.tokeiv2.MovieIMDB
 import com.demomiru.tokeiv2.Season
 import com.demomiru.tokeiv2.TvIMDB
 import com.google.gson.Gson
 import com.lagradost.nicehttp.Requests
-import okhttp3.internal.platform.Jdk9Platform.Companion.isAvailable
 import okio.GzipSource
 import okio.buffer
 import org.json.JSONArray
@@ -64,7 +61,10 @@ suspend fun getTvImdb(tmdbID: String): String{
 
 //val origin = "https://log-training-i-254.site"
 
+private val proxy = BuildConfig.PROXY_URL
+
 suspend fun getMovieLink(imdbId : String): String {
+
     val origin = "https://hurl-party-i-256.site"
     val requests = Requests()
     val encoded = Base64.getEncoder().encodeToString(
@@ -72,7 +72,7 @@ suspend fun getMovieLink(imdbId : String): String {
             StandardCharsets.UTF_8
         )
     )
-
+    try {
     val doc2 = requests.get(
         "$origin/pb/$encoded", referer =
         "https://dudefilms.bio/"
@@ -121,6 +121,7 @@ suspend fun getMovieLink(imdbId : String): String {
             val gzippedSource = GzipSource(responseBody.source())
             val decompressedString = gzippedSource.buffer().readUtf8()
             val jsonArray = JSONArray(decompressedString)
+//            println(jsonArray)
             val jsonObject = jsonArray.getJSONObject(0).toString()
             val movieDetails = gson.fromJson(jsonObject, MovieFile::class.java)
             val movieId = movieDetails.file
@@ -133,6 +134,8 @@ suspend fun getMovieLink(imdbId : String): String {
 
     }
     else{
+        return ""
+    } }catch(e : Exception){
         return ""
     }
     return ""
