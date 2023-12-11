@@ -263,7 +263,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:background="@android:color/transparent"
-                    android:text="Subtitle"
+                    android:text="Subtitle/Source"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
 
@@ -393,7 +393,6 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-
                     android:layout_gravity="center"
                     android:background="@android:color/transparent"
                     android:id="@+id/skip_op_text"

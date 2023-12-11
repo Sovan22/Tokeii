@@ -13,13 +13,14 @@ import com.demomiru.tokeiv2.R
 
 data class SubtitleConfig(
     val subConfig : SingleSampleMediaSource,
-    var isChecked : Boolean = false
+    var isChecked : Boolean = false,
+    val language : String = "",
 )
 
-class SubTrackAdapter(private val subList: List<SubtitleConfig>, private val title : String,
+class SubTrackAdapter(private val subList: List<SubtitleConfig>, private val position: Int,
 private val onClick : (SubtitleConfig) -> Unit
                       ): RecyclerView.Adapter<SubTrackAdapter.ViewHolder> (){
-    private var selectedPosition = 0
+    private var selectedPosition = position
 
     private fun setSelectedPosition(position: Int) {
         selectedPosition = position
@@ -42,7 +43,8 @@ private val onClick : (SubtitleConfig) -> Unit
     @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val sub = subList[position]
-        holder.subTitle.text = "$title Subtitle ${position + 1}"
+//        holder.subTitle.text = "$title Subtitle ${position + 1}"
+        holder.subTitle.text = sub.language
         holder.subTitle.isChecked = position == selectedPosition
 
         holder.itemView.setOnClickListener {
