@@ -35,7 +35,7 @@ import kotlinx.coroutines.withContext
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
-    private val version = 110
+    private val version = 111
     private lateinit var watchHistoryRc : RecyclerView
     private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
     private val watchHistoryDao by lazy { database.watchDao() }
