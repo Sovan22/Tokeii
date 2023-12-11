@@ -12,13 +12,15 @@ interface TMDBService {
     @GET("tv/popular")
     suspend fun getPopularTVShows(
         @Query("api_key") apiKey: String,
-        @Query("language") language: String
+        @Query("language") language: String,
+        @Query("page") page: Int
     ): Response<TVShowResponse>
 
     @GET("trending/tv/day")
     suspend fun getTrendingTVShows(
         @Query("api_key") apiKey: String,
-        @Query("language") language: String
+        @Query("language") language: String,
+        @Query("page") page: Int
     ): Response<TVShowResponse>
 
     @GET("tv/{series_id}")
@@ -46,8 +48,8 @@ interface TMDBService {
     @GET("tv/top_rated")
     suspend fun getTopRatedTVShows(
         @Query("api_key") apiKey: String,
-        @Query("language") language: String
-
+        @Query("language") language: String,
+        @Query("page") page: Int
     ) : Response<TVShowResponse>
 
 
