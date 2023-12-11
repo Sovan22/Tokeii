@@ -10,13 +10,15 @@ interface MovieService {
     @GET("movie/popular")
     suspend fun getPopularMovies(
         @Query("api_key") apiKey: String,
-        @Query("language") language: String
+        @Query("language") language: String,
+        @Query("page") page: Int
     ): Response<MovieResponse>
 
     @GET("trending/movie/day")
     suspend fun getTrendingMovies(
         @Query("api_key") apiKey: String,
-        @Query("language") language: String
+        @Query("language") language: String,
+        @Query("page") page: Int
     ): Response<MovieResponse>
 
 
@@ -42,7 +44,8 @@ interface MovieService {
     @GET("movie/top_rated")
     suspend fun getTopRatedMovies(
         @Query("api_key") apiKey: String,
-        @Query("language") language: String
+        @Query("language") language: String,
+        @Query("page") page: Int
     ) : Response<MovieResponse>
 
 

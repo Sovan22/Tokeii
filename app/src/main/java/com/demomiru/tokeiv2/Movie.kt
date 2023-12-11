@@ -27,7 +27,8 @@ data class MovieFile(
 
 data class MovieIMDB(
     val id: String,
-    val imdb_id : String
+    val imdb_id : String,
+    val external_ids: ExternalIDs
 )
 
 

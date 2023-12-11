@@ -9,6 +9,11 @@ import androidx.navigation.fragment.findNavController
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -51,54 +56,70 @@ class TVShowFragment : Fragment() {
 
         val tvService = retrofit.create(TMDBService::class.java)
 
-        GlobalScope.launch(Dispatchers.Main) {
-            val tvPopularResponse = tvService.getPopularTVShows(
-                BuildConfig.TMDB_API_KEY,
-                "en-US"
-            )
+        lifecycleScope.launch(Dispatchers.IO) {
+            val tvPopularShows = Pager(PagingConfig(1)){TvShowPagingSource(1)}.flow.cachedIn(lifecycleScope)
 
-            val tvTrendingResponse = tvService.getTrendingTVShows(
-                BuildConfig.TMDB_API_KEY,
-                "en-US"
-            )
 
-            val tvTopResponse = tvService.getTopRatedTVShows(
-                BuildConfig.TMDB_API_KEY,
-                "en-US"
-            )
+            val tvTrendingShows = Pager(PagingConfig(1)){TvShowPagingSource(2)}.flow.cachedIn(lifecycleScope)
 
-            if(tvTopResponse.isSuccessful){
-                val tvShows = tvTopResponse.body()?.results ?: emptyList()
-                val adapter = TVShowAdapter(tvShows){it, position->
+            val tvTopShows = Pager(PagingConfig(1)){TvShowPagingSource(3)}.flow.cachedIn(lifecycleScope)
+
+            val topAdapter = TVShowAdapter2{ it, position->
+//                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
+                    findNavController().navigate(playShow(it,position,it.name))
+            }
+
+
+
+            val trenAdapter = TVShowAdapter2{it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
                     findNavController().navigate(playShow(it,position,it.name))
                 }
-                addRecyclerAnimation(topTvRc,adapter)
-            }
 
-            if (tvTrendingResponse.isSuccessful) {
-                val tvShows = tvTrendingResponse.body()?.results ?: emptyList()
-                val adapter = TVShowAdapter(tvShows){it, position->
+
+
+            val popAdapter = TVShowAdapter2{it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
                     findNavController().navigate(playShow(it,position,it.name))
-                }
-                addRecyclerAnimation(trenTvRc,adapter)
             }
 
-            if (tvPopularResponse.isSuccessful) {
-                val tvShows = tvPopularResponse.body()?.results ?: emptyList()
-                val adapter = TVShowAdapter(tvShows){it, position->
-//                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
-                    findNavController().navigate(playShow(it,position,it.name))
-                }
-                addRecyclerAnimation(popTvRc,adapter)
-            }
+
 
             withContext(Dispatchers.Main){
-                view.findViewById<ProgressBar>(R.id.loading_tvshow).visibility = View.GONE
-                view.findViewById<TextView>(R.id.trending_text).visibility = View.VISIBLE
-                view.findViewById<TextView>(R.id.popular_text).visibility = View.VISIBLE
-                view.findViewById<TextView>(R.id.topShows_text).visibility = View.VISIBLE
+                addRecyclerAnimation(popTvRc,popAdapter)
+                addRecyclerAnimation(trenTvRc,trenAdapter)
+                addRecyclerAnimation(topTvRc,topAdapter)
+                lifecycleScope.launch {
+                    tvTrendingShows.collect{
+                        trenAdapter.submitData(it)
+                    }
+                }
+
+                lifecycleScope.launch {
+                    tvPopularShows.collect{
+                        popAdapter.submitData(it)
+                    }
+                }
+
+                lifecycleScope.launch {
+                    topAdapter.addLoadStateListener {
+                        val state = it.refresh
+                        val visible = state is LoadState.Loading
+                        if(visible)
+                        {
+                            view.findViewById<ProgressBar>(R.id.loading_tvshow).visibility = View.VISIBLE
+                        }else{
+                            view.findViewById<ProgressBar>(R.id.loading_tvshow).visibility = View.GONE
+                            view.findViewById<TextView>(R.id.trending_text).visibility = View.VISIBLE
+                            view.findViewById<TextView>(R.id.popular_text).visibility = View.VISIBLE
+                            view.findViewById<TextView>(R.id.topShows_text).visibility = View.VISIBLE
+                        }
+                    }
+                    tvTopShows.collect{
+                        topAdapter.submitData(it)
+                    }
+                }
+
             }
         }
         return view

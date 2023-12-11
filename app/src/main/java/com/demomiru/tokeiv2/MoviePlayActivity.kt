@@ -30,6 +30,7 @@ import androidx.lifecycle.lifecycleScope
 
 
 import androidx.media3.common.Player.*
+import com.demomiru.tokeiv2.utils.Extractor
 import com.demomiru.tokeiv2.utils.GoMovies
 import com.demomiru.tokeiv2.utils.GogoAnime
 import com.demomiru.tokeiv2.utils.SmashyStream
@@ -52,6 +53,7 @@ import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.checkerframework.checker.units.qual.s
 
 
 @Suppress("DEPRECATION")
@@ -78,6 +80,7 @@ class MoviePlayActivity : AppCompatActivity(){
     private var type : String? = null
     private val videoUrl = MutableLiveData<String?>()
     private var subUrl : MutableList<String> = mutableListOf()
+    private var source : String? = null
 
     private val COVER_SCREEN_PARAMS = FrameLayout.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -86,6 +89,8 @@ class MoviePlayActivity : AppCompatActivity(){
 
 //    private val args : MoviePlayActivityArgs by navArgs()
     @SuppressLint("SetJavaScriptEnabled")
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -135,7 +140,6 @@ class MoviePlayActivity : AppCompatActivity(){
             seekProgress = data.progress
             type = data.type
             year = data.year ?: ""
-            //TODO add year in continue watching and videoData
             origin = data.origin ?: ""
             println(data)
             if (type != "movie"){
@@ -149,67 +153,16 @@ class MoviePlayActivity : AppCompatActivity(){
         }
     }
 
-
-//        videoView = findViewById(R.id.video_view)
         loading = findViewById(R.id.loading_content)
-
-//        id = args.tmdbID
-//
-//        val type = args.type
-//
-//        val episode = args.episodeN
-//        val season = args.seasonN
 
 
         webView = findViewById(R.id.web_view)
         loading.visibility = View.VISIBLE
-//        player = ExoPlayer.Builder(this).build()
 
-//        videoView.player = player
-
-//        AdBlockerWebView
-        webView.settings.javaScriptEnabled = true
-        webView.settings.displayZoomControls = true
-//        webView.settings.domStorageEnabled = true
-
-        webView.webViewClient = object : WebViewClient() {
-
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                    return request?.url.toString() != view?.url
-            }
-
-//            override fun onPageFinished(view: WebView?, url: String?) {
-//                webView.evaluateJavascript("javascript:document.getElementByTagName('video')[0].src") {
-//                    Log.i("videoLink", it)
-//                }
-//                super.onPageFinished(view, url)
-//            }
-
-            override fun shouldInterceptRequest(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): WebResourceResponse? {
-                if (request?.url.toString().endsWith(".m3u8")){
-                    url+=1
-                    Log.i("Video Link",request?.url.toString())
-                    lifecycleScope.launch {
-                        videoUrl.value = request?.url.toString()
-                    }
-                }
-                return super.shouldInterceptRequest(view, request)
-            }
-        }
 
         videoUrl.observe(this) { hlsUri ->
             if (!hlsUri.isNullOrEmpty()) {
                 webView.visibility = View.GONE
-//                videoView.visibility = View.VISIBLE
-                //send to VideoPlayActivity
-//                player.setMediaItem(MediaItem.fromUri(hlsUri))
-//                player.prepare()
-//                player.playWhenReady = true
-
-//                loading.visibility = View.GONE
                 videoUrl.removeObservers(this)
                val intent =  passVideoData(VideoData(
                     seekProgress,
@@ -230,209 +183,172 @@ class MoviePlayActivity : AppCompatActivity(){
                 intent.putExtra("origin", origin)
                 intent.putExtra("superstream",isSuper)
                 intent.putExtra("animeUrl",animeUrl)
+//                println(source)
+                intent.putExtra("source",source)
                 startActivity(intent)
                 finish()
             }
         }
 
-//    val listener = object : Listener{
-//        @SuppressLint("UnsafeOptInUsageError")
-//        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-//            if (player.duration != C.TIME_UNSET) {
-//                // Duration is available
-//                val seek = player.duration / 100 * seekProgress
-//                player.seekTo(seek)
-//                videoView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
-//            }
-//            super.onTimelineChanged(timeline, reason)
-//        }
-//    }
-//    player.addListener(listener)
-
-
-
-    webView.webChromeClient =  object : WebChromeClient() {
-
-            override fun onShowCustomView(view: View, callback: CustomViewCallback) {
-                // Make the WebView invisible
-                webView.visibility = View.GONE
-
-                // Create a new view to hold the video display
-                val decorView = window.decorView as FrameLayout
-                fullscreenContainer = FullscreenHolder(this@MoviePlayActivity)
-                fullscreenContainer?.addView(view, COVER_SCREEN_PARAMS)
-                decorView.addView(fullscreenContainer, COVER_SCREEN_PARAMS)
-            }
-
-            override fun onHideCustomView() {
-
-                val decorView = window.decorView as FrameLayout
-                decorView.removeView(fullscreenContainer)
-                fullscreenContainer = null
-
-                webView.visibility = View.VISIBLE
-                super.onHideCustomView()
-            }
-        }
-
-
-        if (savedInstanceState != null) {
-            webView.restoreState(savedInstanceState)
-        } else {
-
-//        if(origin)
-            url = if(type == "movie"){
-//                "https://vidsrc.me/embed/movie?tmdb=$id/"
-                webView.webViewClient = object : WebViewClient() {
-
-//                    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-//                        return request?.url.toString() != view?.url
-//                    }
-
-                    override fun shouldInterceptRequest(
-                        view: WebView?,
-                        request: WebResourceRequest?
-                    ): WebResourceResponse? {
-                        if (request?.url.toString().endsWith("playlist.m3u8"))
-//                        if (request?.url.toString().endsWith("playlist.m3u8"))
-                        {
-//                    Log.i("Video Link","Found")
-                            lifecycleScope.launch {
-                                videoUrl.value = request?.url.toString()
-                            }
-                        }
-//                        else if(request?.url.toString().contains(".mp4")){
-//                            lifecycleScope.launch {
-//                                videoUrl.value = request?.url.toString()
+//            if(type == "tvshow"){
+//                lifecycleScope.launch {
+//                    val imdbId = getTvImdb(id)
+//                    if(imdbId.isNotBlank()){
+//                        origin = "hi"
+//                        IMDBid = imdbId
+//                        val link = getTvLink(imdbId,season-1,episode-1)
+//                        if(link.isNotBlank())
+//                        videoUrl.value = link
+//                        else{
+//                            withContext(Dispatchers.Main){
+//                                Toast.makeText(this@MoviePlayActivity,"No Links Available", Toast.LENGTH_SHORT).show()
+//                                finish()
 //                            }
 //                        }
-                        return super.shouldInterceptRequest(view, request)
-                    }
-                }
-//                "https://vidsrc.me/embed/movie?tmdb=$id"
-                    "https://multiembed.mov/directstream.php?video_id=$id&tmdb=1"
-//                "https://movie-web.app/media/tmdb-movie-$id"
-            }
-            else{
-//                "https://vidsrc.me/embed/tv?tmdb=$id&season=$season&episode=$episode"
-                "https://vidsrc.to/embed/tv/$id/$season/$episode"
-//                " https://multiembed.mov/directstream.php?video_id=$id&tmdb=1&s=$season&e=$episode"
-            }
-
-
+//                    }
+//                    else{
+//                        //Superstream add
+//                        val mainData = superStream.search(title)
+//                        superId = mainData.data.list[0].id
+//                        if (superId != null) {
+//                            isSuper = true
+//                            val tvLinks = superStream.loadLinks(false, superId!!, season, episode)
+//                            val urlMaps: MutableMap<String,String> = mutableMapOf()
+//                            tvLinks.data?.list?.forEach {
+//                                if(!it.path.isNullOrBlank()){
+//                                    println("${it.quality} : ${it.path}")
+//                                    urlMaps[it.quality!!] = it.path
+//                                    if(it.quality == "720p") {
+//                                        val subtitle = superStream.loadSubtile(false,it.fid!!,superId!!,season,episode).data
+////
+//                                        getSub(subtitle)
 //
-//            url = if(type == "movie")
-//                "https://vidsrc.to/embed/movie/$id"
-//            else
-//                "https://vidsrc.to/embed/tv/$id/$season/$episode"
-
+//                                        return@forEach
+//                                    }
+//                                }
+//                            }
+//                            if(urlMaps.isNotEmpty())
+//                                videoUrl.value = gson.toJson(urlMaps)
+//                            if(videoUrl.value.isNullOrBlank()){
+////                                withContext(Dispatchers.Main){
+////                                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
+////                                    finish()
+////                                }
+//                                isSuper = false
+//                                getGoMovieLink(false)
+////                                getSmashLink(false)
+//                            }
+//                        }
+//                        else{
+//                            isSuper = false
+//                            getGoMovieLink(false)
+////                            getSmashLink(false)
+//                        }
+//
+//                    }
+//                }
+//            }
             if(type == "tvshow"){
-                lifecycleScope.launch {
+                lifecycleScope.launch (Dispatchers.IO){
                     val imdbId = getTvImdb(id)
-                    if(imdbId.isNotBlank()){
+                    if (imdbId.isNotBlank()) {
                         origin = "hi"
                         IMDBid = imdbId
-                        val link = getTvLink(imdbId,season-1,episode-1)
-                        if(link.isNotBlank())
-                        videoUrl.value = link
-                        else{
-                            withContext(Dispatchers.Main){
-                                Toast.makeText(this@MoviePlayActivity,"No Links Available", Toast.LENGTH_SHORT).show()
-                                finish()
-                            }
-                        }
                     }
-                    else{
-                        //Superstream add
-                        val mainData = superStream.search(title)
-                        superId = mainData.data.list[0].id
-                        if (superId != null) {
-                            isSuper = true
-                            val tvLinks = superStream.loadLinks(false, superId!!, season, episode)
-                            val urlMaps: MutableMap<String,String> = mutableMapOf()
-                            tvLinks.data?.list?.forEach {
-                                if(!it.path.isNullOrBlank()){
-                                    println("${it.quality} : ${it.path}")
-                                    urlMaps[it.quality!!] = it.path
-                                    if(it.quality == "720p") {
-                                        val subtitle = superStream.loadSubtile(false,it.fid!!,superId!!,season,episode).data
-//
-                                        getSub(subtitle)
+                    val links = Extractor(origin).loadExtractor(title,id,year,season,episode,false)
+                    println(links)
+                    withContext(Dispatchers.Main) {
+                        if (!links.videoUrl.isNullOrBlank()) {
+                            subUrl.addAll(links.subs)
+                            isSuper = links.isSuper
+                            source = links.source
+                            videoUrl.value = links.videoUrl
 
-                                        return@forEach
-                                    }
-                                }
-                            }
-                            if(urlMaps.isNotEmpty())
-                                videoUrl.value = gson.toJson(urlMaps)
-                            if(videoUrl.value.isNullOrBlank()){
-//                                withContext(Dispatchers.Main){
-//                                    Toast.makeText(this@MoviePlayActivity, "Not Available",Toast.LENGTH_SHORT).show()
-//                                    finish()
-//                                }
-                                isSuper = false
-                                getGoMovieLink(false)
-//                                getSmashLink(false)
-                            }
-                        }
-                        else{
-                            isSuper = false
-                            getGoMovieLink(false)
-//                            getSmashLink(false)
-                        }
+                        } else {
 
+                            Toast.makeText(
+                                this@MoviePlayActivity,
+                                "No available links",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+
+                        }
                     }
                 }
-            }else if(type == "movie"){
+            }
+            else if(type == "movie"){
                 println("Reached here")
-                if (origin != "hi") {
-                    lifecycleScope.launch {
-                        try {
-                            val mainData = superStream.search(title)
-//                        println(mainData.data.list[0].year)
-                            val item = mainData.data.list[0]
-                            println(year + " ${item.year}")
-                            superId =
-                                if (item.title == title && item.year.toString() == year) item.id else null
-                            getMovieEn()
-                        }catch (e : Exception){
-                            getMovieEn()
+//                if (origin != "hi") {
+                    lifecycleScope.launch(Dispatchers.IO) {
+//                        try {
+//                            val mainData = superStream.search(title)
+////                        println(mainData.data.list[0].year)
+//                            val item = mainData.data.list[0]
+//                            println(year + " ${item.year}")
+//                            superId =
+//                                if (item.title == title && item.year.toString() == year) item.id else null
+//                            getMovieEn()
+//                        }catch (e : Exception){
+//                            getMovieEn()
+//                        }
+                        val links = Extractor(origin).loadExtractor(title,id,year, season,episode,true)
+                        println(links)
+                        withContext(Dispatchers.Main) {
+                            if (!links.videoUrl.isNullOrBlank()) {
+                                subUrl.addAll(links.subs)
+                                isSuper = links.isSuper
+                                source = links.source
+                                videoUrl.value = links.videoUrl
+
+                            } else {
+
+                                Toast.makeText(
+                                    this@MoviePlayActivity,
+                                    "No available links",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                finish()
+
+                            }
                         }
 //                        webView.loadUrl(url)
                     }
 
-                }
-                else {
-                    lifecycleScope.launch {
-                        val imdbId = getMovieImdb(id)
-                        IMDBid = imdbId
-                        println(imdbId)
-                        lifecycleScope.launch {
-                            try {
-                                val mainData = superStream.search(title)
-//                        println(mainData.data.list[0].year)
-                                val item = mainData.data.list[0]
-                                println(year + " ${item.year}")
-                                superId =
-                                    if (item.title == title && item.year.toString() == year) item.id else null
-                                getMovieHi(imdbId)
-                            } catch (e: Exception) {
-                                getMovieHi(imdbId)
-                            }
-                        }
-//                        videoUrl.value = getMovieLink(imdbId)
-
-
+//                }
+//                else {
+//                    lifecycleScope.launch {
+//                        val imdbId = getMovieImdb(id)
+//                        IMDBid = imdbId
+//                        println(imdbId)
+//                        lifecycleScope.launch {
+//                            try {
+//                                val mainData = superStream.search(title)
+////                        println(mainData.data.list[0].year)
+//                                val item = mainData.data.list[0]
+//                                println(year + " ${item.year}")
+//                                superId =
+//                                    if (item.title == title && item.year.toString() == year) item.id else null
+//                                getMovieHi(imdbId)
+//                            } catch (e: Exception) {
+//                                getMovieHi(imdbId)
+//                            }
+//                        }
+// //                        videoUrl.value = getMovieLink(imdbId)
+//
+//
+//                    }
+//                }
+            }
+            else{
+                lifecycleScope.launch (Dispatchers.IO){
+                    val gogoSrc = GogoAnime()
+                    val link = gogoSrc.extractVideos(animeUrl)
+                    withContext(Dispatchers.Main){
+                        videoUrl.value = link
                     }
                 }
             }
-            else{
-                lifecycleScope.launch {
-                    val gogoSrc = GogoAnime()
-                    videoUrl.value = gogoSrc.extractVideos(animeUrl)
-                }
-            }
-        }
     }
 
     private suspend fun getGoMovieLink(isMovie: Boolean){
@@ -446,7 +362,7 @@ class MoviePlayActivity : AppCompatActivity(){
             getSmashLink(isMovie)
         }
         else{
-            if (!subLinks.isNullOrEmpty())subUrl.addAll(subLinks)
+            if (!subLinks.isNullOrEmpty())subUrl.add(subLinks)
             videoUrl.value = vidLink
         }
     }
@@ -461,12 +377,22 @@ class MoviePlayActivity : AppCompatActivity(){
                         }
                         if (sub.lang == "en" && !sub.file_path.isNullOrBlank()) {
                             subUrl.add(sub.file_path)
-                            println("${sub.language} : ${sub.file_path}")
+//                            println("${sub.language} : ${sub.file_path}")
                         }
 
 
                 }
                 return
+            }
+        }
+    }
+
+    private fun getSub2(subtitle: SuperstreamUtils.PrivateSubtitleData?){
+        subtitle?.list?.forEach { subList->
+                subList.subtitles.forEach { sub->
+                    if (!sub.file_path.isNullOrBlank()) {
+                        subUrl.add("${subList.language} :${sub.file_path}")
+                    }
             }
         }
     }
@@ -532,7 +458,7 @@ class MoviePlayActivity : AppCompatActivity(){
                     isSuper = false
                     val link = getMovieLink(imdbId)
                     if (link.isBlank()) {
-                        getSmashLink(true)
+                        getSmashLink(true,"hi")
                     }
                     else
                         videoUrl.value = link
@@ -547,7 +473,7 @@ class MoviePlayActivity : AppCompatActivity(){
                 isSuper = false
                 val link = getMovieLink(imdbId)
                 if (link.isBlank())
-                    getSmashLink(true)
+                    getSmashLink(true,"hi")
                 else
                     videoUrl.value = link
 
@@ -576,7 +502,7 @@ class MoviePlayActivity : AppCompatActivity(){
 
             }
             if(urlMaps.isNotEmpty())
-            videoUrl.value = gson.toJson(urlMaps)
+                videoUrl.value = gson.toJson(urlMaps)
             if(videoUrl.value.isNullOrBlank()){
                 withContext(Dispatchers.Main){
 //                    webView.loadUrl(url)
@@ -598,11 +524,11 @@ class MoviePlayActivity : AppCompatActivity(){
         }
     }
 
-    private fun getSmashLink(isMovie:Boolean)
+    private fun getSmashLink(isMovie:Boolean,src: String = "en")
     {
         val smashSrc = SmashyStream()
         lifecycleScope.launch {
-            val links = smashSrc.getLink(isMovie,id, season, episode)
+            val links = smashSrc.getLink(isMovie,id, season, episode,src)
             val vidLink = links.first
             val subLink = links.second
             if(vidLink.isNullOrBlank()){

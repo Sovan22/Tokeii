@@ -61,6 +61,7 @@ class TVShowDetails : Fragment() {
             viewModelFactory
         }
     )
+    private var lastPlayedSeason = 1
     private lateinit var episodeProgress : ContinueWatching
     private val database by lazy { ContinueWatchingDatabase.getInstance(requireContext()) }
     private val watchHistoryDao by lazy { database.watchDao() }
@@ -79,6 +80,7 @@ class TVShowDetails : Fragment() {
                 continueButton.visibility = View.VISIBLE
                continueButton.text =
                     "Continue Watching \t S${watchFrom.season} E${watchFrom.episode}"
+                lastPlayedSeason = watchFrom.season
             }
 
             continueButton.setOnClickListener {
@@ -136,8 +138,8 @@ class TVShowDetails : Fragment() {
 //        hintTil = view.findViewById(R.id.dropdown_menu)
         progressBar = view.findViewById(R.id.progress_circular)
         episodesRc = view.findViewById(R.id.episode_display_rc)
+//        episodesRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         episodesRc.layoutManager = LinearLayoutManager(requireContext())
-
 
         val expandView = view.findViewById<ConstraintLayout>(R.id.expand_tvshow_view)
         val titleTv = view.findViewById<TextView>(R.id.title_show)
@@ -177,7 +179,7 @@ class TVShowDetails : Fragment() {
 //                dropdownMenu.setAdapter(arrayAdapter) // Set the adapter
 
                 dropDownSpinner.adapter = arrayAdapter
-
+                dropDownSpinner.setSelection(lastPlayedSeason-1)
 
                 var seasonNumber: String
                 dropDownSpinner.onItemSelectedListener =

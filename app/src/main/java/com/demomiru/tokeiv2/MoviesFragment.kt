@@ -9,6 +9,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.view.isVisible
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.CombinedLoadStates
+import androidx.paging.LoadState
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,6 +28,7 @@ import com.demomiru.tokeiv2.utils.retrofitBuilder
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -38,6 +48,11 @@ class MoviesFragment : Fragment() {
     private lateinit var popMovieRc: RecyclerView
     private lateinit var trenMovieRc : RecyclerView
     private lateinit var topMovieRc : RecyclerView
+    private var loading = MutableLiveData(true)
+    private val adapter = MovieAdapter2{
+        println(it.release_date)
+        startActivity(passData(it,requireContext()))
+    }
     private var param2: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +61,13 @@ class MoviesFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        lifecycleScope.launch (Dispatchers.IO){
+
+        }
+        super.onViewCreated(view, savedInstanceState)
     }
 
     @DelicateCoroutinesApi
@@ -67,75 +89,112 @@ class MoviesFragment : Fragment() {
         val retrofit = retrofitBuilder()
         val movieService = retrofit.create(MovieService::class.java)
 
-        GlobalScope.launch(Dispatchers.Main) {
-            val pmovieResponse = movieService.getPopularMovies(
-                BuildConfig.TMDB_API_KEY,
-                "en-US"
-            )
+        lifecycleScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.IO){
 
-            val tmovieResponse = movieService.getTrendingMovies(
-                BuildConfig.TMDB_API_KEY,
-                "en-US"
-            )
-
-            val topMovieResponse = movieService.getTopRatedMovies(
-                BuildConfig.TMDB_API_KEY,
-                "en-US"
-            )
-
-            if (topMovieResponse.isSuccessful)
-            {
-                val movies = tmovieResponse.body()?.results?: emptyList()
-                val adapter = MovieAdapter(movies){
+                val trmovies =   Pager(PagingConfig(1)){MoviesPagingSource(3)}.flow.cachedIn(lifecycleScope)
+                val tradapter = MovieAdapter2{
 //                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
 //                    findNavController().navigate(play(it))
                     println(it.release_date)
-                    startActivity(passData(it,requireContext()))
+                    startActivity(passData(it, requireContext()))
 
                 }
-                addRecyclerAnimation(topMovieRc,adapter)
 
-            }
-
-            if(tmovieResponse.isSuccessful){
-                val movies = tmovieResponse.body()?.results?: emptyList()
-                val adapter = MovieAdapter(movies){
+                val tmovies =  Pager(PagingConfig(1)){MoviesPagingSource(2)}.flow.cachedIn(lifecycleScope)
+                val tadapter = MovieAdapter2 {
 //                    findNavController().navigate(play(it))
                     println(it.release_date)
-                    startActivity(passData(it,requireContext()))
+                    startActivity(passData(it, requireContext()))
 
                 }
-                addRecyclerAnimation(trenMovieRc,adapter)
 
-            }
-
-
-            if (pmovieResponse.isSuccessful) {
-                val movies = pmovieResponse.body()?.results ?: emptyList()
-                val adapter = MovieAdapter(movies){
-//                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
-//                    findNavController().navigate(action)
-//                    findNavController().navigate(play(it))
+                val movies = Pager(PagingConfig(1)){MoviesPagingSource(1)}.flow.cachedIn(lifecycleScope)
+                val adapter = MovieAdapter2 {
                     println(it.release_date)
-                    startActivity(passData(it,requireContext()))
+                    startActivity(passData(it, requireContext()))
 
                 }
-                addRecyclerAnimation(popMovieRc,adapter)
-            }
+                withContext(Dispatchers.Main) {
+                    addRecyclerAnimation(topMovieRc, tradapter)
+                    addRecyclerAnimation(trenMovieRc, tadapter)
+                    addRecyclerAnimation(popMovieRc, adapter)
 
-            withContext(Dispatchers.Main) {
 
-                view.findViewById<ProgressBar>(R.id.loading_movies).visibility = View.GONE
-                view.findViewById<TextView>(R.id.trending_text).visibility = View.VISIBLE
-                view.findViewById<TextView>(R.id.movies_text).visibility = View.VISIBLE
-                view.findViewById<TextView>(R.id.topmovies_text).visibility = View.VISIBLE
-            }
+                    lifecycleScope.launch {
+                        trmovies.collect {
+                            tradapter.submitData(it)
+                        }
+                    }
+                    lifecycleScope.launch {
+                        movies.collect{
+                            adapter.submitData(it)
+                        }
+                    }
+                    lifecycleScope.launch {
+                        tadapter.addLoadStateListener {
+                            val state = it.refresh
+                            val visible = state is LoadState.Loading
+                            if(visible){
+                                view.findViewById<ProgressBar>(R.id.loading_movies).visibility = View.VISIBLE
+                            }
+                            else{
+                                view.findViewById<TextView>(R.id.trending_text).visibility = View.VISIBLE
+                                view.findViewById<TextView>(R.id.movies_text).visibility = View.VISIBLE
+                                view.findViewById<TextView>(R.id.topmovies_text).visibility = View.VISIBLE
+                                view.findViewById<ProgressBar>(R.id.loading_movies).visibility = View.GONE
+                            }
+                        }
+//                        view.findViewById<ProgressBar>(R.id.loading_movies).visibility = View.GONE
+//                        view.findViewById<TextView>(R.id.trending_text).visibility = View.VISIBLE
+//                        view.findViewById<TextView>(R.id.movies_text).visibility = View.VISIBLE
+//                        view.findViewById<TextView>(R.id.topmovies_text).visibility = View.VISIBLE
+                        tmovies.collect {
+                            tadapter.submitData(it)
+                        }
+                    }
+
+
+                }
+//
+
+        }
+
+//            withContext(Dispatchers.Main) {
+
+//                view.findViewById<ProgressBar>(R.id.loading_movies).visibility = View.GONE
+//                view.findViewById<TextView>(R.id.trending_text).visibility = View.VISIBLE
+//                view.findViewById<TextView>(R.id.movies_text).visibility = View.VISIBLE
+//                view.findViewById<TextView>(R.id.topmovies_text).visibility = View.VISIBLE
+//            }
         }
 
 
         return view
     }
 
+//    private inline fun CombinedLoadStates.decideOnState(
+//        showLoading: (Boolean) -> Unit,
+//        showEmptyState: (Boolean) -> Unit,
+//        showError: (String) -> Unit
+//    ) {
+//        showLoading(refresh is LoadState.Loading)
+//
+//        showEmptyState(
+//            source.append is LoadState.NotLoading
+//                    && source.append.endOfPaginationReached
+//                    && adapter.itemCount == 0
+//        )
+//
+//        val errorState = source.append as? LoadState.Error
+//            ?: source.prepend as? LoadState.Error
+//            ?: source.refresh as? LoadState.Error
+//            ?: append as? LoadState.Error
+//            ?: prepend as? LoadState.Error
+//            ?: refresh as? LoadState.Error
+//
+//        errorState?.let { showError(it.error.toString()) }
+//    }
     companion object {
         /**
          * Use this factory method to create a new instance of
