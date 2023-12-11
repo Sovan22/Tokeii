@@ -3,6 +3,7 @@
 package com.demomiru.tokeiv2
 
 
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.KeyEvent
 
@@ -82,7 +83,12 @@ class SearchFragment : Fragment() {
         animeChoice = view.findViewById(R.id.anime_search)
         choice = view.findViewById(R.id.choice)
 
-        searchResultsRc.layoutManager = GridLayoutManager(requireContext(),2)
+
+        val width = Resources.getSystem().displayMetrics.widthPixels
+        val dpi = Resources.getSystem().displayMetrics.densityDpi
+        val grid = (width*160)/(165*dpi)
+        println(grid)
+        searchResultsRc.layoutManager = GridLayoutManager(requireContext(),grid)
         searchHistoryRC.layoutManager = LinearLayoutManager(requireContext())
 
         adapter = SearchHistoryAdapter2{it,search->
