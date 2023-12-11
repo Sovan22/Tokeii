@@ -101,7 +101,7 @@ class GoMovies{
     private val proxy = BuildConfig.PROXY_URL
     private val headers = mapOf("X-Requested-With" to "XMLHttpRequest")
     private val baseUrl = "https://gomovies.sx"
-    suspend fun search(s: Int, ep:Int ,query: String,isMovie: Boolean,y :String) : Pair<String?,ArrayList<String>?>{
+    suspend fun search(s: Int, ep:Int ,query: String,isMovie: Boolean,y :String) : Pair<String?,String?>{
         val squery = query.lowercase().replace(" ","-")
         val sources: Elements
 
@@ -178,7 +178,7 @@ class GoMovies{
         val stream = gson.fromJson(streamRes, StreamRes::class.java)
 //        println(stream)
 
-        val sub = getSubs(stream.tracks)
+        val sub = getSubs2(stream.tracks)
 
 
         val scriptJs = app.get("https://rabbitstream.net/js/player/prod/e4-player.min.js").toString()
@@ -282,5 +282,14 @@ class GoMovies{
             }
             subs
         }
+    }
+
+    private fun getSubs2(tracks: ArrayList<Track>?): String? {
+        if(tracks == null) return null
+        val subUrl : MutableMap<String,String> = mutableMapOf()
+        tracks.forEach {
+            subUrl[it.label] = it.file
+        }
+        return gson.toJson(subUrl)
     }
 }

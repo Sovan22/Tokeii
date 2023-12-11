@@ -13,20 +13,27 @@ import com.demomiru.tokeiv2.anime.AnimeAdapter
 import com.demomiru.tokeiv2.Episode
 import com.demomiru.tokeiv2.Movie
 import com.demomiru.tokeiv2.MovieAdapter
+import com.demomiru.tokeiv2.MovieAdapter2
 import com.demomiru.tokeiv2.MoviePlayActivity
 
 import com.demomiru.tokeiv2.MoviesFragmentDirections
 import com.demomiru.tokeiv2.R
 import com.demomiru.tokeiv2.TVShowAdapter
+import com.demomiru.tokeiv2.TVShowAdapter2
 import com.demomiru.tokeiv2.TVShowFragmentDirections
 import com.demomiru.tokeiv2.TVshow
 import com.demomiru.tokeiv2.VideoPlayActivity
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingAdapter
 import com.demomiru.tokeiv2.watching.VideoData
+import com.lagradost.nicehttp.addGenericDns
+import com.lagradost.nicehttp.ignoreAllSSLErrors
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 
@@ -106,6 +113,15 @@ fun addRecyclerAnimation(view :RecyclerView, adapter : TVShowAdapter){
     view.scheduleLayoutAnimation()
 }
 
+fun addRecyclerAnimation(view :RecyclerView, adapter : TVShowAdapter2){
+    view.adapter = adapter
+    val context = view.context
+    val controller = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
+    view.layoutAnimation = controller
+    adapter.notifyDataSetChanged()
+    view.scheduleLayoutAnimation()
+}
+
 @SuppressLint("NotifyDataSetChanged")
 fun addRecyclerAnimation(view :RecyclerView, adapter : MovieAdapter){
     view.adapter = adapter
@@ -115,6 +131,17 @@ fun addRecyclerAnimation(view :RecyclerView, adapter : MovieAdapter){
     adapter.notifyDataSetChanged()
     view.scheduleLayoutAnimation()
 }
+
+@SuppressLint("NotifyDataSetChanged")
+fun addRecyclerAnimation(view :RecyclerView, adapter : MovieAdapter2){
+    view.adapter = adapter
+    val context = view.context
+    val controller = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
+    view.layoutAnimation = controller
+    adapter.notifyDataSetChanged()
+    view.scheduleLayoutAnimation()
+}
+
 
  fun passData(data : Movie,context : Context) : Intent{
     val bundle = Bundle()
@@ -192,6 +219,40 @@ fun superStreamRetrofitBuilder(): Retrofit{
         .baseUrl("https://loon-neat-troll.ngrok-free.app/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
+}
+
+fun getBaseClient(): OkHttpClient {
+    fun OkHttpClient.Builder.addCloudFlareDns() = (
+            addGenericDns(
+                "https://cloudflare-dns.com/dns-query",
+                // https://www.cloudflare.com/ips/
+                listOf(
+                    "1.1.1.1",
+                    "1.0.0.1",
+                    "2606:4700:4700::1111",
+                    "2606:4700:4700::1001"
+                )
+            ))
+
+
+    val appCache = Cache(File("cacheDir", "okhttpcache"), 10 * 1024 * 1024)
+//    private val bootstrapClient = OkHttpClient.Builder().cache(appCache).build()
+//
+//    val dns = DnsOverHttps.Builder().client(bootstrapClient)
+//        .url("https://1.1.1.1/dns-query".toHttpUrl())
+//        .build()
+
+    val baseClient = OkHttpClient.Builder()
+        .followRedirects(true)
+        .followSslRedirects(true)
+        .ignoreAllSSLErrors()
+        .cache(
+            appCache
+        )
+        .apply {
+           addCloudFlareDns()
+        }.build()
+    return baseClient
 }
 //fun dynamicRetrofitBuilder (id :String): Retrofit
 //{

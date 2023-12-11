@@ -28,12 +28,12 @@ suspend fun getMovieImdb(tmdbID: String) : String{
 
     )
     val gson = Gson()
-    val movieImdb = requests.get("https://api.themoviedb.org/3/movie/$tmdbID?language=en-US",
+    val movieImdb = requests.get("https://api.themoviedb.org/3/movie/$tmdbID?append_to_response=external_ids&language=en-US",
         headers = headers
     ).okhttpResponse
     val response = movieImdb.body.string()
     val imdbID = gson.fromJson(response, MovieIMDB::class.java)
-    return imdbID.imdb_id
+    return imdbID.external_ids.imdb_id
 //       Log.i("ImdbID", imdbID.imdb_id)
 }
 
@@ -65,8 +65,9 @@ private val proxy = BuildConfig.PROXY_URL
 
 suspend fun getMovieLink(imdbId : String): String {
 
-    val origin = "https://hurl-party-i-256.site"
-    val requests = Requests()
+//    val origin = "https://hurl-party-i-256.site"
+    val origin = "https://gerrickle-franchans-i-267.site"
+    val requests = Requests(baseClient = getBaseClient())
     val encoded = Base64.getEncoder().encodeToString(
         (imdbId + "-" + System.currentTimeMillis()).toByteArray(
             StandardCharsets.UTF_8
@@ -85,7 +86,7 @@ suspend fun getMovieLink(imdbId : String): String {
     if (doc2.size < 2) return ""
 
     val script = doc2[5].toString()
-    val regex = Regex("""let playerConfigs = (.*?);""")
+    val regex = Regex("""let pc = (.*?);""")
     val matchResult = regex.find(script)
 
     if (matchResult != null) {
@@ -95,7 +96,8 @@ suspend fun getMovieLink(imdbId : String): String {
         val fileKeys: Keys = gson.fromJson(jsonInsideHDVBPlayer, Keys::class.java)
         Log.i("file:", fileKeys.file)
 
-        val srcUrl = "https://hurl-party-i-256.site"
+//        val srcUrl = "https://hurl-party-i-256.site"
+        val srcUrl = "https://gerrickle-franchans-i-267.site"
         val absoluteUrl = srcUrl + fileKeys.file
         val headers = mapOf(
             "Accept" to "*/*",
@@ -134,8 +136,10 @@ suspend fun getMovieLink(imdbId : String): String {
 
     }
     else{
+        println("match result issue")
         return ""
     } }catch(e : Exception){
+        println(e.printStackTrace())
         return ""
     }
     return ""
@@ -143,7 +147,7 @@ suspend fun getMovieLink(imdbId : String): String {
 
 suspend fun getTvLink(imdbId: String, s : Int, e: Int) : String{
     val origin = "https://hurl-party-i-256.site"
-    val requests = Requests()
+    val requests = Requests(baseClient = getBaseClient())
     val encoded = Base64.getEncoder().encodeToString(
         (imdbId + "-" + System.currentTimeMillis()).toByteArray(
             StandardCharsets.UTF_8
@@ -219,7 +223,7 @@ suspend fun getTvLink(imdbId: String, s : Int, e: Int) : String{
 }
 suspend fun getHiTvSeasons(imdbId: String) : Int{
     val origin = "https://hurl-party-i-256.site"
-    val requests = Requests()
+    val requests = Requests(baseClient = getBaseClient())
     val encoded = Base64.getEncoder().encodeToString(
         (imdbId + "-" + System.currentTimeMillis()).toByteArray(
             StandardCharsets.UTF_8
