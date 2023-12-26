@@ -156,12 +156,32 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/sub_tracks_rc"
             android:layout_width="0dp"
+            app:layout_constraintWidth_percent="0.5"
+            app:layout_constraintHeight_percent="0.5"
             android:layout_height="0dp"
             android:layout_gravity="center"
             android:layout_margin="10dp"
-            app:layout_constraintBottom_toTopOf="@id/switchcompat"
-            app:layout_constraintEnd_toStartOf="@+id/source_change_rc"
+            app:layout_constraintBottom_toTopOf="@id/add_open_sub"
+
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sources"
+            android:textSize="20sp"
+            android:layout_margin="10dp"
+            app:layout_constraintBottom_toTopOf="@+id/source_change_rc"
+            app:layout_constraintStart_toEndOf="@+id/sub_tracks_rc" />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/source_loading"
+            app:layout_constraintBottom_toTopOf="@+id/apply_sub"
+            app:layout_constraintEnd_toEndOf="@+id/source_change_rc"
+            app:layout_constraintStart_toStartOf="@+id/source_change_rc"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -172,7 +192,18 @@
             android:layout_margin="20dp"
             app:layout_constraintBottom_toTopOf="@id/apply_sub"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toEndOf="@+id/sub_tracks_rc"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.45" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="25dp"
+            android:id="@+id/add_open_sub"
+            android:text="Add From Open Sub"
+            app:layout_constraintBottom_toTopOf="@+id/switchcompat"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switchcompat"
@@ -204,7 +235,7 @@
         android:id="@+id/quality_select"
         android:orientation="vertical"
         android:visibility="gone"
-        tools:visibility="visible"
+        tools:visibility="gone"
         >
 
         <androidx.recyclerview.widget.RecyclerView
@@ -228,6 +259,58 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/open_sub_ll"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:orientation="vertical"
+        tools:context=".scrapers.OpenSubtitle">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+        <Spinner
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:id="@+id/spinner"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin = "20dp"
+            android:id="@+id/search"
+            android:text="Search"
+            android:layout_gravity="center"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/apply"
+            android:text="Apply"
+            android:layout_marginEnd="10dp"
+            android:layout_gravity="center"
+            />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:id="@+id/sub_rc"
+            />
+
+    </LinearLayout>
 
     <include layout="@layout/custom_video_player2"
         android:visibility="gone"

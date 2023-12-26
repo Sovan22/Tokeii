@@ -9,7 +9,7 @@
     <WebView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:id="@+id/web_view"/>
 <!--    <androidx.media3.ui.PlayerView-->
 <!--        android:layout_width="match_parent"-->
@@ -18,13 +18,23 @@
 <!--        android:layout_height="match_parent"-->
 <!--        />-->
 
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/results_rc"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="25dp" />
+
     <ProgressBar
         android:id="@+id/loading_content"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:visibility="gone"
         android:layout_centerVertical="true"
-         />
+        />
 
 <!--    <include layout="@layout/custom_video_player"/>-->
 </RelativeLayout>
