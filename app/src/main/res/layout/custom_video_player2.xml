@@ -21,7 +21,8 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_weight="0"
-            android:background="@android:color/transparent"
+            android:background="@drawable/play_ripple"
+            android:focusable="true"
             android:src="@drawable/ic_baseline_keyboard_backspace_24" />
 
         <TextView
@@ -109,7 +110,8 @@
             android:id="@+id/videoView_rewind"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:background="@android:color/transparent"
+            android:background="@drawable/play_ripple"
+            android:focusable="true"
             android:src="@drawable/ic_rewind" />
 
         <Space
@@ -126,7 +128,8 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
                 android:visibility="gone"
-            android:background="@android:color/transparent"
+            android:background="@drawable/play_ripple"
+              android:focusable="true"
             android:src="@drawable/netflix_pause_button" />
 
             <ProgressBar
@@ -146,8 +149,9 @@
         <ImageButton
             android:id="@+id/videoView_forward"
             android:layout_width="60dp"
+            android:background="@drawable/play_ripple"
+            android:focusable="true"
             android:layout_height="60dp"
-            android:background="@android:color/transparent"
             android:src="@drawable/ic_forward" />
 
         <Space
@@ -212,6 +216,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
+                android:focusable="true"
+                android:background="@drawable/focus_search"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:padding="10dp"
@@ -239,6 +245,8 @@
 
 
             <LinearLayout
+                android:focusable="true"
+                android:background="@drawable/focus_search"
                 android:id="@+id/videoView_track"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -270,6 +278,8 @@
             </LinearLayout>
 
             <LinearLayout
+                android:focusable="true"
+                android:background="@drawable/focus_search"
                 android:id="@+id/videoView_screen_size"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -302,6 +312,8 @@
 
             </LinearLayout>
             <LinearLayout
+                android:focusable="true"
+                android:background="@drawable/focus_search"
                 android:id="@+id/videoView_resolution"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -335,6 +347,8 @@
             </LinearLayout>
 
             <LinearLayout
+                android:focusable="true"
+                android:background="@drawable/focus_search"
                 android:id="@+id/videoView_next_ep"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -369,6 +383,8 @@
             </LinearLayout>
 
             <LinearLayout
+                android:focusable="true"
+                android:background="@drawable/focus_search"
                 android:id="@+id/videoView_skip_op"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
