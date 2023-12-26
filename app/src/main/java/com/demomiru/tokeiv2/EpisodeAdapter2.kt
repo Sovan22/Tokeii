@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import at.blogc.android.views.ExpandableTextView
 import coil.load
@@ -35,6 +36,7 @@ class EpisodeAdapter2(private val episodes : List<Episode>,
         val episodeImg : ImageView = itemView.findViewById(R.id.episode_img)
         val episodeOverview : ExpandableTextView = itemView.findViewById(R.id.episode_overview_text)
         val fl : FrameLayout = itemView.findViewById(R.id.expanded_episode_fl)
+        val epCard: CardView = itemView.findViewById(R.id.episode_card)
         val expandText : ImageView = itemView.findViewById(R.id.expand_text)
         val expandableTextView : ExpandableTextView = itemView.findViewById(R.id.episode_overview_text)
         val episodeNumber : TextView = itemView.findViewById(R.id.episode_number)
@@ -53,6 +55,10 @@ class EpisodeAdapter2(private val episodes : List<Episode>,
         holder.episodeImg.load("https://image.tmdb.org/t/p/w500${episode.still_path}")
         holder.fl.setOnClickListener {
             clickHandler(episode)
+        }
+        holder.epCard.setOnClickListener {
+            holder.fl.performClick()
+//            clickHandler(episode)
         }
         val etv = holder.expandableTextView
         etv.setAnimationDuration(750L)
