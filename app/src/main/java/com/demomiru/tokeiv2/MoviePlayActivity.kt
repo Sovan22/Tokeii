@@ -2,6 +2,7 @@ package com.demomiru.tokeiv2
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Resources
 import android.net.Uri
 
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +31,11 @@ import androidx.lifecycle.lifecycleScope
 
 
 import androidx.media3.common.Player.*
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.extractors.PrMovies
+import com.demomiru.tokeiv2.extractors.ResultsAdapter
+import com.demomiru.tokeiv2.extractors.SearchResponse
 import com.demomiru.tokeiv2.utils.Extractor
 import com.demomiru.tokeiv2.utils.GoMovies
 import com.demomiru.tokeiv2.utils.GogoAnime
@@ -53,7 +59,9 @@ import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.checkerframework.checker.units.qual.s
+
+
+import kotlin.Exception
 
 
 @Suppress("DEPRECATION")
@@ -69,6 +77,7 @@ class MoviePlayActivity : AppCompatActivity(){
     private lateinit var loading:ProgressBar
     private lateinit var id:String
 //    private var clickedMiddle = false
+    private lateinit var resultRc : RecyclerView
     private var animeUrl = ""
     private var season: Int = 1
     private var episode: Int = 1
@@ -84,7 +93,7 @@ class MoviePlayActivity : AppCompatActivity(){
 
     private val COVER_SCREEN_PARAMS = FrameLayout.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-
+    private val prMovies = PrMovies()
     private lateinit var url : String
 
 //    private val args : MoviePlayActivityArgs by navArgs()
@@ -96,7 +105,7 @@ class MoviePlayActivity : AppCompatActivity(){
 
         setContentView(R.layout.activity_movie_play)
         Log.i("Start", "Time")
-
+        resultRc = findViewById(R.id.results_rc)
         val bundle = intent.extras
         type = bundle?.getString("type")
         when (type) {
@@ -257,22 +266,48 @@ class MoviePlayActivity : AppCompatActivity(){
                     }
                     val links = Extractor(origin).loadExtractor(title,id,year,season,episode,false)
                     println(links)
+                    val list = prMovies.getPrMovieLink(title)
                     withContext(Dispatchers.Main) {
                         if (!links.videoUrl.isNullOrBlank()) {
+                            println("if run")
                             subUrl.addAll(links.subs)
                             isSuper = links.isSuper
                             source = links.source
                             videoUrl.value = links.videoUrl
 
                         } else {
+                            println("else run")
+                            loading.visibility = View.GONE
+                            try {
+                                val rcAdapter = ResultsAdapter {
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        val src = prMovies.loadLinks(it.link!!)
+                                        if (src.file.isNullOrBlank()) throw Exception("no video url found")
+                                        withContext(Dispatchers.Main) {
+                                            isSuper = false
+                                            source = "prmovies"
+                                            videoUrl.value = src.file
+                                        }
+                                    }
+                                }
+                                val width = Resources.getSystem().displayMetrics.widthPixels
+                                val dpi = Resources.getSystem().displayMetrics.densityDpi
+                                val grid = (width*160)/(165*dpi)
+                                resultRc.apply {
+                                    layoutManager = GridLayoutManager(this@MoviePlayActivity,grid)
+                                    adapter = rcAdapter
+                                }
+                                if (list.isEmpty()) throw Exception("Empty search")
 
-                            Toast.makeText(
-                                this@MoviePlayActivity,
-                                "No available links",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            finish()
-
+                                rcAdapter.submitList(list)
+                            }catch (e:Exception){
+                                Toast.makeText(
+                                    this@MoviePlayActivity,
+                                    "No available links",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                finish()
+                            }
                         }
                     }
                 }
@@ -294,6 +329,11 @@ class MoviePlayActivity : AppCompatActivity(){
 //                        }
                         val links = Extractor(origin).loadExtractor(title,id,year, season,episode,true)
                         println(links)
+                        val query = title.filter {
+                            it.isLetterOrDigit() || it.isWhitespace()
+                        }
+                        val list = prMovies.getPrMovieLink(query)
+
                         withContext(Dispatchers.Main) {
                             if (!links.videoUrl.isNullOrBlank()) {
                                 subUrl.addAll(links.subs)
@@ -302,13 +342,46 @@ class MoviePlayActivity : AppCompatActivity(){
                                 videoUrl.value = links.videoUrl
 
                             } else {
+                                println("else run")
+                                println(list)
+                                loading.visibility = View.GONE
+                                try {
+                                    if (list.isEmpty()) throw Exception("Empty search")
+                                    val rcAdapter = ResultsAdapter {
+                                        lifecycleScope.launch(Dispatchers.IO) {
+                                            val src = prMovies.loadLinks(it.link!!)
+                                            if (src.file.isNullOrBlank()) throw Exception("no video url found")
+                                            withContext(Dispatchers.Main) {
+                                                isSuper = false
+                                                source = "prmovies"
+                                                videoUrl.value = src.file
+                                            }
+                                        }
+                                    }
+                                    val width = Resources.getSystem().displayMetrics.widthPixels
+                                    val dpi = Resources.getSystem().displayMetrics.densityDpi
+                                    val grid = (width*160)/(165*dpi)
+                                    resultRc.apply {
+                                        layoutManager = GridLayoutManager(this@MoviePlayActivity,grid)
+                                        adapter = rcAdapter
+                                    }
 
-                                Toast.makeText(
-                                    this@MoviePlayActivity,
-                                    "No available links",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                finish()
+
+                                    rcAdapter.submitList(list)
+                                }catch (e:Exception){
+                                    Toast.makeText(
+                                        this@MoviePlayActivity,
+                                        "No available links",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    finish()
+                                }
+//                                Toast.makeText(
+//                                    this@MoviePlayActivity,
+//                                    "No available links",
+//                                    Toast.LENGTH_SHORT
+//                                ).show()
+//                                finish()
 
                             }
                         }
@@ -349,6 +422,10 @@ class MoviePlayActivity : AppCompatActivity(){
                     }
                 }
             }
+    }
+
+    private fun getPrMovie(list: List<SearchResponse>){
+
     }
 
     private suspend fun getGoMovieLink(isMovie: Boolean){

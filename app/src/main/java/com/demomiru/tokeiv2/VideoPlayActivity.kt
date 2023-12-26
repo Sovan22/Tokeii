@@ -9,6 +9,7 @@ import com.demomiru.tokeiv2.watching.VideoData
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
+import android.health.connect.datatypes.units.Length
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Handler
@@ -23,6 +24,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -31,10 +34,13 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 
 import android.widget.SeekBar
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContentProviderCompat.requireContext
 
 
 import androidx.core.view.GestureDetectorCompat
@@ -50,6 +56,7 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
 import androidx.media3.common.text.CueGroup
+import androidx.media3.datasource.DefaultDataSourceFactory
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 
@@ -77,12 +84,18 @@ import com.demomiru.tokeiv2.utils.ExtractedData
 import com.demomiru.tokeiv2.utils.Extractor
 import com.demomiru.tokeiv2.utils.GoMovies
 import com.demomiru.tokeiv2.utils.GogoAnime
+import com.demomiru.tokeiv2.utils.OpenSubtitle
 import com.demomiru.tokeiv2.utils.SmashyStream
+import com.demomiru.tokeiv2.utils.SubAdapter
 import com.demomiru.tokeiv2.utils.SuperstreamUtils
+import com.demomiru.tokeiv2.utils.VideoViewModel
 import com.demomiru.tokeiv2.utils.encodeStringToInt
 
 import com.demomiru.tokeiv2.utils.getHiTvSeasons
+import com.demomiru.tokeiv2.utils.getMovieImdb
 import com.demomiru.tokeiv2.utils.getSeasonEpisodes
+import com.demomiru.tokeiv2.utils.getTvIMDB
+import com.demomiru.tokeiv2.utils.getTvImdb
 import com.demomiru.tokeiv2.utils.getTvLink
 import com.demomiru.tokeiv2.utils.getTvSeasons
 import com.demomiru.tokeiv2.utils.setSeekBarTime
@@ -101,6 +114,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import java.lang.reflect.Type
 import kotlin.Exception
 import kotlin.math.abs
@@ -111,6 +125,8 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private val gson = Gson()
     private val superStream = SuperstreamUtils()
     private var trackUpdate = 0L
+    private val fileList: MutableList<String> = mutableListOf()
+    private val fileLinks: MutableList<String> = mutableListOf()
     private var bfapplyUrl = ""
     private var setTrackAdapter = 1
     private val openSubtitleAPI = BuildConfig.OPEN_SUBTITLE_API_KEY
@@ -159,6 +175,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private lateinit var volumeSeek : SeekBar
     private var audioManager: AudioManager? = null
     private lateinit var seekBar:SeekBar
+    private var q = ""
     private var subUrl : List<String> = listOf()
     private var newSubUrl: MutableList<String> = mutableListOf()
     private lateinit var mediaSource: MediaSource
@@ -173,9 +190,10 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
     private var selectedUrl : String = ""
     private var sourcesList = listOf<ExtractedData>()
     private var source: String? = ""
-
     private lateinit var powerManager: PowerManager
     private lateinit var wakeLock: PowerManager.WakeLock
+    private lateinit var openSubll : LinearLayout
+    private val oS = OpenSubtitle(this)
 
 
 
@@ -201,6 +219,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "VideoPlayerActivity:wakelock")
         showSubs = findViewById(R.id.switchcompat)
 
+
 //        val sub =PlayerControlView.findViewById<SubtitleView>(R.id.exo_subtitles)
         val videoNext = findViewById<LinearLayout>(R.id.videoView_next_ep)
         val buffer = findViewById<ProgressBar>(R.id.buffering)
@@ -223,9 +242,15 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         println("Video Url:" + data.videoUrl)
 
         videoUri =  if(isSuper){
+            q = "720p"
             urlMaps = gson.fromJson(data.videoUrl,object : TypeToken<Map<String, String>>() {}.type)
-            selectedUrl = urlMaps["720p"]!!
-            Uri.parse(urlMaps["720p"])
+            selectedUrl = if(urlMaps["720p"].isNullOrEmpty()) {
+                q = urlMaps.keys.first()
+                urlMaps[q]!!
+            } else
+                urlMaps["720p"]!!
+
+            Uri.parse(selectedUrl)
 
         } else Uri.parse(data.videoUrl)
 
@@ -247,11 +272,25 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         }
 
         val videoQuality = findViewById<TextView>(R.id.videoView_quality)
-        videoQuality.text = if (isSuper) "720p" else "Auto"
+        videoQuality.text = if (isSuper) q else "Auto"
+        val sourceLoading = findViewById<ProgressBar>(R.id.source_loading)
 
         val sourceAdapter = SourceAdapter{
             newSubUrl.clear()
             newSubUrl.addAll(it.subs)
+            if(fileLinks.isNotEmpty()){
+                val l = fileLinks.size
+                val fl = fileList.size
+                var j = 1
+                val map  = mutableMapOf<String,String>()
+                for (i in (fl-l) until fl ){
+                    val lang = fileList[i].substringAfter("lang-").substringBefore("N").replace("%20","")
+                    map["$j OS - $lang"] = fileList[i]
+                }
+                val mapString = gson.toJson(map)
+                val prevSubs = newSubUrl
+                newSubUrl = (prevSubs + mapString).toMutableList()
+            }
             source = it.source
             isSuper = it.isSuper
             isTrackChanged = true
@@ -263,7 +302,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 selectedUrl
             }
             subSelectBg.visibility = View.GONE
-            videoQuality.text = if (isSuper) "720p" else "Auto"
+            videoQuality.text = if (isSuper) q else "Auto"
         }
         sourceSelectRc = findViewById(R.id.source_change_rc)
         sourceSelectRc.apply {
@@ -284,10 +323,14 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     source
                 )
                 withContext(Dispatchers.Main) {
+                    sourceLoading.visibility = View.GONE
                     sourceAdapter.submitList(sourcesList)
                 }
             }
         }
+
+
+
 
         window.decorView.apply {
             systemUiVisibility = (
@@ -326,6 +369,124 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 return super.shouldInterceptRequest(view, request)
             }
         }
+
+
+
+
+        openSubll = findViewById<LinearLayout>(R.id.open_sub_ll)
+        val addOpenSub = findViewById<Button>(R.id.add_open_sub)
+        val spinner = findViewById<Spinner>(R.id.spinner)
+        val search = findViewById<Button>(R.id.search)
+        val apply = findViewById<Button>(R.id.apply)
+        val subRv = findViewById<RecyclerView>(R.id.sub_rc)
+        var langMap : Map<String,String> = mapOf()
+        var spinList :List<String>
+        var selectedItem = "English"
+        var fileLink = ""
+        var lI = 0
+
+        var openSubAdapter = SubAdapter{
+            fileLink = it
+        }
+
+        subRv.apply {
+            layoutManager = LinearLayoutManager(this@VideoPlayActivity)
+            adapter = openSubAdapter
+        }
+
+
+        lifecycleScope.launch(Dispatchers.IO) {
+           langMap =  oS.getLang()
+            spinList = langMap.map{
+                it.key
+            }
+            val eI = spinList.indexOfFirst {
+                it == "English"
+            }
+
+            withContext(Dispatchers.Main){
+                val arrayAdapter = ArrayAdapter(
+                    this@VideoPlayActivity,
+                    android.R.layout.simple_dropdown_item_1line,
+                    spinList
+                )
+                spinner.adapter = arrayAdapter
+                spinner.setSelection(eI)
+            }
+        }
+
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                p1: View?,
+                position: Int,
+                p3: Long
+            ) {
+                val lang = parent?.getItemAtPosition(position) as String
+                if(selectedItem != lang){
+                    openSubAdapter = SubAdapter{
+                        fileLink = it
+                    }
+                    subRv.adapter = openSubAdapter
+                }
+                selectedItem = lang
+
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+                selectedItem = "English"
+            }
+
+        }
+
+        search.setOnClickListener {
+            if (langMap.isEmpty())return@setOnClickListener
+            val langCode = langMap[selectedItem]!!
+            lifecycleScope.launch(Dispatchers.IO) {
+                val sid = if(type=="movie") getMovieImdb(id) else getTvIMDB(id)
+                val subRes = oS.searchSubs(sid,langCode,season,episode,type=="movie" )
+
+                withContext(Dispatchers.Main){
+                    if (subRes.isEmpty()) Toast.makeText(this@VideoPlayActivity,"No Subs for this Language",Toast.LENGTH_SHORT).show()
+                    openSubAdapter.submitList(subRes)
+                }
+            }
+        }
+
+
+        apply.setOnClickListener{
+            if(fileLink.isBlank()) return@setOnClickListener
+            if(fileLink in fileLinks) {
+                Toast.makeText(this@VideoPlayActivity,"Already added", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            lifecycleScope.launch(Dispatchers.IO) {
+                val fileName = "$title-S$season-E$episode-lang-$selectedItem N$lI"
+                oS.getSub2(fileLink, selectedItem, fileName)
+                fileLinks.add(fileLink)
+                trackUpdate = subUpdateProgress
+                isTrackChanged = true
+                withContext(Dispatchers.Main) {
+                    val map: MutableMap<String, String> = mutableMapOf()
+                    lI++
+                    val link = oS.getSRT(fileName).toString()
+                    map["$lI OS - $selectedItem"] = link
+                    if(link !in fileList) {
+                        val mapString = gson.toJson(map)
+                        val prevSubs = subList.value
+                        subList.value = if (prevSubs != null)
+                            prevSubs + mapString
+                        else
+                            listOf(mapString)
+                        fileList.add(link)
+                    }
+                }
+            }
+        }
+
+
+
 
         val remTimeTv = findViewById<TextView>(R.id.videoView_endtime)
         val seekForward: ImageButton = findViewById(R.id.videoView_forward)
@@ -568,7 +729,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                             val trackData = superUrlSelector()
                             val ta = TrackAdapter(trackData) {
                                 isTrackChanged = true
-                                newSubUrl = subUrl.toMutableList()
+                                newSubUrl = subList.value?.toMutableList() ?: mutableListOf()
                                 selectedUrl = urlMaps[it.resolution.second]!!
                                 videoQuality.text = "${it.resolution.second}"
                             }
@@ -655,20 +816,16 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
 
 
-            if (subUrl.isEmpty()) {
+            if (subUrl.isEmpty() && imdbId!=null) {
                 println("empty")
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val fileID: List<String> = if (type == "movie") {
-                        getSubtitles(id)
-                    } else {
-                        getSubtitles(id, season, episode)
-                    }
+//                lifecycleScope.launch(Dispatchers.IO) {
+//                   val subs = oS.searchSubs(imdbId!!,"eng",season,episode,type=="movie")
+//                    val fileName = "$title-$season-$episode-English"
+//                    oS.getSub2(subs[0].SubDownloadLink,"English",fileName)
+//                    subList.postValue(subUrl + listOf(oS.getSRT(fileName).toString()))
+//                }
+                subList.postValue(subUrl)
 
-                    subList.postValue(getAuthToken(fileID))
-                    withContext(Dispatchers.IO) {
-//                    Log.i("DownloadSubCount1", subList.value!![0])
-                    }
-                }
             } else {
                 subList.postValue(subUrl)
             }
@@ -682,6 +839,12 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     }
                     println("Source: $source")
                     episodeNext()
+                    fileLinks.clear()
+                    openSubAdapter = SubAdapter {
+                        fileLink = it
+                    }
+                    subRv.adapter = openSubAdapter
+                    sourceLoading.visibility = View.VISIBLE
                     lifecycleScope.launch (Dispatchers.IO){
 
                         val vidData = Extractor(origin!!).loadExtractorNext(title,id,season,episode,source!!)
@@ -691,7 +854,11 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                                 newSubUrl.addAll(vidData.subs)
                                 newVideoUrl.value = if(!vidData.isSuper)vidData.videoUrl ?: "" else{
                                     urlMaps = gson.fromJson(vidData.videoUrl,object : TypeToken<Map<String, String>>() {}.type)
-                                    selectedUrl = urlMaps["720p"]!!
+                                    selectedUrl = if(urlMaps[q].isNullOrEmpty()){
+                                        q = urlMaps.keys.first()
+                                        urlMaps[q]!!
+                                    }
+                                    else urlMaps[q]!!
                                     selectedUrl
                                 }
                             }
@@ -705,23 +872,41 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                         val sourceAdapter2 = SourceAdapter{
                             newSubUrl.clear()
                             newSubUrl.addAll(it.subs)
+                            if(fileLinks.isNotEmpty()){
+                                val l = fileLinks.size
+                                val fl = fileList.size
+                                var j = 1
+                                val map  = mutableMapOf<String,String>()
+                                for (i in (fl-l) until fl ){
+                                    val lang = fileList[i].substringAfter("lang-").substringBefore(" ")
+                                    map["$j OS - $lang"] = fileList[i]
+                                }
+                                val mapString = gson.toJson(map)
+                                val prevSubs = newSubUrl
+                                newSubUrl = (prevSubs + mapString).toMutableList()
+                            }
                             source = it.source
                             isSuper = it.isSuper
                             isTrackChanged = true
                             setTrackAdapter = 1
                             newVideoUrl.value = if(!it.isSuper)it.videoUrl else{
                                 urlMaps = gson.fromJson(it.videoUrl,object : TypeToken<Map<String, String>>() {}.type)
-                                selectedUrl = urlMaps["720p"]!!
+                                selectedUrl = if(urlMaps[q].isNullOrEmpty()){
+                                    q = urlMaps.keys.first()
+                                    urlMaps[q]!!
+                                }
+                                else urlMaps[q]!!
                                 bfapplyUrl = selectedUrl
                                 selectedUrl
                             }
                             subSelectBg.visibility = View.GONE
-                            videoQuality.text = if (isSuper) "720p" else "Auto"
+                            videoQuality.text = if (isSuper) q else "Auto"
                         }
                         sourceSelectRc.adapter = sourceAdapter2
                         sourcesList = listOf(ExtractedData(newVideoUrl.value,newSubUrl,source!!,isSuper))
                         sourcesList = sourcesList + Extractor(mOrigin!!).loadSourceChange(title,id,season,episode,year,type == "movie",source)
                         withContext(Dispatchers.Main){
+                            sourceLoading.visibility = View.GONE
                             sourceAdapter2.submitList(sourcesList)
                         }
                     }
@@ -795,7 +980,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
             // When Subtitles are available
             subList.observe(this) {
-
+                fileLink = ""
                 val subtitleConfig: MutableList<SubtitleConfig> = mutableListOf()
                 var s = 0
 //                videoQuality.text = if (isSuper) "720p" else "Auto"
@@ -816,7 +1001,17 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                                         .build(),
                                     C.TIME_UNSET
                                 )
-                            } else {
+                            }else if (element.contains("file://")) {
+                                SingleSampleMediaSource.Factory(DefaultDataSourceFactory(this@VideoPlayActivity,"user-agent")).createMediaSource(
+                                    MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
+                                        .setMimeType(MimeTypes.APPLICATION_SUBRIP)
+                                        .setLanguage("en")
+                                        .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                                        .build(),
+                                    C.TIME_UNSET
+                                )
+                            }
+                            else {
                                 SingleSampleMediaSource.Factory(dataSourceFactory).createMediaSource(
                                     MediaItem.SubtitleConfiguration.Builder(Uri.parse(element))
                                         .setMimeType(MimeTypes.APPLICATION_SUBRIP)
@@ -832,9 +1027,33 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                             i++
                         }
                     }
-                    s = subtitleConfig.indexOfFirst {
-                        it.language.contains("English")
+
+                    s = subtitleConfig.indexOfFirst {subConfig ->
+                        subConfig.language.contains("English")
                     }
+                    if(it.size > 1){
+                        for( i in 1 until it.size){
+                            val map = it[i]
+                            var subMap : MutableMap<String,String> = mutableMapOf()
+                            if(!map.isNullOrBlank()) subMap = gson.fromJson(map, object : TypeToken<Map<String, String>>() {}.type)
+                            for( key in subMap.keys){
+                                val subtitleMediaSource =
+                                    SingleSampleMediaSource.Factory(DefaultDataSourceFactory(this@VideoPlayActivity,"user-agent")).createMediaSource(
+                                        MediaItem.SubtitleConfiguration.Builder(Uri.parse(subMap[key]))
+                                            .setMimeType(MimeTypes.APPLICATION_SUBRIP)
+                                            .setLanguage("en")
+                                            .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                                            .build(),
+                                        C.TIME_UNSET
+                                    )
+                                subtitleConfig.add(0,SubtitleConfig(subtitleMediaSource, language = "$key"))
+                                s = 0
+                            }
+                        }
+                    }
+
+
+                    // change from here
 //                    for (element in it) {
 //                        println(element)
 //                        val subtitleMediaSource = if (element.contains("vtt")) {
@@ -916,6 +1135,12 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                     playerPause()
                     mainPlayer.visibility = View.GONE
                     subSelectBg.visibility = View.VISIBLE
+
+                }
+
+                addOpenSub.setOnClickListener {
+                    openSubll.visibility = View.VISIBLE
+                    subSelectBg.visibility = View.GONE
                 }
 
                 vidTracks.setOnClickListener {
@@ -927,8 +1152,10 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 applyQuality.setOnClickListener {
                     qualitySelectBg.visibility = View.GONE
                     mainPlayer.visibility = View.VISIBLE
-                    if(bfapplyUrl!= selectedUrl)
-                        newVideoUrl.value = selectedUrl
+                    if(isSuper) {
+                        if (bfapplyUrl != selectedUrl)
+                            newVideoUrl.value = selectedUrl
+                    }
 
                     player.seekTo(subUpdateProgress)
                     seekBar.progress = subUpdateProgress.toInt()
@@ -1037,7 +1264,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
                 if (!newUrl.isNullOrEmpty()) {
                     videoUri = Uri.parse(newUrl)
                     if (!isTrackChanged) {
-                        if(isSuper) videoQuality.text = "720p"
+                        if(isSuper) videoQuality.text = "720p" else videoQuality.text = "Auto"
                         progress = 0
                         subUpdateProgress = 0
                     } else {
@@ -1402,6 +1629,15 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
         player.release() // or pause, depending on your requirements
 
+        lifecycleScope.launch (Dispatchers.IO) {
+            for (s in fileList) {
+                val path = Uri.parse(s).path
+                path?.let {
+                    File(path).delete()
+                }
+            }
+        }
+
         Log.i("Finish", "Called finish() go back pressed")
         super.onDestroy()
     }
@@ -1484,7 +1720,7 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
         var id = 0
         var selectPos = 0
         var tracks = urlMaps.map {
-            val selected = it.key == "720p"
+            val selected = it.key == q
 
             val resolution = Pair("",it.key)
 
@@ -1513,8 +1749,12 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if(subSelectBg.visibility != View.VISIBLE && !qualitySelectBg.isVisible)
+        if(subSelectBg.visibility != View.VISIBLE && !qualitySelectBg.isVisible && !openSubll.isVisible)
         super.onBackPressed()
+        else if (openSubll.isVisible){
+            openSubll.visibility = View.GONE
+            subSelectBg.visibility = View.VISIBLE
+        }
         else{
             subSelectBg.visibility = View.GONE
             qualitySelectBg.visibility = View.GONE
