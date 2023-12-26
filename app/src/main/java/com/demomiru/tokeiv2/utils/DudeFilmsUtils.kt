@@ -59,6 +59,25 @@ suspend fun getTvImdb(tmdbID: String): String{
         ""
 }
 
+suspend fun getTvIMDB(tmdbID: String): String{
+    val requests = Requests()
+    val headers = mapOf(
+        "accept" to " application/json",
+        "Authorization" to "Bearer ${BuildConfig.TMDB_TOKEN}"
+
+    )
+
+    val tvImdb = requests.get("https://api.themoviedb.org/3/tv/$tmdbID?append_to_response=external_ids&language=en-US",
+        headers = headers
+    ).okhttpResponse
+    val gson = Gson()
+    val response = tvImdb.body.string()
+//    Log.i("response", response)
+    val imdbID = gson.fromJson(response, TvIMDB::class.java)
+    return imdbID.external_ids.imdb_id
+
+}
+
 //val origin = "https://log-training-i-254.site"
 
 private val proxy = BuildConfig.PROXY_URL
@@ -199,13 +218,37 @@ suspend fun getTvLink(imdbId: String, s : Int, e: Int) : String{
             val gzippedSource = GzipSource(responseBody.source())
             val decompressedString = gzippedSource.buffer().readUtf8()
             val jsonArray = JSONArray(decompressedString)
-            val jsonObject = jsonArray.getJSONObject(s).toString()
-            Log.i("json", jsonObject)
-            val episodeDetails = gson.fromJson(
-                jsonObject
-                    .replace("[]", ""), Season::class.java
-            )
-            val episode = episodeDetails.folder[e].folder[0].file.replace("~", "")
+            val seasons = arrayListOf<Season>()
+            for (i in 0 until jsonArray.length()){
+                val jO = jsonArray.getJSONObject(i).toString()
+                val eD = gson.fromJson(
+                    jO
+                        .replace("[]", ""), Season::class.java
+                )
+                seasons.add(eD)
+            }
+//            println(seasons)
+
+            val episodeDetails = seasons.find {
+                it.id.toInt() == (s+1)
+            } ?: return ""
+
+//            val jsonObject = jsonArray.getJSONObject(s).toString()
+//            Log.i("json", jsonObject)
+//            val episodeDetails = gson.fromJson(
+//                jsonObject
+//                    .replace("[]", ""), Season::class.java
+//            )
+
+//match episode also
+//            val episode = episodeDetails.folder[e].folder[0].file.replace("~", "")
+            val episodes = episodeDetails.folder.map {
+                Pair(it.episode,it.folder[0].file.replace("~",""))
+            }
+            val episode = episodes.find {
+                it.first == "${e+1}"
+            }?.second ?: return ""
+
             Log.i("episode", episode)
             val doc4 = requests.post(
                 "$origin/playlist/$episode.txt",
