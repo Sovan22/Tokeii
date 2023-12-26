@@ -3,6 +3,7 @@ package com.demomiru.tokeiv2.utils
 import android.net.Uri
 import androidx.media3.common.MimeTypes
 import androidx.media3.exoplayer.source.SingleSampleMediaSource
+import com.demomiru.tokeiv2.extractors.Vidplay
 import com.demomiru.tokeiv2.subtitles.SubtitleConfig
 import com.google.gson.Gson
 
@@ -19,14 +20,17 @@ class Extractor (private val origin: String){
 
     private val gson = Gson()
     private val extractorPriority = mapOf(
-        "hi" to listOf(1,5,3,4),
-        "en" to listOf(1,5,2,3),
-        "" to listOf(1,5,2,3)
+//        "hi" to listOf(1,5,3,4),
+//        "en" to listOf(1,5,2,3),
+//        "" to listOf(1,5,2,3)
+        "hi" to listOf(6,5,1,3,4),
+        "en" to listOf(6,5,1,2,3),
+        "" to listOf(6,5,1,2,3)
     )
-    private val eList = extractorPriority[origin]
+    private val eList = if(origin in extractorPriority.keys) extractorPriority[origin] else extractorPriority[""]
     var i = 0
 
-    suspend fun loadExtractor(title: String, id: String, year: String = "1970", s: Int, ep: Int, isMovie: Boolean, next:Int = 1): ExtractedData{
+    suspend fun loadExtractor(title: String, id: String, year: String = "1970", s: Int, ep: Int, isMovie: Boolean, next:Int = 6): ExtractedData{
         println(origin)
         return when(next){
             2 -> goMovieExtractor(title,s,ep,id,year,isMovie)
@@ -34,6 +38,7 @@ class Extractor (private val origin: String){
             3 -> smashyExtractor(title,s,ep,id,year,isMovie)
             4 -> dudeFilmExtractor(title,s,ep,id,year,isMovie)
             5 -> vidSrcExtractor(title,s,ep,id,year,isMovie)
+            6 -> vidPlayExtractor(title,year,s,ep,id,isMovie)
             else -> ExtractedData(source = "")
         }
     }
@@ -45,17 +50,20 @@ class Extractor (private val origin: String){
              "smashy" -> smashyExtractor(title,s,ep,id,"",false)
              "dudefilms" ->  dudeFilmExtractor(title,s,ep,id,"",false)
             "vidsrc"   -> vidSrcExtractor(title,s,ep,id,"",false)
+            "vidplay"   -> vidPlayExtractor(title,"",s,ep,id,false)
             else-> ExtractedData(source = "")
         }
     }
 
     suspend fun loadSourceChange(title: String, id:String,s:Int, ep: Int,year: String,isMovie: Boolean, source: String? = null) : List<ExtractedData>{
         val listSources = mutableListOf<ExtractedData>()
+        listSources.add(vidPlayExtractor(title,year,s,ep,id,isMovie,true))
         listSources.add(superStreamExtractor(title,s,ep,id,year,isMovie,true))
         listSources.add(vidSrcExtractor(title,s,ep,id,year,isMovie,true))
         listSources.add(goMovieExtractor(title,s,ep,id,year,isMovie,true))
         listSources.add(smashyExtractor(title,s,ep,id,year,isMovie,true))
         listSources.add(dudeFilmExtractor(title,s,ep,id,year,isMovie))
+
 
         listSources.removeIf{
             it.videoUrl.isNullOrBlank()
@@ -82,7 +90,7 @@ class Extractor (private val origin: String){
             val mainData = superStream.search(title)
             val item = mainData.data.list[0]
             val superId =
-                if (item.title == title && item.year.toString() == year) item.id else if(!isMovie) item.id else throw Exception(
+                if (item.title == title && item.year.toString() == year) item.id else if(!isMovie && item.title == title) item.id else throw Exception(
                     "No super stream found"
                 )
             val movieLinks = superStream.loadLinks(isMovie, superId!!,s,ep)
@@ -228,13 +236,34 @@ class Extractor (private val origin: String){
         return ExtractedData(videoUrl,subUrl,"smashy",false)
     }
 
+    private suspend fun vidPlayExtractor(title: String, year :String,s: Int, ep: Int, id: String, isMovie: Boolean, srcChange: Boolean = false): ExtractedData{
+        var videoUrl: String? = null
+        val subUrl : ArrayList<String> = arrayListOf()
+        val vidPlay = Vidplay()
+        try {
+            val links = vidPlay.getVidPlayUrl(isMovie,s,ep,id)
+            val vidLink = links.first
+            val subLink = links.second
+            if(vidLink.isNullOrBlank()){
+                throw Exception("No vidplay found")
+            }
+            else{
+                if (!subLink.isNullOrBlank())subUrl.add(subLink)
+                videoUrl = vidLink
+            }
+
+        }catch (e: Exception){
+            return if(!srcChange)   loadExtractor(title, id, year, s, ep, isMovie,eList!![++i]) else ExtractedData(source = "")
+        }
+        return ExtractedData(videoUrl,subUrl,"vidplay",false)
+    }
+
     //TODO
     private suspend fun dudeFilmExtractor(title: String, s: Int, ep: Int, id: String, year: String, movie: Boolean): ExtractedData {
         var videoUrl : String? = null
         try {
             videoUrl = if (movie) {
                 val imdb = getMovieImdb(id)
-                println(imdb)
                 getMovieLink(imdb)
             } else {
                 val imdb = getTvImdb(id)
