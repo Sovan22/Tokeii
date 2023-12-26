@@ -8,4 +8,29 @@
             <solid android:color="@color/colorPrimary"/>
         </shape>
         </item>
+
+    <item android:state_pressed="true">
+    <shape  android:shape="rectangle"
+
+        >
+        <corners android:radius="30dp"/>
+        <solid android:color="@color/ripple_color"/>
+    </shape>
+    </item>
+    <item android:state_focused="true">
+        <shape  android:shape="rectangle"
+
+            >
+            <corners android:radius="30dp"/>
+            <solid android:color="@color/ripple_color"/>
+        </shape>
+    </item>
+    <item android:state_hovered="true">
+    <shape  android:shape="rectangle"
+
+        >
+        <corners android:radius="30dp"/>
+        <solid android:color="@color/ripple_color"/>
+    </shape>
+        </item>
 </selector>
