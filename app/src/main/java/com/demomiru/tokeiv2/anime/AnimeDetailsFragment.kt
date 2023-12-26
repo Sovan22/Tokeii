@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +26,7 @@ import com.demomiru.tokeiv2.TVShowDetailsArgs
 
 import com.demomiru.tokeiv2.databinding.FragmentAnimeDetailsBinding
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory
 import com.demomiru.tokeiv2.utils.GogoAnime
 import com.demomiru.tokeiv2.utils.encodeStringToInt
@@ -37,7 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class AnimeDetailsFragment : Fragment() {
-
+    private val activityViewModel: ContinueWatchingViewModel2 by activityViewModels()
     private lateinit var viewModelFactory: ContinueWatchingViewModelFactory
     private val viewModel: ContinueWatchingViewModel by viewModels(
         factoryProducer = {
@@ -205,7 +207,10 @@ class AnimeDetailsFragment : Fragment() {
         }
     }
 
-
+    override fun onResume() {
+        activityViewModel.currentFragment.value = R.id.animeDetailsFragment
+        super.onResume()
+    }
 
 
 

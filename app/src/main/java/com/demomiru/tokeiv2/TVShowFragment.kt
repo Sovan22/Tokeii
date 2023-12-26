@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.paging.Pager
@@ -17,6 +18,7 @@ import androidx.paging.cachedIn
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
 
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.playShow
@@ -30,6 +32,7 @@ import kotlinx.coroutines.withContext
 
 class TVShowFragment : Fragment() {
 
+    private val activityViewModel : ContinueWatchingViewModel2 by activityViewModels()
     private lateinit var popTvRc: RecyclerView
     private lateinit var trenTvRc: RecyclerView
     private lateinit var topTvRc : RecyclerView
@@ -57,12 +60,12 @@ class TVShowFragment : Fragment() {
         val tvService = retrofit.create(TMDBService::class.java)
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val tvPopularShows = Pager(PagingConfig(1)){TvShowPagingSource(1)}.flow.cachedIn(lifecycleScope)
-
-
-            val tvTrendingShows = Pager(PagingConfig(1)){TvShowPagingSource(2)}.flow.cachedIn(lifecycleScope)
-
-            val tvTopShows = Pager(PagingConfig(1)){TvShowPagingSource(3)}.flow.cachedIn(lifecycleScope)
+//            val tvPopularShows = Pager(PagingConfig(1)){TvShowPagingSource(1)}.flow.cachedIn(lifecycleScope)
+//
+//
+//            val tvTrendingShows = Pager(PagingConfig(1)){TvShowPagingSource(2)}.flow.cachedIn(lifecycleScope)
+//
+//            val tvTopShows = Pager(PagingConfig(1)){TvShowPagingSource(3)}.flow.cachedIn(lifecycleScope)
 
             val topAdapter = TVShowAdapter2{ it, position->
 //                    val action = TVShowFragmentDirections.actionTVShowFragmentToTVShowDetails(it.id)
@@ -90,13 +93,13 @@ class TVShowFragment : Fragment() {
                 addRecyclerAnimation(trenTvRc,trenAdapter)
                 addRecyclerAnimation(topTvRc,topAdapter)
                 lifecycleScope.launch {
-                    tvTrendingShows.collect{
+                    activityViewModel.tvTrendingShows.collect{
                         trenAdapter.submitData(it)
                     }
                 }
 
                 lifecycleScope.launch {
-                    tvPopularShows.collect{
+                    activityViewModel.tvPopularShows.collect{
                         popAdapter.submitData(it)
                     }
                 }
@@ -115,7 +118,7 @@ class TVShowFragment : Fragment() {
                             view.findViewById<TextView>(R.id.topShows_text).visibility = View.VISIBLE
                         }
                     }
-                    tvTopShows.collect{
+                    activityViewModel.tvTopShows.collect{
                         topAdapter.submitData(it)
                     }
                 }
@@ -123,5 +126,10 @@ class TVShowFragment : Fragment() {
             }
         }
         return view
+    }
+
+    override fun onResume() {
+        activityViewModel.currentFragment.value = R.id.TVShowFragment
+        super.onResume()
     }
 }

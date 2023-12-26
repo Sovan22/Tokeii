@@ -10,15 +10,16 @@ import androidx.paging.PagingDataAdapter
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.demomiru.tokeiv2.MovieAdapter2.Companion.differCallback
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 
-class TVShowAdapter(private val tvShows: List<TVshow>,
+class TVShowAdapter(
 private val clickHandler : (TVshow,Int) -> Unit
 ) :
-    RecyclerView.Adapter<TVShowAdapter.ViewHolder>() {
+    ListAdapter<TVshow,TVShowAdapter.ViewHolder>(differCallback) {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.image_view)
@@ -32,7 +33,7 @@ private val clickHandler : (TVshow,Int) -> Unit
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val tvShow = tvShows[position]
+        val tvShow = getItem(position)
         holder.titleTextView.text = tvShow.name
         holder.imageView
             .load("https://image.tmdb.org/t/p/w500${tvShow.poster_path}")
@@ -42,10 +43,18 @@ private val clickHandler : (TVshow,Int) -> Unit
             clickHandler(tvShow,position)
         }
     }
+    companion object {
+        val differCallback = object : DiffUtil.ItemCallback<TVshow>() {
+            override fun areItemsTheSame(oldItem: TVshow, newItem: TVshow): Boolean {
+                return oldItem.id == newItem.id
+            }
 
-    override fun getItemCount(): Int {
-        return tvShows.size
+            override fun areContentsTheSame(oldItem: TVshow, newItem: TVshow): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
+
 }
 
 class TvShowPagingSource(private val list: Int): PagingSource<Int, TVshow>() {

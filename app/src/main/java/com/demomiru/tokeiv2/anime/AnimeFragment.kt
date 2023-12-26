@@ -6,18 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.R
 import com.demomiru.tokeiv2.databinding.FragmentAnimeBinding
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
 import com.demomiru.tokeiv2.utils.encodeStringToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class AnimeFragment : Fragment() {
-
+    private val activityViewModel : ContinueWatchingViewModel2 by activityViewModels()
     private lateinit var winterAnimeRc: RecyclerView
     private lateinit var fallAnimeRc: RecyclerView
     private lateinit var springAnimeRc : RecyclerView
@@ -81,27 +85,32 @@ class AnimeFragment : Fragment() {
         }
         summerAnimeRc.adapter = suAdapter
         try {
-            lifecycleScope.launch(Dispatchers.IO) {
+
+                activityViewModel.getAnime(requireContext())
 
 
-                val winterList = animeInfo.getSeasonalAnimeInfo(2)
-                val fallList = animeInfo.getSeasonalAnimeInfo(1)
-                val springList = animeInfo.getSeasonalAnimeInfo(3)
-                val summerList = animeInfo.getSeasonalAnimeInfo(4)
+                    activityViewModel.winterList.observe(viewLifecycleOwner){winterList->
+                        wAdapter.submitList(winterList)
+                        if(winterList.isNotEmpty()){
+                            binding.loadingAnime.visibility = View.GONE
+                            binding.winterText.visibility = View.VISIBLE
+                            binding.fallText.visibility = View.VISIBLE
+                            binding.springText.visibility = View.VISIBLE
+                            binding.summerText.visibility = View.VISIBLE
+                        }
+                    }
+                    activityViewModel.fallList.observe(viewLifecycleOwner){fallList->
+                        fAdapter.submitList(fallList)
+                    }
 
-                withContext(Dispatchers.Main) {
-                    wAdapter.submitList(winterList)
-                    fAdapter.submitList(fallList)
-                    spAdapter.submitList(springList)
-                    suAdapter.submitList(summerList)
-                    binding.loadingAnime.visibility = View.GONE
-                    binding.winterText.visibility = View.VISIBLE
-                    binding.fallText.visibility = View.VISIBLE
-                    binding.springText.visibility = View.VISIBLE
-                    binding.summerText.visibility = View.VISIBLE
-                }
+                    activityViewModel.springList.observe(viewLifecycleOwner){springList->
+                        spAdapter.submitList(springList)
+                    }
 
-            }
+                    activityViewModel.summerList.observe(viewLifecycleOwner){summerList->
+                        suAdapter.submitList(summerList)
+                    }
+
         }catch (e:Exception){
             e.printStackTrace()
         }
@@ -109,7 +118,10 @@ class AnimeFragment : Fragment() {
         return binding.root
     }
 
-
+    override fun onResume() {
+        activityViewModel.currentFragment.value = R.id.animeFragment
+        super.onResume()
+    }
 
 
 

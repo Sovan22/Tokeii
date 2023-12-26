@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() {
     )
     private var currentFragment = MutableLiveData(R.id.moviesFragment)
     private lateinit var continueText: TextView
+    private lateinit var bottomNavigationView : BottomNavigationView
 
     private var nestedScrollView : NestedScrollView? = null
     private lateinit var adapter: ContinueWatchingAdapter
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         viewModelFactory = ContinueWatchingViewModelFactory2(watchHistoryDao)
         val options = NavOptions.Builder()
             .setEnterAnim(R.anim.enter_from_bottom)
@@ -63,11 +65,16 @@ class MainActivity : AppCompatActivity() {
 
         nestedScrollView = findViewById(R.id.nestedScrollView)
         val navController = findNavController(R.id.nav_host_fragment)
-        val bottomNavigationView : BottomNavigationView = findViewById(R.id.bottom_nav_bar)
+        bottomNavigationView = findViewById(R.id.bottom_nav_bar)
         continueWatchingRepository = ContinueWatchingRepository(watchHistoryDao)
         watchHistoryRc = findViewById(R.id.watch_history_rc)
         watchHistoryRc.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,false)
         continueText = findViewById(R.id.continue_watching_text)
+
+
+
+
+
 
         adapter = ContinueWatchingAdapter{it,delete->
             if(delete){
@@ -84,7 +91,6 @@ class MainActivity : AppCompatActivity() {
 
 
         watchHistoryRc.adapter = adapter
-
        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.moviesFragment -> {
@@ -125,6 +131,7 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemReselectedListener {
             return@setOnNavigationItemReselectedListener
         }
+//        bottomNavigationView.selectedItemId = R.id.animeFragment
 
         lifecycleScope.launch {
             val update = app.get("https://github.com/Sovan22/Tokeii/").document.select("article.markdown-body.entry-content.container-lg .anchor")[2].attr("href").substringAfter("v").toInt()
@@ -146,39 +153,65 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     override fun onResume() {
-        currentFragment.observe(this){
-            if(it == R.id.searchFragment ){
-                watchHistoryRc.visibility = View.GONE
-                continueText.visibility = View.GONE
-            }
-            else{
-                watchHistoryRc.visibility = View.VISIBLE
-                continueText.visibility = View.VISIBLE
-            }
-        }
+//        viewModel.currentFragment.observe(this){
+//            if(it == R.id.searchFragment ){
+//                watchHistoryRc.visibility = View.GONE
+//                continueText.visibility = View.GONE
+//            }
+//            else{
+//                watchHistoryRc.visibility = View.VISIBLE
+//                continueText.visibility = View.VISIBLE
+//            }
+//        }
+
+//        viewModel.showContinue.observe(this){
+//            if(!it){
+//                watchHistoryRc.visibility = View.GONE
+//                continueText.visibility = View.GONE
+//            }
+//            else{
+//                watchHistoryRc.visibility = View.VISIBLE
+//                continueText.visibility = View.VISIBLE
+//            }
+//        }
             val viewStateObserver = Observer<List<ContinueWatching>> {watchFrom ->
             if(watchFrom.isNotEmpty()){
                 watchHistoryRc.visibility = View.VISIBLE
                 continueText.visibility = View.VISIBLE
+
                 adapter.submitList(watchFrom)
                 addRecyclerAnimation(watchHistoryRc,adapter)
-                if(currentFragment.value  == R.id.searchFragment){
-                    watchHistoryRc.visibility = View.GONE
-                    continueText.visibility = View.GONE
-                }else
-                {
-                    watchHistoryRc.visibility = View.VISIBLE
-                    continueText.visibility = View.VISIBLE
+                viewModel.currentFragment.observe(this){
+
+                    if(it == R.id.searchFragment || it == R.id.TVShowDetails || it == R.id.animeDetailsFragment ){
+                        watchHistoryRc.visibility = View.GONE
+                        continueText.visibility = View.GONE
+                    }
+                    else{
+                        watchHistoryRc.visibility = View.VISIBLE
+                        continueText.visibility = View.VISIBLE
+                    }
                 }
+//                if(currentFragment.value  == R.id.searchFragment){
+//                    watchHistoryRc.visibility = View.GONE
+//                    continueText.visibility = View.GONE
+//                }else
+//                {
+//                    watchHistoryRc.visibility = View.VISIBLE
+//                    continueText.visibility = View.VISIBLE
+//                }
             }
             else{
+
                 watchHistoryRc.visibility = View.GONE
                 continueText.visibility = View.GONE
             }
 
         }
         viewModel.allWatchHistory.observe(this,viewStateObserver)
-
+        viewModel.currentFragment.observe(this){
+            bottomNavigationView.selectedItemId = it
+        }
         super.onResume()
     }
 
@@ -204,6 +237,16 @@ class MainActivity : AppCompatActivity() {
 
         val dialog = builder.create()
         dialog.show()
+    }
+
+    override fun onBackPressed() {
+        if(viewModel.currentFragment.value == R.id.searchFragment && viewModel.searchOpen.value == true) {
+
+                viewModel.searchOpen.value = false
+
+        }
+        else
+        super.onBackPressed()
     }
 
 }

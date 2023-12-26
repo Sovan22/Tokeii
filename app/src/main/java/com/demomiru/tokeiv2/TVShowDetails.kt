@@ -1,6 +1,7 @@
 package com.demomiru.tokeiv2
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 
 import android.os.Bundle
 
@@ -21,6 +22,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -32,6 +34,7 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.demomiru.tokeiv2.anime.AnimeEpisodeAdapter
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
 import com.demomiru.tokeiv2.utils.ContinueWatchingViewModelFactory
 import com.demomiru.tokeiv2.utils.GogoAnime
 import com.demomiru.tokeiv2.utils.dateToUnixTime
@@ -51,6 +54,7 @@ import kotlinx.coroutines.withContext
 
 class TVShowDetails : Fragment() {
     private val args : TVShowDetailsArgs by navArgs()
+    private val activityViewModel: ContinueWatchingViewModel2 by activityViewModels()
     private lateinit var id: String
     private lateinit var title: String
     private var isAnime: Boolean = false
@@ -98,6 +102,7 @@ class TVShowDetails : Fragment() {
     ): View? {
 //        postponeEnterTransition()
         // Inflate the layout for this fragment
+        activityViewModel.currentFragment.value = R.id.TVShowDetails
         val view = inflater.inflate(R.layout.fragment_tv_show_details, container, false)
 //        val animeDetails = arguments?.getSerializable("anime-details") as? GogoAnime.AnimeDetails
 //        if (animeDetails!= null) isAnime = true
@@ -138,7 +143,10 @@ class TVShowDetails : Fragment() {
 //        hintTil = view.findViewById(R.id.dropdown_menu)
         progressBar = view.findViewById(R.id.progress_circular)
         episodesRc = view.findViewById(R.id.episode_display_rc)
-//        episodesRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        val orientation = this.resources.configuration.orientation
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE)
+        episodesRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            else
         episodesRc.layoutManager = LinearLayoutManager(requireContext())
 
         val expandView = view.findViewById<ConstraintLayout>(R.id.expand_tvshow_view)
@@ -148,6 +156,9 @@ class TVShowDetails : Fragment() {
         val overview: TextView = view.findViewById(R.id.overview)
         val retrofit = retrofitBuilder()
         dropDownSpinner = view.findViewById(R.id.dropdown_spinner)
+//        viewModel.season.observe(viewLifecycleOwner){
+//            dropDownSpinner.setSelection(it)
+//        }
 //        expandView.transitionName = "image_$position"
 
 
@@ -193,6 +204,7 @@ class TVShowDetails : Fragment() {
                             val selectedItem = parent?.getItemAtPosition(position) as String
                             seasonNumber = selectedItem.substringAfter(" ")
                             Log.i("Season Number", seasonNumber)
+                            viewModel.season.value = position
 
                             GlobalScope.launch(Dispatchers.Main) {
                                 val episodeResponse = tvService.getEpisodeDetails(

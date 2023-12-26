@@ -11,6 +11,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.CombinedLoadStates
@@ -21,6 +22,7 @@ import androidx.paging.cachedIn
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.demomiru.tokeiv2.utils.ContinueWatchingViewModel2
 import com.demomiru.tokeiv2.utils.addRecyclerAnimation
 import com.demomiru.tokeiv2.utils.passData
 
@@ -45,6 +47,7 @@ private const val ARG_PARAM2 = "param2"
 class MoviesFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
+    private val activityViewModel: ContinueWatchingViewModel2 by activityViewModels()
     private lateinit var popMovieRc: RecyclerView
     private lateinit var trenMovieRc : RecyclerView
     private lateinit var topMovieRc : RecyclerView
@@ -92,7 +95,7 @@ class MoviesFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.Main) {
             withContext(Dispatchers.IO){
 
-                val trmovies =   Pager(PagingConfig(1)){MoviesPagingSource(3)}.flow.cachedIn(lifecycleScope)
+//                val trmovies =   Pager(PagingConfig(1)){MoviesPagingSource(3)}.flow.cachedIn(lifecycleScope)
                 val tradapter = MovieAdapter2{
 //                    val action = MoviesFragmentDirections.actionMoviesFragmentToMoviePlayActivity(it.id, "movie")
 //                    findNavController().navigate(play(it))
@@ -101,7 +104,7 @@ class MoviesFragment : Fragment() {
 
                 }
 
-                val tmovies =  Pager(PagingConfig(1)){MoviesPagingSource(2)}.flow.cachedIn(lifecycleScope)
+//                val tmovies =  Pager(PagingConfig(1)){MoviesPagingSource(2)}.flow.cachedIn(lifecycleScope)
                 val tadapter = MovieAdapter2 {
 //                    findNavController().navigate(play(it))
                     println(it.release_date)
@@ -109,7 +112,7 @@ class MoviesFragment : Fragment() {
 
                 }
 
-                val movies = Pager(PagingConfig(1)){MoviesPagingSource(1)}.flow.cachedIn(lifecycleScope)
+//                val movies = Pager(PagingConfig(1)){MoviesPagingSource(1)}.flow.cachedIn(lifecycleScope)
                 val adapter = MovieAdapter2 {
                     println(it.release_date)
                     startActivity(passData(it, requireContext()))
@@ -122,12 +125,12 @@ class MoviesFragment : Fragment() {
 
 
                     lifecycleScope.launch {
-                        trmovies.collect {
+                        activityViewModel.topMovies.collect {
                             tradapter.submitData(it)
                         }
                     }
                     lifecycleScope.launch {
-                        movies.collect{
+                        activityViewModel.popMovies.collect{
                             adapter.submitData(it)
                         }
                     }
@@ -149,7 +152,7 @@ class MoviesFragment : Fragment() {
 //                        view.findViewById<TextView>(R.id.trending_text).visibility = View.VISIBLE
 //                        view.findViewById<TextView>(R.id.movies_text).visibility = View.VISIBLE
 //                        view.findViewById<TextView>(R.id.topmovies_text).visibility = View.VISIBLE
-                        tmovies.collect {
+                        activityViewModel.trenMovies.collect {
                             tadapter.submitData(it)
                         }
                     }
@@ -195,6 +198,11 @@ class MoviesFragment : Fragment() {
 //
 //        errorState?.let { showError(it.error.toString()) }
 //    }
+
+    override fun onResume() {
+        activityViewModel.currentFragment.value = R.id.moviesFragment
+        super.onResume()
+    }
     companion object {
         /**
          * Use this factory method to create a new instance of

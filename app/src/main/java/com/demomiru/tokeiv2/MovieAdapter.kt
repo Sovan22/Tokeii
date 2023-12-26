@@ -11,15 +11,14 @@ import androidx.paging.PagingDataAdapter
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.demomiru.tokeiv2.utils.retrofitBuilder
 import com.demomiru.tokeiv2.utils.yearExtract
 
-class MovieAdapter(private val movies: List<Movie>,
-                   private val clickHandler : (Movie) -> Unit
-) :
-    RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
+class MovieAdapter(private val clickHandler : (Movie) -> Unit) :
+    ListAdapter<Movie,MovieAdapter.ViewHolder>(differCallback) {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.image_view)
@@ -31,14 +30,23 @@ class MovieAdapter(private val movies: List<Movie>,
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int {
-       return movies.size
+    companion object {
+        val differCallback = object : DiffUtil.ItemCallback<Movie>() {
+            override fun areItemsTheSame(oldItem: Movie, newItem: Movie): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: Movie, newItem: Movie): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
+
 
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val movie = movies[position]
+        val movie = getItem(position)
         holder.titleTextView.text = movie.title + " (${yearExtract(movie.release_date)})"
         holder.imageView.load("https://image.tmdb.org/t/p/w500${movie.poster_path}")
         holder.itemView.setOnClickListener {
