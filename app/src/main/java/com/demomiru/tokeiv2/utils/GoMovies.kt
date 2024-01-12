@@ -97,7 +97,7 @@ class GoMovies{
 
     private val aes = AES()
     private val gson = Gson()
-    private val app = Requests()
+    private val app = Requests(baseClient = getBaseClient())
     private val proxy = BuildConfig.PROXY_URL
     private val headers = mapOf("X-Requested-With" to "XMLHttpRequest")
     private val baseUrl = "https://gomovies.sx"

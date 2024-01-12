@@ -2,6 +2,7 @@ package com.demomiru.tokeiv2.extractors
 
 import androidx.lifecycle.lifecycleScope
 import com.demomiru.tokeiv2.utils.Video3
+import com.demomiru.tokeiv2.utils.getBaseClient
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.lagradost.nicehttp.Requests
@@ -16,7 +17,7 @@ import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
-private val app = Requests()
+private val app = Requests(baseClient = getBaseClient())
 private val gson = Gson()
 
 

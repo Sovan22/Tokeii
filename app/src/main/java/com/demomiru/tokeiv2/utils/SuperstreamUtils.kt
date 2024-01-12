@@ -17,7 +17,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class SuperstreamUtils() {
-    private val app = Requests()
+    private val app = Requests(baseClient = getBaseClient())
     private val unixTime = System.currentTimeMillis()/1000L
     private val gson = Gson()
 //    private var episode: Int? = null

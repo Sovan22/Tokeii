@@ -105,12 +105,12 @@
         android:layout_height="match_parent">
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/search_results_rc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_results_rc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -119,37 +119,37 @@
             android:orientation="vertical"
             >
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:visibility="gone"
-            tools:visibility="visible"
-            android:id="@+id/search_history_rc"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:paddingBottom= "30dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:paddingTop="10dp"
-            android:background="@drawable/background_search_history"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:id="@+id/search_history_rc"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:paddingBottom= "30dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="10dp"
+                android:background="@drawable/background_search_history"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
 
-            />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:id="@+id/delete_all_button"
-            android:fontFamily="@font/exo_2"
-            android:text="@string/clear_all"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
-            android:background="@drawable/background_search_history"
-            android:textColor="@color/white"
-            android:layout_marginBottom="8dp"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:layout_gravity="bottom"
-            />
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/delete_all_button"
+                android:fontFamily="@font/exo_2"
+                android:text="@string/clear_all"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:background="@drawable/background_search_history"
+                android:textColor="@color/white"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:textSize="18sp"
+                android:layout_gravity="bottom"
+                />
         </LinearLayout>
 
 

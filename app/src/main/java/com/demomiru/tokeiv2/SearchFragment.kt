@@ -39,7 +39,7 @@ import com.demomiru.tokeiv2.utils.passData
 import kotlinx.coroutines.DelicateCoroutinesApi
 
 class SearchFragment : Fragment() {
-//    private lateinit var searchHistoryList: List<String>
+    //    private lateinit var searchHistoryList: List<String>
     private lateinit var searchHistoryRC: RecyclerView
     private lateinit var searchView : SearchView
     private val activityViewModel: ContinueWatchingViewModel2 by activityViewModels()
@@ -105,15 +105,15 @@ class SearchFragment : Fragment() {
 //                val action = SearchFragmentDirections.actionSearchFragmentToTVShowDetails(
 //                    encodeStringToInt(it.name).toString(), title = "",animeUrl = it.url)
 //                findNavController().navigate(action)
-                val action =  SearchFragmentDirections.actionSearchFragmentToAnimeDetailsFragment(it.name,it.url)
-                findNavController().navigate(action)
+            val action =  SearchFragmentDirections.actionSearchFragmentToAnimeDetailsFragment(it.name,it.url)
+            findNavController().navigate(action)
 
         }
 
-        var start = true
-        viewModel.queryText.observe(viewLifecycleOwner){
-            if(it.isNotBlank() && start)searchView.setQuery(it,false)
-        }
+//        var start = true
+//        viewModel.queryText.observe(viewLifecycleOwner){
+//            if(it.isNotBlank() && start)searchView.setQuery(it,false)
+//        }
 
 //        searchView.setQuery(viewModel.queryText.value,false)
 
@@ -125,7 +125,7 @@ class SearchFragment : Fragment() {
         println(grid)
         searchResultsRc.layoutManager = GridLayoutManager(requireContext(),grid)
         searchHistoryRC.layoutManager = LinearLayoutManager(requireContext())
-        start   = false
+//        start   = false
         adapter = SearchHistoryAdapter2{it,search->
             if (search){
 
@@ -205,9 +205,9 @@ class SearchFragment : Fragment() {
             imm.showSoftInput(it.findFocus(), 0)
         }
 
-        viewModel.queryText.observe(viewLifecycleOwner){
-            if(it.isNotBlank())searchView.setQuery(it,false)
-        }
+//        viewModel.queryText.observe(viewLifecycleOwner){
+//            if(it.isNotBlank())searchView.setQuery(it,false)
+//        }
 
         searchView.setOnQueryTextFocusChangeListener { view, hasFocus ->
             if(hasFocus) {
@@ -358,7 +358,7 @@ class SearchFragment : Fragment() {
             }
         }
 
-                return view
+        return view
     }
 
 

@@ -22,7 +22,7 @@ data class Video3(
 }
 class SmashyStream{
 
-    private val app = Requests()
+    private val app = Requests(baseClient = getBaseClient())
     private val gson = Gson()
     private val proxy = BuildConfig.PROXY_URL
     suspend fun getLink(isMovie: Boolean = false,id: String,s: Int,e:Int,src:String ="en") : Pair<String?,String?>{

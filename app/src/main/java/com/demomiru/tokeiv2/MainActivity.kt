@@ -27,15 +27,22 @@ import com.demomiru.tokeiv2.watching.ContinueWatchingAdapter
 import com.demomiru.tokeiv2.watching.ContinueWatchingDatabase
 import com.demomiru.tokeiv2.watching.ContinueWatchingRepository
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.common.primitives.UnsignedBytes.toInt
+import com.google.gson.Gson
 import com.lagradost.nicehttp.Requests
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONArray
+import org.jsoup.Jsoup
 
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
-    private val version = 112
+    private val version = 113
+    private val gson = Gson()
     private lateinit var watchHistoryRc : RecyclerView
     private val database by lazy { ContinueWatchingDatabase.getInstance(this) }
     private val watchHistoryDao by lazy { database.watchDao() }
@@ -133,17 +140,29 @@ class MainActivity : AppCompatActivity() {
         }
 //        bottomNavigationView.selectedItemId = R.id.animeFragment
 
-        lifecycleScope.launch {
-            val update = app.get("https://github.com/Sovan22/Tokeii/").document.select("article.markdown-body.entry-content.container-lg .anchor")[2].attr("href").substringAfter("v").toInt()
-            if( version < update)
-                withContext(Dispatchers.Main){
-                    showDialog()
-                }
+        lifecycleScope.launch (Dispatchers.IO){
+//            val update = app.get("https://github.com/Sovan22/Tokeii/").document.select("article.markdown-body.entry-content.container-lg .anchor")[2].attr("href").substringAfter("v").toInt()
+            val client = OkHttpClient()
+            val request = Request.Builder()
+                .url("https://api.github.com/repos/Sovan22/Tokeii/releases").build()
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val releases = JSONArray(response.body.string())
+                val update = gson.fromJson(releases.getJSONObject(0).toString(),Release::class.java).tag_name.replace(".","").replace("v","").replace("-tokei","").toInt()
+//                [2].attr("href").substringAfter("v").toInt()
+                println(update)
+                if (version < update)
+                    withContext(Dispatchers.Main) {
+                        showDialog()
+                    }
+            }
         }
 
 
 
     }
+
+    data class Release(val tag_name:String)
     fun triggerSearchKeyPress() {
         val enterKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
         dispatchKeyEvent(enterKeyEvent)
@@ -242,11 +261,11 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if(viewModel.currentFragment.value == R.id.searchFragment && viewModel.searchOpen.value == true) {
 
-                viewModel.searchOpen.value = false
+            viewModel.searchOpen.value = false
 
         }
         else
-        super.onBackPressed()
+            super.onBackPressed()
     }
 
 }

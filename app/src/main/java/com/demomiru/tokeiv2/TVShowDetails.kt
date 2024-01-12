@@ -145,8 +145,8 @@ class TVShowDetails : Fragment() {
         episodesRc = view.findViewById(R.id.episode_display_rc)
         val orientation = this.resources.configuration.orientation
         if(orientation == Configuration.ORIENTATION_LANDSCAPE)
-        episodesRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-            else
+            episodesRc.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        else
         episodesRc.layoutManager = LinearLayoutManager(requireContext())
 
         val expandView = view.findViewById<ConstraintLayout>(R.id.expand_tvshow_view)
@@ -163,8 +163,9 @@ class TVShowDetails : Fragment() {
 
 
         if (!isAnime){
+            println(" NOt anime")
         val tvService = retrofit.create(TMDBService::class.java)
-        GlobalScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.IO) {
             val tvDetailsResponse = tvService.getTVShowDetails(
                 id,
                 BuildConfig.TMDB_API_KEY,
@@ -174,10 +175,12 @@ class TVShowDetails : Fragment() {
             if (tvDetailsResponse.isSuccessful) {
                 val tvShows = tvDetailsResponse.body()
 
-                posterImg.load("https://image.tmdb.org/t/p/w500${tvShows?.poster_path}")
-                backdropImg.load("https://image.tmdb.org/t/p/original${tvShows?.backdrop_path}")
-                overview.text = tvShows?.overview
-                titleTv.text = title
+                withContext(Dispatchers.Main){
+                    posterImg.load("https://image.tmdb.org/t/p/w500${tvShows?.poster_path}")
+                    backdropImg.load("https://image.tmdb.org/t/p/original${tvShows?.backdrop_path}")
+                    overview.text = tvShows?.overview
+                    titleTv.text = title
+                }
 
 
                 val seasons = dropDownMenu(tvShows!!.number_of_seasons.toInt()) // Fetch the data
@@ -189,8 +192,11 @@ class TVShowDetails : Fragment() {
 //                dropdownMenu = view.findViewById(R.id.autoCompleteTextView)
 //                dropdownMenu.setAdapter(arrayAdapter) // Set the adapter
 
-                dropDownSpinner.adapter = arrayAdapter
-                dropDownSpinner.setSelection(lastPlayedSeason-1)
+                withContext(Dispatchers.Main){
+                    dropDownSpinner.adapter = arrayAdapter
+                    dropDownSpinner.setSelection(lastPlayedSeason-1)
+
+                }
 
                 var seasonNumber: String
                 dropDownSpinner.onItemSelectedListener =
@@ -206,7 +212,7 @@ class TVShowDetails : Fragment() {
                             Log.i("Season Number", seasonNumber)
                             viewModel.season.value = position
 
-                            GlobalScope.launch(Dispatchers.Main) {
+                            lifecycleScope.launch(Dispatchers.IO) {
                                 val episodeResponse = tvService.getEpisodeDetails(
                                     id, seasonNumber,
                                     BuildConfig.TMDB_API_KEY,
@@ -218,6 +224,8 @@ class TVShowDetails : Fragment() {
 
                                     if(episodes.isNotEmpty()){
                                         val condition: (Episode) -> Boolean = { episode ->
+                                            if (episode.air_date == null) true
+                                            else
                                             dateToUnixTime(episode.air_date) > System.currentTimeMillis()
                                         }
                                         val repisodes =  episodes.toMutableList()
@@ -237,17 +245,20 @@ class TVShowDetails : Fragment() {
                                         )
 
                                     }
-                                    episodesRc.adapter = adapter
+
                                     val context = episodesRc.context
                                     val controller = AnimationUtils.loadLayoutAnimation(
                                         context,
                                         R.anim.layout_animation
                                     )
-                                    episodesRc.layoutAnimation = controller
-                                    adapter.notifyDataSetChanged()
-                                    episodesRc.scheduleLayoutAnimation()
-                                    view.findViewById<TextView>(R.id.episodes_text).visibility =
-                                        View.VISIBLE
+                                    withContext(Dispatchers.Main) {
+                                        episodesRc.adapter = adapter
+                                        episodesRc.layoutAnimation = controller
+                                        adapter.notifyDataSetChanged()
+                                        episodesRc.scheduleLayoutAnimation()
+                                        view.findViewById<TextView>(R.id.episodes_text).visibility =
+                                            View.VISIBLE
+                                    }
 
                                 }
                             }

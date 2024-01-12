@@ -74,12 +74,12 @@ data class TVShowEpisodeDetailsResponse(
     val episodes : List<Episode>
 )
 data class Episode(
-    val air_date: String,
+    val air_date: String?,
     val season_number: String,
     val episode_number: String,
-    val overview: String,
-    val name: String,
-    val still_path: String,
+    val overview: String?,
+    val name: String?,
+    val still_path: String?,
 ) : Serializable
 
 data class Season(

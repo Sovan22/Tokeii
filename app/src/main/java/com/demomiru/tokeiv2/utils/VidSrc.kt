@@ -6,7 +6,7 @@ import org.checkerframework.checker.units.qual.s
 import java.util.Base64
 
 class VidSrc {
-    private val app = Requests()
+    private val app = Requests(baseClient = getBaseClient())
     private val gson = Gson()
     private val url = "https://vidsrc.me/"
 

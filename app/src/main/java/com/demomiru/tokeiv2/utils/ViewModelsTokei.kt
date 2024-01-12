@@ -14,9 +14,12 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import androidx.room.util.query
+import com.demomiru.tokeiv2.BuildConfig
 import com.demomiru.tokeiv2.Movie
 import com.demomiru.tokeiv2.MoviesPagingSource
 import com.demomiru.tokeiv2.R
+import com.demomiru.tokeiv2.TMDBService
+import com.demomiru.tokeiv2.TVShowDetailsResponse
 import com.demomiru.tokeiv2.TVshow
 import com.demomiru.tokeiv2.TvShowPagingSource
 import com.demomiru.tokeiv2.anime.AnimeInfo
@@ -201,6 +204,28 @@ class VideoViewModel(): ViewModel(){
     }
 
 
+}
+
+class TVShowViewModel() : ViewModel(){
+    private val retrofit = retrofitBuilder()
+    private val tvService = retrofit.create(TMDBService::class.java)
+    val tvShows = MutableLiveData<TVShowDetailsResponse>(null)
+    fun getTVDetails(id : String) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val tvDetailsResponse = tvService.getTVShowDetails(
+                    id,
+                    BuildConfig.TMDB_API_KEY,
+                    "en-US"
+                )
+                if(tvDetailsResponse.isSuccessful){
+                   tvShows.postValue(tvDetailsResponse.body())
+                }
+            }
+    }
+
+    fun getSeasons(season: Int){
+        viewModelScope.launch (Dispatchers.IO){  }
+    }
 }
 
 

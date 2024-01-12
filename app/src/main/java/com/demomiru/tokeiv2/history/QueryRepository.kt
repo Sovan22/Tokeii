@@ -25,13 +25,12 @@ import retrofit2.create
 
 class QueryRepository(private val queryDao: SearchHistoryDao) {
 
-//    private val _allQueries = MutableLiveData<List<SearchHistory>>()
-//    val allQueries : LiveData<List<SearchHistory>> = _allQueries
+    private val _allQueries = MutableLiveData<List<SearchHistory>>()
+    val allQueries : LiveData<List<SearchHistory>> = _allQueries
 
 
-//    fun loadData(): MutableLiveData<List<SearchHistory>>{
+//    fun loadData(){
 //        _allQueries.postValue(queryDao.getSearchHistory())
-//        return _allQueries
 //    }
     private val retrofit = retrofitBuilder()
 
