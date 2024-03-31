@@ -2,6 +2,7 @@ package com.demomiru.tokeiv2.anime
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -114,6 +115,7 @@ class AnimeDetailsFragment : Fragment() {
 
         lifecycleScope.launch (Dispatchers.IO) {
             val details = animeInfo.getAnimeDetails(title)
+            Log.i("anime url",url)
             val gogoDetails: GogoAnime.AnimeDetails = try{gogoSrc.load(url)}catch (e:Exception){
                 println(e.printStackTrace())
                 GogoAnime.AnimeDetails()
@@ -147,6 +149,7 @@ class AnimeDetailsFragment : Fragment() {
                 overview.text = details.synopsis.replace("[Written by MAL Rewrite]","")
                 titleTv.text = gogoDetails.title
                 val episodes = gogoDetails.episodes
+
                 val adapter = AnimeEpisodeAdapter{ _, epPos->
                     startActivity(
                         passData(

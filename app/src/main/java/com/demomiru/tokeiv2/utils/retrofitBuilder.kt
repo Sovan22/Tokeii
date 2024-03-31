@@ -6,6 +6,10 @@ import android.content.Intent
 import android.os.Bundle
 
 import android.view.animation.AnimationUtils
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.HttpDataSource
+import androidx.media3.datasource.TransferListener
 
 import androidx.navigation.NavDirections
 import androidx.recyclerview.widget.RecyclerView
@@ -26,6 +30,7 @@ import com.demomiru.tokeiv2.VideoPlayActivity
 import com.demomiru.tokeiv2.watching.ContinueWatching
 import com.demomiru.tokeiv2.watching.ContinueWatchingAdapter
 import com.demomiru.tokeiv2.watching.VideoData
+import com.google.gson.Gson
 import com.lagradost.nicehttp.addGenericDns
 import com.lagradost.nicehttp.ignoreAllSSLErrors
 import okhttp3.Cache
@@ -37,11 +42,34 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 
+
+
+
+private val appCache = Cache(File("cacheDir", "okhttpcache"), 10 * 1024 * 1024)
+private fun OkHttpClient.Builder.addCloudFlareDns() = (
+        addGenericDns(
+            "https://cloudflare-dns.com/dns-query",
+            // https://www.cloudflare.com/ips/
+            listOf(
+                "1.1.1.1",
+                "1.0.0.1",
+                "2606:4700:4700::1111",
+                "2606:4700:4700::1001"
+            )
+        ))
+private val baseClient = OkHttpClient.Builder()
+    .followRedirects(true)
+    .followSslRedirects(true)
+    .ignoreAllSSLErrors()
+    .cache(
+        appCache
+    ).addCloudFlareDns().build()
+
 fun retrofitBuilder (): Retrofit
 {
    return Retrofit.Builder()
         .baseUrl("https://api.themoviedb.org/3/")
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(GsonConverterFactory.create()).client(baseClient)
         .build()
 }
 

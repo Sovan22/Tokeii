@@ -1080,8 +1080,22 @@ class VideoPlayActivity : AppCompatActivity(),AudioManager.OnAudioFocusChangeLis
 //                    }
 
 //                    val
-                            videoMediaSource = if (isSuper) {
-                        ProgressiveMediaSource.Factory(dataSourceFactory)
+                            videoMediaSource = if (isSuper || source == "nowtv") {
+                                if(source == "nowtv"){
+                                    val dsF = DefaultHttpDataSource.Factory()
+                                        .setDefaultRequestProperties(mapOf("Referer" to "https://bflix.gs/",
+                                        "Connection" to "keep-alive"
+                                            ))
+                                        .setAllowCrossProtocolRedirects(true)
+                                        .setConnectTimeoutMs(50000)
+                                        .setReadTimeoutMs(50000)
+                                        .setTransferListener(DefaultBandwidthMeter.Builder(this).build())
+                                    println("NowTV insiide videomedia")
+                                    ProgressiveMediaSource.Factory(dsF)
+                                        .createMediaSource(MediaItem.fromUri(videoUri))
+
+                                }else
+                                ProgressiveMediaSource.Factory(dataSourceFactory)
                             .createMediaSource(MediaItem.fromUri(videoUri))
                     } else {
                         HlsMediaSource.Factory(dataSourceFactory)

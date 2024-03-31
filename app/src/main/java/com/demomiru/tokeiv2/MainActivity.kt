@@ -41,7 +41,7 @@ import org.jsoup.Jsoup
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
-    private val version = 113
+    private val version = 114
     private val gson = Gson()
     private lateinit var watchHistoryRc : RecyclerView
     private val database by lazy { ContinueWatchingDatabase.getInstance(this) }

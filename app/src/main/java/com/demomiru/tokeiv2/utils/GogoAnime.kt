@@ -159,7 +159,7 @@ class GogoAnime{
         return ""
     }
 
-    private var mainUrl = "https://gogoanime3.net"
+    private var mainUrl = "https://anitaku.to"
 //        "https://gogoanime.lu"
     private var name = "GogoAnime"
     private val hasQuickSearch = false
@@ -167,7 +167,7 @@ class GogoAnime{
 
 
     val headers = mapOf(
-        "authority" to "ajax.gogo-load.com",
+        "authority" to "ajax.gogocdn.net",
         "sec-ch-ua" to "\"Google Chrome\";v=\"89\", \"Chromium\";v=\"89\", \";Not A Brand\";v=\"99\"",
         "accept" to "text/html, */*; q=0.01",
         "dnt" to "1",
@@ -288,7 +288,8 @@ class GogoAnime{
 
     suspend fun load(url: String): AnimeDetails {
         val link = getProperAnimeLink(url)
-        val episodeloadApi = "https://ajax.gogo-load.com/ajax/load-list-episode"
+
+        val episodeloadApi = "https://ajax.gogocdn.net/ajax/load-list-episode"
         val doc = app.get(link).document
 
         val animeBody = doc.selectFirst(".anime_info_body_bg")
